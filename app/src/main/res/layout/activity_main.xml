@@ -1,0 +1,132 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<LinearLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:fitsSystemWindows="true"
+    android:id="@+id/mainlayout"
+    tools:context="com.avaa.surfforecast.MainActivity"
+    android:background="#eeeeee">
+
+    <RelativeLayout
+        android:id="@+id/top"
+        android:layout_width="match_parent"
+        android:layout_height="0px"
+        android:fitsSystemWindows="true"
+        android:layout_weight="1">
+
+        <me.zhanghai.android.materialprogressbar.MaterialProgressBar
+            android:fitsSystemWindows="true"
+            android:id="@+id/progressBar"
+            android:layout_width="match_parent"
+            android:layout_height="2dp"
+            android:indeterminate="true"
+            android:visibility="invisible"
+            app:mpb_progressStyle="horizontal"
+            app:mpb_useIntrinsicPadding="false"
+            style="@style/Widget.MaterialProgressBar.ProgressBar.Horizontal"
+            />
+
+        <com.avaa.surfforecast.views.BaliMap
+            android:id="@+id/balimap"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent" />
+
+        <com.avaa.surfforecast.views.MyList
+            android:id="@+id/spots"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent" />
+
+        <FrameLayout
+            android:id="@+id/menu"
+            android:layout_width="50dp"
+            android:layout_height="100dp"
+            android:paddingTop="4dp"
+            android:text="&#8926;"
+            android:onClick="onUpdateClick"
+            android:layout_alignParentRight="true"
+            android:background="?android:attr/selectableItemBackground"
+            android:textColor="#ffffff"
+            android:layout_alignParentEnd="true">
+            <ImageView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center"
+                android:src="@drawable/ic_more_vert_black_24dp"/>
+        </FrameLayout>
+
+        <!--<HorizontalScrollView-->
+            <!--android:id="@+id/hsvDays"-->
+            <!--android:layout_width="match_parent"-->
+            <!--android:layout_height="wrap_content"-->
+            <!--android:layout_alignParentBottom="true"-->
+            <!--android:scrollbars="none">-->
+        <RelativeLayout
+            android:id="@+id/vllDays"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:padding="0dp"
+            android:layout_alignParentBottom="true">
+            <LinearLayout
+                android:id="@+id/hllDays"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:orientation="horizontal">
+            <com.avaa.surfforecast.views.OneDayConditionsSmallView
+                android:id="@+id/odcs0"
+                android:layout_width="wrap_content"
+                android:layout_height="match_parent"/>
+            <com.avaa.surfforecast.views.OneDayConditionsSmallView
+                android:id="@+id/odcs1"
+                android:layout_width="wrap_content"
+                android:layout_height="match_parent"/>
+            <com.avaa.surfforecast.views.OneDayConditionsSmallView
+                android:id="@+id/odcs2"
+                android:layout_width="wrap_content"
+                android:layout_height="match_parent"/>
+            <com.avaa.surfforecast.views.OneDayConditionsSmallView
+                android:id="@+id/odcs3"
+                android:layout_width="wrap_content"
+                android:layout_height="match_parent"/>
+            <com.avaa.surfforecast.views.OneDayConditionsSmallView
+                android:id="@+id/odcs4"
+                android:layout_width="wrap_content"
+                android:layout_height="match_parent"/>
+            <com.avaa.surfforecast.views.OneDayConditionsSmallView
+                android:id="@+id/odcs5"
+                android:layout_width="wrap_content"
+                android:layout_height="match_parent"/>
+            <com.avaa.surfforecast.views.OneDayConditionsSmallView
+                    android:id="@+id/odcs6"
+                    android:layout_width="wrap_content"
+                    android:layout_height="match_parent"/>
+            </LinearLayout>
+            <RelativeLayout
+                android:id="@+id/rlDaysScroller"
+                android:layout_width="match_parent"
+                android:layout_alignParentBottom="true"
+                android:layout_height="4dp">
+                <ImageView
+                    android:id="@+id/ivDaysScroller"
+                    android:layout_width="0dp"
+                    android:layout_height="match_parent"
+                    android:background="#ffffff"/>
+            </RelativeLayout>
+        </RelativeLayout>
+        <!--</HorizontalScrollView>-->
+    </RelativeLayout>
+
+    <com.avaa.surfforecast.views.SurfConditionsForecastView
+        android:id="@+id/rlBottom"
+        android:layout_width="match_parent"
+        android:layout_height="0px"
+        android:layout_weight="0"
+        android:elevation="4dp"
+        android:background="#ffffff">
+    </com.avaa.surfforecast.views.SurfConditionsForecastView>
+</LinearLayout>

@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <color name="colorPrimary">#0091c1</color>
+    <color name="colorPrimaryDark">#006283</color>
+    <color name="colorAccent">#FF4081</color>
+
+    <color name="colorWaterBG">#4ac3ec</color>
+    <color name="colorWater">#0091c1</color>
+    <!--<color name="colorWater">#4ad2ff</color>-->
+    <color name="colorTideChartBG">#006283</color>
+</resources>

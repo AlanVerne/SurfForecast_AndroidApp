@@ -1,0 +1,48 @@
+apply plugin: 'com.android.application'
+
+android {
+    signingConfigs {
+        release {
+            keyAlias 'sf'
+            keyPassword 'iamalive'
+            storeFile file('C:/Users/alan/keystores/android.jks')
+            storePassword 'iamalive'
+        }
+    }
+    compileSdkVersion 24
+    buildToolsVersion "24.0.0"
+    defaultConfig {
+        applicationId "com.avaa.surfforecast"
+        minSdkVersion 15
+        targetSdkVersion 24
+        versionCode 23
+        versionName '1.22'
+        jackOptions {
+            enabled true
+        }
+        signingConfig signingConfigs.release
+    }
+    buildTypes {
+        release {
+            minifyEnabled false
+            proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
+        }
+    }
+    compileOptions {
+        targetCompatibility 1.8
+        sourceCompatibility 1.8
+    }
+    productFlavors {
+    }
+}
+
+dependencies {
+    compile fileTree(include: ['*.jar'], dir: 'libs')
+    testCompile 'junit:junit:4.12'
+    compile 'com.android.support:appcompat-v7:24.0.0'
+    //compile files('libs/androidsvg-1.2.1.jar')
+    compile 'me.zhanghai.android.materialprogressbar:library:1.1.7'
+    compile 'org.apache.commons:commons-vfs2-project:2.1'
+    compile 'commons-net:commons-net:3.3'
+    compile 'commons-io:commons-io:+'
+}
