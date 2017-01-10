@@ -24,9 +24,11 @@ import java.util.List;
 
 import static com.avaa.surfforecast.data.Common.TIME_ZONE;
 
+
 /**
  * Created by Alan on 6 Aug 2016.
  */
+
 
 @TargetApi(Build.VERSION_CODES.JELLY_BEAN_MR2)
 public class TideDrawer {

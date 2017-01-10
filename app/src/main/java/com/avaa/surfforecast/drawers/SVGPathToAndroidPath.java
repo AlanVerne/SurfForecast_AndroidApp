@@ -12,11 +12,11 @@ public class SVGPathToAndroidPath {
     public static Path convert(String data, Point size) {
         Path p = new Path();
         try {
-            String[] tokens = data.split("[ ,\n]");
+            String[] tokens = data.split("[ ,\r\n]");
 
-            int i = 0;
+            size.set(Integer.parseInt(tokens[0]), Integer.parseInt(tokens[1]));
 
-            size.set(Integer.valueOf(tokens[i++]), Integer.valueOf(tokens[i++]));
+            int i = 2;
 
             while (i < tokens.length) {
                 String token = tokens[i].toLowerCase();

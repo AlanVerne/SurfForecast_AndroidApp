@@ -831,10 +831,10 @@ public class BaliMap extends View {
                 windArrowVbr = vbr ? 1 : 0;
             }
             else {
-                double dA = (a - windArrowAngle) * 0.05;
+                double dA = (a - windArrowAngle);
                 if (dA > Math.PI) { windArrowAngle += Math.PI*2; dA -= Math.PI*2; }
                 else if (dA < -Math.PI) { windArrowAngle -= Math.PI*2; dA += Math.PI*2; }
-                windArrowAngle += dA;
+                windArrowAngle += dA * 0.05;
                 if (dA > 0.01) needRepaint = true;
 
                 double dVbr = ((vbr ? 1 : 0) - windArrowVbr) * 0.05;

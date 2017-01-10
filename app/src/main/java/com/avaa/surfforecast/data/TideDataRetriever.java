@@ -51,15 +51,12 @@ public class TideDataRetriever extends AsyncTask<String, Void, TideData> {
                 result.write(buffer, 0, length);
             }
 
-            String[] split = result.toString("UTF-8").split("\n--\n");
+            String[] split = result.toString("ASCII").split("\n--\n");
 
-//                Log.i("BTW", split.length+" ");
-//                Log.i("BTW", split[0]);
-//                Log.i("BTW", split[1]);
-
-            return new TideData(split[0], split[1]);
+            long currentTimeMillis = System.currentTimeMillis();
+            return new TideData(split[0].trim(), split[1].trim(), currentTimeMillis, currentTimeMillis);
         } catch (Exception e) {
-            Log.i(TAG, "Fetch failed");
+            Log.i(TAG, "doInBackground() | fetch failed");
             e.printStackTrace();
         } finally {
             if (reader != null) {
@@ -79,12 +76,8 @@ public class TideDataRetriever extends AsyncTask<String, Void, TideData> {
         tideDataProvider.fireLoadingStateChanged(portID, false);
 
         if (tideData == null) return;
-        if (tideData.equals(tideDataProvider.portIDToTideData.get(portID))) return;
 
-        tideDataProvider.portIDToTideData.put(portID, tideData);
-        tideDataProvider.save();
-
-        tideDataProvider.fireUpdated(portID);
+        tideDataProvider.newDataFetched(portID, tideData);
 
         if (runnable != null) runnable.run();
     }

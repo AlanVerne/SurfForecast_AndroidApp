@@ -9,6 +9,7 @@ import java.util.Date;
 import java.util.GregorianCalendar;
 import java.util.Map;
 import java.util.SortedMap;
+import java.util.TimeZone;
 import java.util.TreeMap;
 import java.util.TreeSet;
 
@@ -20,8 +21,15 @@ import java.util.TreeSet;
 
 public class TideData {
     private static final String TAG = "TideData";
-    public  long  fetched;
-    public  long  fetchedSuccessfully;
+
+    //public TimeZone timeZone = null;
+
+    public long  fetched;
+    public long  fetchedSuccessfully;
+
+    public final String preciseStr;
+    public final String extremumsStr;
+
     private final SortedMap<Long, int[]> precise = new TreeMap<>();
     private final SortedMap<Long, Integer> extremums = new TreeMap<>();
 
@@ -37,16 +45,22 @@ public class TideData {
     public TideData(Long fetched) {
         this.fetched = fetched;
         this.fetchedSuccessfully = 0L;
+
+        this.preciseStr = null;
+        this.extremumsStr = null;
     }
     public TideData(String precise, String extremums) {
         this(precise, extremums, 0l, 0l);
     }
-    public TideData(String precise, String extremums, Long fetched, Long fetchedSuccessfully) {
+    public TideData(String preciseStr, String extremumsStr, Long fetched, Long fetchedSuccessfully) {
         this.fetched = fetched;
         this.fetchedSuccessfully = fetchedSuccessfully;
 
-        if (precise != null) {
-            String[] daily = precise.split("\n");
+        this.preciseStr = preciseStr;
+        this.extremumsStr = extremumsStr;
+
+        if (preciseStr != null) {
+            String[] daily = preciseStr.split("\n");
 
             if (daily.length % 2 == 1) return;
 
@@ -60,8 +74,8 @@ public class TideData {
                 this.precise.put(Long.valueOf(daily[i]), values);
             }
         }
-        if (extremums != null) {
-            String[] split = extremums.split("\n");
+        if (extremumsStr != null) {
+            String[] split = extremumsStr.split("\n");
 
             if (split.length % 2 == 1) return;
 
@@ -73,7 +87,7 @@ public class TideData {
 
 
     public boolean isEmpty() {
-        return precise.isEmpty() && extremums.isEmpty();
+        return precise.isEmpty() || extremums.isEmpty();
     }
 
 
@@ -82,7 +96,7 @@ public class TideData {
         int day = calendar.get(Calendar.DAY_OF_YEAR);
 
         if (hasDaysStartingFrom == day) {
-            Log.i(TAG, "hasDays() cached: startfrom = " + hasDaysStartingFrom + ", days = " + hasDaysN);
+            Log.i(TAG, "hasDays() | cached: startfrom = " + hasDaysStartingFrom + ", days = " + hasDaysN);
             return hasDaysN;
         }
 
@@ -93,7 +107,7 @@ public class TideData {
             hasDaysN++;
         }
 
-        Log.i(TAG, "hasDays() calculated: startfrom = " + hasDaysStartingFrom + ", days = " + hasDaysN);
+        Log.i(TAG, "hasDays() | calculated: startfrom = " + hasDaysStartingFrom + ", days = " + hasDaysN);
 
         return hasDaysN;
     }
@@ -102,11 +116,8 @@ public class TideData {
     public boolean needUpdate() {
         return hasDays() < 7;
     }
-
-
     public boolean needAndCanUpdate() {
         long currentTimeMillis = System.currentTimeMillis();
-
         return (fetched == 0 || fetched + 60*1000 < currentTimeMillis) &&
                (fetchedSuccessfully == 0 || fetchedSuccessfully + 60*60*1000 < currentTimeMillis) &&
                needUpdate();
@@ -227,32 +238,6 @@ public class TideData {
     }
 
 
-    public String preciseToString() {
-        if (precise == null || precise.isEmpty()) return null;
-        String r = "";
-        for (Map.Entry<Long, int[]> e : precise.entrySet()) {
-            r += e.getKey() + "\n";
-            for (int i : e.getValue()) {
-                r += i + " ";
-            }
-            r = r.substring(0, r.length()-1) + "\n";
-        }
-        r = r.substring(0, r.length()-1);
-        return r;
-    }
-
-
-    public String extremumsToString() {
-        if (extremums == null || extremums.isEmpty()) return null;
-        String r = "";
-        for (Map.Entry<Long, Integer> e : extremums.entrySet()) {
-            r += e.getKey() + "\n" + e.getValue() + "\n";
-        }
-        r = r.substring(0, r.length()-1);
-        return r;
-    }
-
-
     public Map<Integer, Integer> getExtremums(long day) {
         Map<Integer, Integer> result = new TreeMap<>();
         for (Map.Entry<Long, Integer> entry : extremums.subMap(day, day + 60L * 60 * 24).entrySet()) {
@@ -267,8 +252,13 @@ public class TideData {
     }
 
 
+    public int[] getPrecise(long day) {
+        return precise.get(day);
+    }
+
+
     @Override
     public String toString() {
-        return precise.firstKey() + "-" + precise.lastKey() + "\n" + preciseToString();
+        return precise.firstKey() + "-" + precise.lastKey() + "\n" + preciseStr;
     }
 }
