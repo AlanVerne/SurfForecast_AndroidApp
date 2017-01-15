@@ -10,6 +10,9 @@ public class SurfSpot {
     public SurfConditionsProvider conditionsProvider;
 
     public String name;
+
+    public String[] altNames;
+
     public PointF pointOnSVG;
     public PointF pointEarth;
     public Direction waveDirection;
@@ -70,6 +73,24 @@ public class SurfSpot {
 
     public SurfSpot(String name, SurfConditionsProvider conditionsProvider, PointF pointOnSVG, PointF pointEarth, Direction waveDirection, int leftright, int tides, int minSwell, int maxSwell, String urlMSW, String urlCam, double la, double lo) {
         this.name = name;
+        this.conditionsProvider = conditionsProvider;
+        this.pointOnSVG = pointOnSVG;
+        this.pointEarth = pointEarth;
+        this.waveDirection = waveDirection;
+        this.leftright = leftright;
+        this.tides = tides;
+        this.minSwell = minSwell;
+        this.maxSwell = maxSwell;
+        this.urlMSW = urlMSW;
+        this.urlCam = urlCam;
+        this.la = la;
+        this.lo = lo;
+    }
+
+
+    public SurfSpot(String name, String[] alt, SurfConditionsProvider conditionsProvider, PointF pointOnSVG, PointF pointEarth, Direction waveDirection, int leftright, int tides, int minSwell, int maxSwell, String urlMSW, String urlCam, double la, double lo) {
+        this.name = name;
+        this.altNames = alt;
         this.conditionsProvider = conditionsProvider;
         this.pointOnSVG = pointOnSVG;
         this.pointEarth = pointEarth;

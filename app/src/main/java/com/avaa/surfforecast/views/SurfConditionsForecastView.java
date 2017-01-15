@@ -389,7 +389,15 @@ public class SurfConditionsForecastView extends HorizontalScrollView { //extends
         return i* dh*16 + dh*8 - getWidth()/2; // i * dh * 16 + dh * 2;
     }
 
-
+    public void showDaySmooth(int i) {
+        int newScrollX = dayToX(i);
+        if (getScrollX() != newScrollX) {
+            //Log.i(TAG, "showday " + i + " " + iv.getWidth() + " " + getScrollX() + " " + newScrollX + "   " + iv.getWidth());
+            //smoothScrollBy(0, 0);
+            smoothScrollTo(newScrollX, 0);
+            //Log.i(TAG, "showday " + i + " " + iv.getWidth() + " " + getScrollX());
+        }
+    }
     public void showDay(int i) {
         int newScrollX = dayToX(i);
         if (getScrollX() != newScrollX) {

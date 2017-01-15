@@ -44,7 +44,6 @@ import java.util.TimerTask;
 
 import static com.avaa.surfforecast.data.Common.*;
 
-
 /**
  * Created by Alan on 9 Jul 2016.
  */

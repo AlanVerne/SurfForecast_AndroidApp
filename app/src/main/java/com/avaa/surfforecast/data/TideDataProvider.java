@@ -75,7 +75,7 @@ public class TideDataProvider {
         fetch(portID, null);
     }
     public void fetch(@NonNull String portID, @Nullable final Runnable widgetsRunnable) {
-        Log.i(TAG, "Fetch " + portID);
+        Log.i(TAG, "fetch() | " + portID);
 
         TideData tideData = portIDToTideData.get(portID);
         if (tideData != null) {

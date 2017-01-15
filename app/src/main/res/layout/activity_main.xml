@@ -1,16 +1,23 @@
 <?xml version="1.0" encoding="utf-8"?>
 
-<LinearLayout
+<!--<android.support.design.widget.CoordinatorLayout-->
+    <!--&gt;-->
+<RelativeLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
+    android:fitsSystemWindows="true"
+    tools:context="com.avaa.surfforecast.MainActivity"
+    android:background="#FFFFFFFF"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent">
+
+<LinearLayout
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:orientation="vertical"
-    android:fitsSystemWindows="true"
     android:id="@+id/mainlayout"
-    tools:context="com.avaa.surfforecast.MainActivity"
-    android:background="#eeeeee">
+    >
 
     <RelativeLayout
         android:id="@+id/top"
@@ -130,3 +137,19 @@
         android:background="#ffffff">
     </com.avaa.surfforecast.views.SurfConditionsForecastView>
 </LinearLayout>
+
+<FrameLayout
+    android:id="@+id/flVoiceInterface"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    >
+    <fragment
+        android:name="com.avaa.surfforecast.VoiceInterfaceFragment"
+        android:id="@+id/vif"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        />
+</FrameLayout>
+
+</RelativeLayout>
+<!--</android.support.design.widget.CoordinatorLayout>-->

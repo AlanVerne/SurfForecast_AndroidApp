@@ -10,7 +10,6 @@ import android.os.Bundle;
 import android.util.Log;
 import android.util.TypedValue;
 import android.view.Gravity;
-import android.view.MotionEvent;
 import android.view.OrientationEventListener;
 import android.view.View;
 import android.view.ViewGroup;
@@ -70,6 +69,7 @@ public class MainActivity extends AppCompatActivity {
 
     float density;
 
+    VoiceInterfaceFragment vif;
     View mainLayout;
     BaliMap baliMap;
     ImageView daysScroller;
@@ -118,6 +118,7 @@ public class MainActivity extends AppCompatActivity {
 //        }
         setContentView(R.layout.activity_main);
 
+        vif = (VoiceInterfaceFragment)getSupportFragmentManager().findFragmentById(R.id.vif);
         mainLayout = findViewById(R.id.mainlayout);
         baliMap = (BaliMap) findViewById(R.id.balimap);
         daysScroller = (ImageView) findViewById(R.id.ivDaysScroller);
@@ -126,6 +127,10 @@ public class MainActivity extends AppCompatActivity {
         progressBar = (MaterialProgressBar)findViewById(R.id.progressBar);
         rlDays = (RelativeLayout)findViewById(R.id.vllDays);
         btnMenu = (FrameLayout)findViewById(R.id.menu);
+
+        vif.ma = this;
+        vif.surfSpots = appContext.surfSpots;
+        vif.init();
 
         progressBar.getIndeterminateDrawable().setColorFilter(0xffffffff, PorterDuff.Mode.SRC_IN );
         progressBar.setVisibility(busyCount > 0 ? View.VISIBLE : View.INVISIBLE);
@@ -461,12 +466,6 @@ public class MainActivity extends AppCompatActivity {
 
             if (i == ssi) selected = textView;
 
-            final int finalI = i;
-            textView.setOnClickListener(v -> {
-                listSpots.select(textView);
-                surfSpots.setSelectedSpotI(finalI);
-            });
-
             spotsTV.put(i, textView);
             views.add(textView);
 
@@ -475,6 +474,7 @@ public class MainActivity extends AppCompatActivity {
 
         listSpots.setDH(dh);
         listSpots.setViews(views);
+        listSpots.onSelected = surfSpots::setSelectedSpotI;
 
         final View finalSelected = selected;
         listSpots.post(() -> listSpots.select(finalSelected));
@@ -511,5 +511,24 @@ public class MainActivity extends AppCompatActivity {
         updateConditionsSmallViews();
         if (dh == 0) return;
         forecast.redrawSurfConditions();
+    }
+
+
+    public void performSelectSpot(SurfSpot spot, Runnable after) {
+        Log.i(TAG, "performSelectSpot(" + spot.name + ")");
+
+        int spotI = appContext.surfSpots.indexOf(spot);
+
+        if (appContext.surfSpots.selectedSpotI != spotI) listSpots.awake(() -> listSpots.select(spotsTV.get(spotI), after));
+        else if (after != null) after.run();
+    }
+
+    //  &@&
+    //   |
+    //   \
+
+    public void performSelectDay(int day, Runnable after) {
+        Log.i(TAG, "performSelectDay(" + day + ")");
+        forecast.showDaySmooth(day);
     }
 }

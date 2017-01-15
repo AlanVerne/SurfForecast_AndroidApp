@@ -15,8 +15,8 @@ android {
         applicationId "com.avaa.surfforecast"
         minSdkVersion 15
         targetSdkVersion 24
-        versionCode 23
-        versionName '1.22'
+        versionCode 24
+        versionName '1.23'
         jackOptions {
             enabled true
         }
@@ -38,11 +38,12 @@ android {
 
 dependencies {
     compile fileTree(include: ['*.jar'], dir: 'libs')
-    testCompile 'junit:junit:4.12'
-    compile 'com.android.support:appcompat-v7:24.0.0'
     //compile files('libs/androidsvg-1.2.1.jar')
+    compile 'com.android.support:appcompat-v7:24.2.1'
     compile 'me.zhanghai.android.materialprogressbar:library:1.1.7'
     compile 'org.apache.commons:commons-vfs2-project:2.1'
     compile 'commons-net:commons-net:3.3'
-    compile 'commons-io:commons-io:+'
+    compile 'commons-io:commons-io:2.4'
+    compile 'com.android.support:support-v4:24.2.1'
+    testCompile 'junit:junit:4.12'
 }
