@@ -16,6 +16,7 @@ import java.util.SortedMap;
 import java.util.TreeMap;
 
 import static com.avaa.surfforecast.data.Common.TIME_ZONE;
+import static com.avaa.surfforecast.data.Common.getDay;
 
 /**
  * Created by Alan on 2 Jul 2016.
@@ -58,7 +59,7 @@ public class SurfConditionsProvider {
 
 
     public boolean isNoData() {
-        return conditions == null;
+        return conditions == null || get(0) == null && get(1) == null && get(2) == null && get(3) == null && get(4) == null && get(5) == null && get(6) == null;
     }
 
 

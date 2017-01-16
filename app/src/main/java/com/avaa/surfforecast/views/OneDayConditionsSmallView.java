@@ -32,6 +32,10 @@ import java.util.TimerTask;
 public class OneDayConditionsSmallView extends LinearLayout {
     private static final SimpleDateFormat DAY_FORMAT = new SimpleDateFormat("EEE");
 
+    private static final int LONG_DELAY  = 500;
+    private static final int SHORT_DELAY = 50;
+
+
     private final Paint p = new Paint();
 
     private TextView  tvDate;
@@ -113,7 +117,7 @@ public class OneDayConditionsSmallView extends LinearLayout {
                         timerHAnimataion = null;
                     }
                 }
-            }, isVisible() ? 100 : 300, 50);
+            }, isVisible() ? 100 : LONG_DELAY, SHORT_DELAY);
         }
     }
 

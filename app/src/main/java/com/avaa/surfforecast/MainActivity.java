@@ -519,7 +519,10 @@ public class MainActivity extends AppCompatActivity {
 
         int spotI = appContext.surfSpots.indexOf(spot);
 
-        if (appContext.surfSpots.selectedSpotI != spotI) listSpots.awake(() -> listSpots.select(spotsTV.get(spotI), after));
+        if (appContext.surfSpots.selectedSpotI != spotI) {
+            View view = spotsTV.get(spotI);
+            listSpots.awake(() -> listSpots.scrollTo(view, () -> listSpots.select(view, after)));
+        }
         else if (after != null) after.run();
     }
 

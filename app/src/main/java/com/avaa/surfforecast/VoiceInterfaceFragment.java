@@ -32,8 +32,11 @@ import java.util.TreeMap;
 public class VoiceInterfaceFragment extends Fragment {
     private static final String TAG = "VoiceIntFr";
 
+    private SpeechRecognizer speech;
+
     View btnMic;
     View btnMicImage;
+
     MainActivity ma = null;
 
 
@@ -130,7 +133,6 @@ public class VoiceInterfaceFragment extends Fragment {
 
     public void mic(View view) {
         startListening();
-        //recognize("serangan tomorrow monday");
     }
 
 
@@ -157,10 +159,13 @@ public class VoiceInterfaceFragment extends Fragment {
             int dayOfWeek = c.get(Calendar.DAY_OF_WEEK);
             if (i > 1 && dayOfWeek == Calendar.SATURDAY) sToDay.put("weekend", i);
             String s = c.getDisplayName(Calendar.DAY_OF_WEEK, Calendar.LONG, Locale.getDefault()).toLowerCase();
-            Log.i(TAG, "initSToDay() " + s + " - " + i);
             sToDay.put(s, i);
             c.add(Calendar.DATE, 1);
         }
+        sToDay.put("friendly", sToDay.get("friday"));
+//        sToDay.put("friendly", sToDay.get("friday"));
+//        sToDay.put("friendly", sToDay.get("friday"));
+//        sToDay.put("friendly", sToDay.get("friday"));
     }
 
 
@@ -178,7 +183,6 @@ public class VoiceInterfaceFragment extends Fragment {
     }
 
 
-    private SpeechRecognizer speech;
     public void startListening() {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN) {
             btnMic.setBackground(getContext().getResources().getDrawable(R.drawable.round_button));
@@ -189,6 +193,7 @@ public class VoiceInterfaceFragment extends Fragment {
 //        intent.putExtra(RecognizerIntent.EXTRA_LANGUAGE, Locale.ENGLISH.toString());
 //        intent.putExtra("android.speech.extra.EXTRA_ADDITIONAL_LANGUAGES", new String[]{new Locale("ru", "RU").toString()});
         intent.putExtra(RecognizerIntent.EXTRA_LANGUAGE_MODEL, RecognizerIntent.LANGUAGE_MODEL_FREE_FORM);
+        intent.putExtra(RecognizerIntent.EXTRA_WEB_SEARCH_ONLY, false);
         intent.putExtra(RecognizerIntent.EXTRA_CALLING_PACKAGE, getContext().getPackageName());
         intent.putExtra(RecognizerIntent.EXTRA_MAX_RESULTS, 20);
 
@@ -203,8 +208,6 @@ public class VoiceInterfaceFragment extends Fragment {
         SurfSpot spot = null;
         for (String s : strings) {
             s = s.toLowerCase();
-//            day = null;
-//            spot = null;
 
             for (Map.Entry<String, Integer> e : sToDay.entrySet()) {
                 if (s.contains(e.getKey())) {

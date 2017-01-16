@@ -47,6 +47,8 @@ public class TideDrawer {
     Paint paint;
     Rect bounds;
 
+    public TideData tideData = null;
+
 
     public TideDrawer(SurfConditionsForecastView view, ConditionsDrawer condDrawer) {
         this.view = view;
@@ -82,7 +84,7 @@ public class TideDrawer {
     public void draw(Canvas c, int w, int h, int dx, int orientation) {
         Integer nowTime = Common.getNowTimeInt(TIME_ZONE);
 
-        TideData tideData = tideDataProvider.getTideData(Common.BENOA_PORT_ID);
+        tideData = tideDataProvider.getTideData(Common.BENOA_PORT_ID);
         Integer now = tideData == null ? null : tideData.getNow();
 
         if (now != null) {

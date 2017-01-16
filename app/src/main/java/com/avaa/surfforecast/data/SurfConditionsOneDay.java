@@ -13,6 +13,8 @@ import static com.avaa.surfforecast.data.Common.TIME_ZONE;
  */
 
 public class SurfConditionsOneDay extends TreeMap<Integer, SurfConditions> {
+    private int detailed = -1; // 0 - no, 1 - yes
+
     public SurfConditions getNow() {
         Calendar calendar = GregorianCalendar.getInstance(TIME_ZONE);
         int now = calendar.get(Calendar.HOUR_OF_DAY) * 60 + calendar.get(Calendar.MINUTE);
@@ -26,8 +28,7 @@ public class SurfConditionsOneDay extends TreeMap<Integer, SurfConditions> {
     }
 
     public SurfConditionsOneDay getFixed() {
-        boolean detailed = false;
-        if (get( 5*60)!=null && get( 8*60)!=null || get(14*60)!=null || get(23*60)!=null) detailed = true;
+        boolean detailed = isDetailed();
 
         SurfConditionsOneDay fixedConditions = new SurfConditionsOneDay();
         if (detailed) {
@@ -46,6 +47,7 @@ public class SurfConditionsOneDay extends TreeMap<Integer, SurfConditions> {
     }
 
     public boolean isDetailed() {
-        return get(5 * 60) != null && get(8 * 60) != null || get(14 * 60) != null || get(23 * 60) != null;
+        if (detailed == -1) detailed = (get(5 * 60) != null && get(8 * 60) != null || get(14 * 60) != null || get(23 * 60) != null) ? 1 : 0;
+        return detailed == 1;
     }
 }

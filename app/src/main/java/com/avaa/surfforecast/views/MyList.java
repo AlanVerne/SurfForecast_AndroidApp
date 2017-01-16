@@ -1,5 +1,7 @@
 package com.avaa.surfforecast.views;
 
+import android.animation.Animator;
+import android.animation.AnimatorListenerAdapter;
 import android.animation.ObjectAnimator;
 import android.content.Context;
 import android.os.Build;
@@ -23,10 +25,11 @@ import java.util.function.Consumer;
  */
 
 public class MyList extends FeaturedScrollView {
+    private static final String TAG = "MyList";
+
     private static final int DELAY_BEFORE_SLEEP = 60000;
     private static final int FALLING_ASLEEP_TIME = 80;
     private static final int AWAKENING_TIME = 240;
-    private static final String TAG = "MyList";
 
     public static int spacing = 0;
     public static int paddingLeft = 0;
@@ -186,6 +189,26 @@ public class MyList extends FeaturedScrollView {
             else postInvalidate();
         }
     }
+    public void scrollTo(View v, Runnable after) {
+        ObjectAnimator objectAnimator = ObjectAnimator.ofInt(this, "scrollY", v.getTop() - paddingTop).setDuration(AWAKENING_TIME);
+
+        Animator.AnimatorListener al = new AnimatorListenerAdapter() {
+            @Override
+            public void onAnimationCancel(Animator animation) {
+                if (after!=null) after.run();
+                objectAnimator.removeAllListeners();
+            }
+            @Override
+            public void onAnimationEnd(Animator animation) {
+                if (after!=null) after.run();
+                objectAnimator.removeAllListeners();
+            }
+        };
+
+        objectAnimator.addListener(al);
+
+        objectAnimator.start();
+    }
     public void sleep() {
         cancelSleepTimer();
         //smoothScrollTo(0, selectedView.getTop() - paddingTop);
@@ -237,7 +260,7 @@ public class MyList extends FeaturedScrollView {
         select(view);
     }
     public void select(View view) {
-        Log.i(TAG, "select() | " + "ignoreSelectedViewSelection = " + ignoreSelectedViewSelection);
+        //Log.i(TAG, "select() | " + "ignoreSelectedViewSelection = " + ignoreSelectedViewSelection);
         if (ignoreSelectedViewSelection) {
             ignoreSelectedViewSelection = false;
             if (selectedView == view) {
@@ -345,7 +368,7 @@ public class MyList extends FeaturedScrollView {
     @Override
     public boolean onInterceptTouchEvent(MotionEvent ev) {
         if (ev.getAction() == MotionEvent.ACTION_DOWN) {
-            Log.i(TAG, "onInterceptTouchEvent() | " + awake + " " + prevTime + " " + awakeState);
+            //Log.i(TAG, "onInterceptTouchEvent() | " + awake + " " + prevTime + " " + awakeState);
             if (!awake) {
                 ignoreSelectedViewSelection = true;
             }
@@ -365,7 +388,7 @@ public class MyList extends FeaturedScrollView {
             if (pointers == 0 && !isScrolling()) resetSleepTimer();
         }
 
-        Log.i(TAG, "onTouchEvent() | " + ev.getAction() + awake + " " + prevTime + " " + awakeState);
+        //Log.i(TAG, "onTouchEvent() | " + ev.getAction() + awake + " " + prevTime + " " + awakeState);
         ignoreSelectedViewSelection = false;
 
         return super.onTouchEvent(ev);
