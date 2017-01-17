@@ -4,6 +4,85 @@
     android:layout_height="match_parent"
     tools:context="com.avaa.surfforecast.VoiceInterfaceFragment">
 
+    <com.avaa.surfforecast.views.CircleAnimatedFrameLayout
+        android:id="@+id/flHint"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:paddingTop="240dp"
+        android:background="#00000000">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:orientation="vertical"
+            android:paddingTop="60dp"
+            android:paddingLeft="60dp"
+            android:paddingRight="60dp">
+
+            <TextView
+                android:id="@+id/tvHintTitle"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:textSize="24dp"
+                android:paddingBottom="18dp"
+                android:textColor="#222222"
+                android:text="Say!"/>
+
+            <TextView
+                android:id="@+id/tvHintOpt1"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:textSize="18dp"
+                android:paddingTop="6dp"
+                android:paddingBottom="6dp"
+                android:text="Uluwatu tomorrow"/>
+            <TextView
+                android:id="@+id/tvHintOpt2"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:textSize="18dp"
+                android:paddingTop="6dp"
+                android:paddingBottom="6dp"
+                android:text="Canggu now"/>
+            <TextView
+                android:id="@+id/tvHintOpt3"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:textSize="18dp"
+                android:paddingTop="6dp"
+                android:paddingBottom="6dp"
+                android:text="Serangan friday"/>
+            <TextView
+                android:id="@+id/tvHintOpt4"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:textSize="18dp"
+                android:paddingTop="6dp"
+                android:paddingBottom="6dp"
+                android:text="Kuta"/>
+            <TextView
+                android:id="@+id/tvHintOpt5"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:textSize="18dp"
+                android:paddingTop="6dp"
+                android:paddingBottom="6dp"
+                android:text="Weekend"/>
+
+            <TextView
+                android:id="@+id/tvPrerecognized"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:textSize="18dp"
+                android:paddingTop="6dp"
+                android:paddingBottom="6dp"
+                android:text="..."/>
+
+        </LinearLayout>
+
+    </com.avaa.surfforecast.views.CircleAnimatedFrameLayout>
+
+
     <RelativeLayout
         android:layout_width="match_parent"
         android:layout_height="match_parent">

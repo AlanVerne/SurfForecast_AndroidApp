@@ -28,8 +28,10 @@ public class MyList extends FeaturedScrollView {
     private static final String TAG = "MyList";
 
     private static final int DELAY_BEFORE_SLEEP = 60000;
-    private static final int FALLING_ASLEEP_TIME = 80;
+    private static final int FALLING_ASLEEP_TIME = 160;
     private static final int AWAKENING_TIME = 240;
+
+    int dh = 0;
 
     public static int spacing = 0;
     public static int paddingLeft = 0;
@@ -44,16 +46,16 @@ public class MyList extends FeaturedScrollView {
     volatile private boolean awake = false;
     volatile private float   awakeState = 0; // 0 - not awakened - no list, 1 - awakened - all spots list
 
+    long prevTime = -1;
+
+    boolean firedAwaken = true;
+    boolean firedSlept  = true;
+
+
     public OnSelectedListener onSelected = (i) -> {};
     public interface OnSelectedListener {
         void onSelected(int i);
     }
-
-//    public Listener l = null;
-//    public interface Listener {
-//        void awakened();
-//        void slept();
-//    }
 
     Runnable afterAwakened = null;
     Runnable afterSlept    = null;
@@ -83,7 +85,7 @@ public class MyList extends FeaturedScrollView {
         addView(layout);
     }
 
-    int dh = 0;
+
     public void setDH(int dh) {
         this.dh = dh;
 
@@ -92,10 +94,6 @@ public class MyList extends FeaturedScrollView {
         paddingTop  = dh/2; //paddingLeft - spacing/2;
     }
 
-    long prevTime = -1;
-
-    boolean firedAwaken = true;
-    boolean firedSlept  = true;
 
     @Override
     public void computeScroll() {
