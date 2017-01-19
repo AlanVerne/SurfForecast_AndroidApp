@@ -154,7 +154,7 @@ public class SurfSpots {
         //addSpot("Pererenan", new SurfConditionsProvider(sp, "Pererenan"), new PointF(833, 722), new PointF(0, 0), Direction.NE);
         addSpot("Canggu / Echo", new String[]{"Canggu", "Echo"}, new SurfConditionsProvider(sp, "Canggu"), new PointF(840, 726), new PointF(0, 0), Direction.NE, 0, 1+2+4, 3, 10, "http://magicseaweed.com/Canggu-Surf-Report/935/", "http://balibelly.com/canggu", -8.654989, 115.125030);
         addSpot("Old man's / BB", new String[]{"Old mans", "Old man's", "Oldman", "Old men", "Old man", "Batu Bolong", "Batu"}, new SurfConditionsProvider(sp, "Canggu"), new PointF(843, 730), new PointF(0, 0), Direction.NE, 0, 1+2+4, 2, 10, "http://magicseaweed.com/Old-Mans-Batu-Bolong-Surf-Report/2305/", "http://oldmans.net/#surfcam-popup", -8.659556, 115.130200);
-        addSpot("Berawa", new String[]{"brava"}, new SurfConditionsProvider(sp, "Canggu"), new PointF(845, 734), new PointF(0, 0), Direction.NE, 2, 1+2+4, 2, 8, "http://magicseaweed.com/Berawa-Beach-Surf-Report/1293/", "", -8.667381, 115.139262);
+        addSpot("Berawa", new String[]{"Brava"}, new SurfConditionsProvider(sp, "Canggu"), new PointF(845, 734), new PointF(0, 0), Direction.NE, 2, 1+2+4, 2, 8, "http://magicseaweed.com/Berawa-Beach-Surf-Report/1293/", "", -8.667381, 115.139262);
 
         categories.put(list.size(), "Seminyak - Kuta");
         //addSpot("Blue Ocean", new SurfConditionsProvider(sp, "Blue-Ocean"), new PointF(856, 742), new PointF(0, 0), Direction.ENE);
@@ -164,8 +164,8 @@ public class SurfSpots {
         addSpot("Kuta Beach", new String[]{"Kuta"}, new SurfConditionsProvider(sp, "Kuta-Beach"), new PointF(887, 798), new PointF(0, 0), Direction.ENE, 2, 1+2+4, 1, 8, "http://magicseaweed.com/Kuta-Beach-Surf-Report/566/", "http://balibelly.com/kuta", -8.717815, 115.168486);
         addSpot("Kuta Reef", new SurfConditionsProvider(sp, "Kuta-Reef"), new PointF(864, 825), new PointF(0, 0), Direction.ENE, 1, 2+4, 3, 6, "http://magicseaweed.com/Airport-Reef-Surf-Report/2309/", "", -8.731291, 115.157751);
         //addSpot("Legian Beach", new SurfConditionsProvider(sp, "Legian-Beach"), new PointF(872, 826), new PointF(0, 0), Direction.ENE);
-        addSpot("Airport left's", new String[]{"airport left", "airport"}, new SurfConditionsProvider(sp, "Airport-Lefts"), new PointF(874, 836), new PointF(0, 0), Direction.E, 1, 2+4, 4, 6, "http://magicseaweed.com/Airport-Reef-Surf-Report/2309/", "", -8.740112, 115.150799);
-        addSpot("Airport right", new String[]{"airport right's"}, new SurfConditionsProvider(sp, "Airport-Rights_2"), new PointF(878, 849), new PointF(0, 0), Direction.E, -1, 2+4, 3, 6, "http://magicseaweed.com/Airport-Reef-Surf-Report/2309/", "", -8.757235, 115.154246);
+        addSpot("Airport left's", new String[]{"Airport left", "Airport"}, new SurfConditionsProvider(sp, "Airport-Lefts"), new PointF(874, 836), new PointF(0, 0), Direction.E, 1, 2+4, 4, 6, "http://magicseaweed.com/Airport-Reef-Surf-Report/2309/", "", -8.740112, 115.150799);
+        addSpot("Airport right", new String[]{"Airport right's"}, new SurfConditionsProvider(sp, "Airport-Rights_2"), new PointF(878, 849), new PointF(0, 0), Direction.E, -1, 2+4, 3, 6, "http://magicseaweed.com/Airport-Reef-Surf-Report/2309/", "", -8.757235, 115.154246);
 
         categories.put(list.size(), "Bukit west");
         addSpot("Balangan", new SurfConditionsProvider(sp, "Balangan"), new PointF(840, 894), new PointF(0, 0), Direction.SE, 1, 1+2+4, 4, 15, "http://magicseaweed.com/Balangan-Surf-Report/2304/", "", -8.792450, 115.120989);
@@ -199,7 +199,7 @@ public class SurfSpots {
         categories.put(list.size(), "Lembongan");
         addSpot("Shipwrecks", new String[]{"Ship Wrecks"}, new SurfConditionsProvider(sp, "Shipwrecks"), new PointF(1245, 735), new PointF(0, 0), Direction.E, -1, 2+4, 3, 10, "http://magicseaweed.com/Shipwrecks-Lembongan-Surf-Report/1088/", "", -8.664195, 115.442830);
         addSpot("Lacerations", new SurfConditionsProvider(sp, "Lacerations"), new PointF(1234, 735), new PointF(0, 0), Direction.E, -1, 2+4, 3, 10, "http://magicseaweed.com/Lacerations-Surf-Report/1090/", "", -8.671239, 115.441876);
-        addSpot("Playgrounds", new String[]{"playground"}, new SurfConditionsProvider(sp, "Playgrounds"), new PointF(1227, 746), new PointF(0, 0), Direction.E, 0, 1+2+4, 2, 8, "http://magicseaweed.com/Playgrounds-Surf-Report/1089/", "", -8.675822, 115.440853);
+        addSpot("Playgrounds", new String[]{"Playground"}, new SurfConditionsProvider(sp, "Playgrounds"), new PointF(1227, 746), new PointF(0, 0), Direction.E, 0, 1+2+4, 2, 8, "http://magicseaweed.com/Playgrounds-Surf-Report/1089/", "", -8.675822, 115.440853);
         addSpot("Ceningan", new SurfConditionsProvider(sp, "Ceningan-Point"), new PointF(1216, 786), new PointF(0, 0), Direction.E, 1, 1+2+4, 3, 10, "http://magicseaweed.com/Ceningan-Surf-Report/2311/", "", -8.702750, 115.437421);
 
         for (int i = 2; i < list.size()-6; i++) {

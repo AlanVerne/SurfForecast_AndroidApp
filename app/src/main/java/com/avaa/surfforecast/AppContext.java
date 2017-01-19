@@ -17,6 +17,7 @@ import com.avaa.surfforecast.data.TidesProvider;
 public class AppContext {
     public final SharedPreferences sharedPreferences;
 
+    public final MainActivity mainActivity;
     public final UsageStat usageStat;
     public final METARProvider metarProvider;
     public final SurfSpots surfSpots;
@@ -27,13 +28,15 @@ public class AppContext {
     public static AppContext instance = null;
 
 
-    public static AppContext getInstance(SharedPreferences sharedPreferences, BusyStateListener bsl) {
-        instance = new AppContext(sharedPreferences, bsl);
+    public static AppContext getInstance(MainActivity ma, SharedPreferences sharedPreferences, BusyStateListener bsl) {
+        if (instance == null) instance = new AppContext(ma, sharedPreferences, bsl);
         return instance;
     }
 
 
-    public AppContext(SharedPreferences sharedPreferences, BusyStateListener bsl) {
+    public AppContext(MainActivity ma, SharedPreferences sharedPreferences, BusyStateListener bsl) {
+        mainActivity = ma;
+
         this.sharedPreferences = sharedPreferences;
 
         usageStat = UsageStat.getInstance(sharedPreferences);

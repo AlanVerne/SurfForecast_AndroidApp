@@ -22,6 +22,7 @@ import android.widget.ProgressBar;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
 
+import com.avaa.surfforecast.ai.CommandsExecutor;
 import com.avaa.surfforecast.data.BusyStateListener;
 import com.avaa.surfforecast.data.Common;
 import com.avaa.surfforecast.data.METARProvider;
@@ -33,6 +34,7 @@ import com.avaa.surfforecast.views.BaliMap;
 import com.avaa.surfforecast.views.MyList;
 import com.avaa.surfforecast.views.OneDayConditionsSmallView;
 import com.avaa.surfforecast.views.SurfConditionsForecastView;
+import com.avaa.surfforecast.ai.VoiceInterfaceFragment;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -98,7 +100,7 @@ public class MainActivity extends AppCompatActivity {
             //Log.i(TAG, "busyCount: " + busyCount);
         };
 
-        appContext = AppContext.getInstance(sharedPreferences, bsl);
+        appContext = AppContext.getInstance(this, sharedPreferences, bsl);
 
         appContext.surfSpots.addChangeListener(changes -> {
             if (changes.contains(SurfSpots.Change.SELECTED_SPOT)) {
@@ -128,9 +130,7 @@ public class MainActivity extends AppCompatActivity {
         rlDays = (RelativeLayout)findViewById(R.id.vllDays);
         btnMenu = (FrameLayout)findViewById(R.id.menu);
 
-        vif.ma = this;
-        vif.surfSpots = appContext.surfSpots;
-        vif.init();
+        vif.commandsExecutor = new CommandsExecutor(appContext);
 
         progressBar.getIndeterminateDrawable().setColorFilter(0xffffffff, PorterDuff.Mode.SRC_IN );
         progressBar.setVisibility(busyCount > 0 ? View.VISIBLE : View.INVISIBLE);

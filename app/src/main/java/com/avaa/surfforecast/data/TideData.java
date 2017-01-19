@@ -7,11 +7,16 @@ import java.util.AbstractMap;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.GregorianCalendar;
+import java.util.HashMap;
+import java.util.Iterator;
 import java.util.Map;
+import java.util.Set;
 import java.util.SortedMap;
 import java.util.TimeZone;
 import java.util.TreeMap;
 import java.util.TreeSet;
+
+import static com.avaa.surfforecast.data.Common.TIME_ZONE;
 
 
 /**
@@ -235,6 +240,77 @@ public class TideData {
         int h = Math.round((h1 + (h2-h1) * (now-i1)) / 10.0f);
 
         return h;
+    }
+
+
+    public String getStateNow() {
+        return getState(Common.getToday(TIME_ZONE), System.currentTimeMillis() / 1000);
+    }
+    public String getState(long day, long l) {
+        ClosestExtremums ce = getClosestExtremums(day, l);
+        return ce.getNowDirString();
+    }
+
+
+    public static String intToString(int h) {
+        return String.valueOf(Math.round(h/10f)/10f);
+    }
+
+
+    private static class ClosestExtremums {
+        int now;
+
+        int t1, h1, t2, h2;
+
+        boolean rising;
+        boolean nowinside;
+        int nowdir;
+
+        private static final Map<Integer, String> dirToString = new HashMap<Integer, String>(){{
+            put(0, "mid to low");
+            put(1, "low");
+            put(2, "low to mid");
+            put(3, "raising mid"); //growing");
+            put(4, "mid to high");
+            put(5, "high");
+            put(6, "high to mid");
+            put(7, "lowering mid"); //descending
+        }};
+
+        public void set(int t1, int h1, int t2, int h2) {
+            this.t1 = t1;
+            this.h1 = h1;
+            this.t2 = t2;
+            this.h2 = h2;
+
+            rising = h2 > h1;
+            nowinside = t1 < now;
+
+            if (true           && now < t1 - 60) nowdir = 0;
+            if (t1 - 60 <= now && now < t1)        nowdir = 1;
+            if (t1 + 00 <= now && now < (t1+t2)/2 - 60) nowdir = 2;
+            if ((t1+t2)/2 - 60 <= now && true)      nowdir = 3;
+
+            if (!rising) nowdir += 4;
+        }
+
+        public String getNowDirString() {
+            return dirToString.get(nowdir);
+        }
+    }
+
+
+    public ClosestExtremums getClosestExtremums(long day, long time) {
+        SortedMap<Long, Integer> subMap = extremums.subMap(time - 60 * 60 * 3L, time + 60 * 60 * 24L);
+        Iterator<Map.Entry<Long, Integer>> iterator = subMap.entrySet().iterator();
+        Map.Entry<Long, Integer> e1 = iterator.next();
+        Map.Entry<Long, Integer> e2 = iterator.next();
+
+        ClosestExtremums ce = new ClosestExtremums();
+        ce.now = (int)((time - day) / 60); //Common.getNowTimeInt(TIME_ZONE);
+        ce.set((int)((e1.getKey()-day) / 60), e1.getValue() / 10,
+               (int)((e2.getKey()-day) / 60), e2.getValue() / 10);
+        return ce;
     }
 
 

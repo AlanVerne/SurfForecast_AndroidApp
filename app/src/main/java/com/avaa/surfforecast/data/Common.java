@@ -32,7 +32,7 @@ public class Common {
 
     public static int strToInt(String s, int def) {
         try {
-            while(s.startsWith("0") && s.length()>1) s=s.substring(1);
+            while (s.startsWith("0") && s.length() > 1) s = s.substring(1);
             return Integer.valueOf(s);
         } catch (NumberFormatException e) {
             return def;

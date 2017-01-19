@@ -2,7 +2,7 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context="com.avaa.surfforecast.VoiceInterfaceFragment">
+    tools:context="com.avaa.surfforecast.ai.VoiceInterfaceFragment">
 
     <com.avaa.surfforecast.views.CircleAnimatedFrameLayout
         android:id="@+id/flHint"
@@ -12,6 +12,37 @@
         android:background="#00000000">
 
         <LinearLayout
+            android:id="@+id/llAnswer"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:orientation="vertical"
+            android:paddingTop="60dp"
+            android:paddingLeft="60dp"
+            android:paddingRight="90dp"
+            android:visibility="invisible">
+
+            <TextView
+                android:id="@+id/tvAnswerTitle"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:textSize="24dp"
+                android:paddingBottom="18dp"
+                android:textColor="#222222"
+                android:text=""/>
+
+            <TextView
+                android:id="@+id/tvAnswerText"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:textSize="18dp"
+                android:paddingTop="6dp"
+                android:paddingBottom="6dp"
+                android:text=""/>
+
+        </LinearLayout>
+
+        <LinearLayout
+            android:id="@+id/llHint"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
             android:orientation="vertical"
@@ -30,15 +61,15 @@
 
             <TextView
                 android:id="@+id/tvHintOpt1"
-                android:layout_width="wrap_content"
+                android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:textSize="18dp"
                 android:paddingTop="6dp"
                 android:paddingBottom="6dp"
-                android:text="Uluwatu tomorrow"/>
+                android:text="Serangan tomorrow"/>
             <TextView
                 android:id="@+id/tvHintOpt2"
-                android:layout_width="wrap_content"
+                android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:textSize="18dp"
                 android:paddingTop="6dp"
@@ -46,23 +77,23 @@
                 android:text="Canggu now"/>
             <TextView
                 android:id="@+id/tvHintOpt3"
-                android:layout_width="wrap_content"
+                android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:textSize="18dp"
                 android:paddingTop="6dp"
                 android:paddingBottom="6dp"
-                android:text="Serangan friday"/>
+                android:text="Swell and tide on sunset"/>
             <TextView
                 android:id="@+id/tvHintOpt4"
-                android:layout_width="wrap_content"
+                android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:textSize="18dp"
                 android:paddingTop="6dp"
                 android:paddingBottom="6dp"
-                android:text="Kuta"/>
+                android:text="Conditions now"/>
             <TextView
                 android:id="@+id/tvHintOpt5"
-                android:layout_width="wrap_content"
+                android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:textSize="18dp"
                 android:paddingTop="6dp"
@@ -79,7 +110,6 @@
                 android:text="..."/>
 
         </LinearLayout>
-
     </com.avaa.surfforecast.views.CircleAnimatedFrameLayout>
 
 
@@ -87,22 +117,23 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent">
 
+        <com.avaa.surfforecast.views.CircleVoiceIndicator
+            android:id="@+id/cvi"
+            android:layout_width="240dp"
+            android:layout_height="240dp"
+            android:layout_alignParentBottom="true"
+            android:layout_alignParentLeft="true"/>
+
         <FrameLayout
             android:id="@+id/btnMic"
-
             android:elevation="5dp"
-
             android:layout_width="50dp"
             android:layout_height="50dp"
-
             android:background="@drawable/round_button_transparent"
-
             android:layout_marginLeft="-10dp"
             android:layout_marginBottom="-10dp"
-
             android:layout_alignParentBottom="true"
-            android:layout_alignParentLeft="true"
-            >
+            android:layout_alignParentLeft="true">
             <ImageView
                 android:id="@+id/btnMicImage"
                 android:layout_width="wrap_content"

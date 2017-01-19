@@ -104,4 +104,14 @@ public class SurfSpot {
         this.la = la;
         this.lo = lo;
     }
+
+
+    public float getWindRelativeAngle(float windAngle) {
+        float a = windAngle - (float)Math.PI - Direction.directionToAngle(waveDirection);
+
+        if (a < 0) a += Math.PI*2;
+        else if (a >= Math.PI*2) a -= Math.PI*2;
+
+        return a;
+    }
 }

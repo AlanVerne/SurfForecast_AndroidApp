@@ -74,4 +74,14 @@ public class SurfConditions {
         Direction direction = Direction.values()[(int)Math.round(waveAngle / Math.PI * 8)];
         return direction.toString().toLowerCase();
     }
+
+    public static int windSpeedToBeaufort(int windSpeed) {
+        if (windSpeed <=  2) return 0;
+        if (windSpeed <=  5) return 1;
+        if (windSpeed <= 11) return 2;
+        if (windSpeed <= 19) return 3;
+        if (windSpeed <= 28) return 4;
+        if (windSpeed <= 38) return 5;
+        return 6;
+    }
 }

@@ -172,8 +172,11 @@ public class MyList extends FeaturedScrollView {
     }
 
     public void awake(Runnable r) {
-        afterAwakened = r;
-        awake();
+        if (awakeState == 1) r.run();
+        else {
+            afterAwakened = r;
+            awake();
+        }
     }
     public void awake() {
         //Log.i(TAG, "awake() " + awake + " " + prevTime + " " + awakeState);
