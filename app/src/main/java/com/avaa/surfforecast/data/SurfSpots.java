@@ -152,7 +152,7 @@ public class SurfSpots {
 
         categories.put(list.size(), "Canggu");
         //addSpot("Pererenan", new SurfConditionsProvider(sp, "Pererenan"), new PointF(833, 722), new PointF(0, 0), Direction.NE);
-        addSpot("Canggu / Echo", new String[]{"Canggu", "Echo"}, new SurfConditionsProvider(sp, "Canggu"), new PointF(840, 726), new PointF(0, 0), Direction.NE, 0, 1+2+4, 3, 10, "http://magicseaweed.com/Canggu-Surf-Report/935/", "http://balibelly.com/canggu", -8.654989, 115.125030);
+        addSpot("Canggu / Echo", new String[]{"Canggu", "Echo", "Pererenan"}, new SurfConditionsProvider(sp, "Canggu"), new PointF(840, 726), new PointF(0, 0), Direction.NE, 0, 1+2+4, 3, 10, "http://magicseaweed.com/Canggu-Surf-Report/935/", "http://balibelly.com/canggu", -8.654989, 115.125030);
         addSpot("Old man's / BB", new String[]{"Old mans", "Old man's", "Oldman", "Old men", "Old man", "Batu Bolong", "Batu"}, new SurfConditionsProvider(sp, "Canggu"), new PointF(843, 730), new PointF(0, 0), Direction.NE, 0, 1+2+4, 2, 10, "http://magicseaweed.com/Old-Mans-Batu-Bolong-Surf-Report/2305/", "http://oldmans.net/#surfcam-popup", -8.659556, 115.130200);
         addSpot("Berawa", new String[]{"Brava"}, new SurfConditionsProvider(sp, "Canggu"), new PointF(845, 734), new PointF(0, 0), Direction.NE, 2, 1+2+4, 2, 8, "http://magicseaweed.com/Berawa-Beach-Surf-Report/1293/", "", -8.667381, 115.139262);
 

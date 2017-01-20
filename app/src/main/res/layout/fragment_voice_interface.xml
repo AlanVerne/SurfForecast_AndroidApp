@@ -12,99 +12,63 @@
         android:background="#00000000">
 
         <LinearLayout
-            android:id="@+id/llAnswer"
-            android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:orientation="vertical"
-            android:paddingTop="60dp"
-            android:paddingLeft="60dp"
-            android:paddingRight="90dp"
-            android:visibility="invisible">
-
-            <TextView
-                android:id="@+id/tvAnswerTitle"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:textSize="24dp"
-                android:paddingBottom="18dp"
-                android:textColor="#222222"
-                android:text=""/>
-
-            <TextView
-                android:id="@+id/tvAnswerText"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:textSize="18dp"
-                android:paddingTop="6dp"
-                android:paddingBottom="6dp"
-                android:text=""/>
-
-        </LinearLayout>
-
-        <LinearLayout
             android:id="@+id/llHint"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
             android:orientation="vertical"
             android:paddingTop="60dp"
-            android:paddingLeft="60dp"
-            android:paddingRight="60dp">
+            android:paddingLeft="0dp"
+            android:paddingRight="0dp">
 
             <TextView
                 android:id="@+id/tvHintTitle"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:textSize="24dp"
+                android:paddingLeft="60dp"
+                android:paddingRight="60dp"
                 android:paddingBottom="18dp"
                 android:textColor="#222222"
                 android:text="Say!"/>
 
             <TextView
                 android:id="@+id/tvHintOpt1"
+                style="@style/Opt"
                 android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:textSize="18dp"
-                android:paddingTop="6dp"
-                android:paddingBottom="6dp"
-                android:text="Serangan tomorrow"/>
+                android:layout_height="wrap_content"/>
             <TextView
                 android:id="@+id/tvHintOpt2"
+                style="@style/Opt"
                 android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:textSize="18dp"
-                android:paddingTop="6dp"
-                android:paddingBottom="6dp"
-                android:text="Canggu now"/>
+                android:layout_height="wrap_content"/>
             <TextView
                 android:id="@+id/tvHintOpt3"
+                style="@style/Opt"
                 android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:textSize="18dp"
-                android:paddingTop="6dp"
-                android:paddingBottom="6dp"
-                android:text="Swell and tide on sunset"/>
+                android:layout_height="wrap_content"/>
             <TextView
                 android:id="@+id/tvHintOpt4"
+                style="@style/Opt"
                 android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:textSize="18dp"
-                android:paddingTop="6dp"
-                android:paddingBottom="6dp"
-                android:text="Conditions now"/>
+                android:layout_height="wrap_content"/>
             <TextView
                 android:id="@+id/tvHintOpt5"
+                style="@style/Opt"
                 android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:textSize="18dp"
-                android:paddingTop="6dp"
-                android:paddingBottom="6dp"
-                android:text="Weekend"/>
+                android:layout_height="wrap_content"/>
+            <TextView
+                android:id="@+id/tvHintOptRed"
+                style="@style/OptRed"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"/>
 
             <TextView
                 android:id="@+id/tvPrerecognized"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:textSize="18dp"
+                android:paddingLeft="60dp"
+                android:paddingRight="60dp"
                 android:paddingTop="6dp"
                 android:paddingBottom="6dp"
                 android:text="..."/>
@@ -112,6 +76,27 @@
         </LinearLayout>
     </com.avaa.surfforecast.views.CircleAnimatedFrameLayout>
 
+    <com.avaa.surfforecast.views.TwoCirclesAnimatedFrameLayout
+        android:id="@+id/flHeader"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:paddingTop="120dp"
+        android:paddingBottom="375dp"
+        android:background="#00000000"
+        android:visibility="invisible">
+
+        <TextView
+            android:id="@+id/tvHeader"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textSize="24dp"
+            android:textColor="#ffffffff"
+            android:paddingLeft="60dp"
+            android:paddingTop="60dp"
+            android:paddingRight="60dp"
+            android:text="You question"/>
+
+    </com.avaa.surfforecast.views.TwoCirclesAnimatedFrameLayout>
 
     <RelativeLayout
         android:layout_width="match_parent"

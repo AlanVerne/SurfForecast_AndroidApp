@@ -26,6 +26,10 @@ public class Answers {
         this.appContext = appContext;
     }
 
+
+    // --
+
+
     public Answer windNow() {
         SurfSpots surfSpots = appContext.surfSpots;
 
@@ -49,7 +53,8 @@ public class Answers {
 
 
     public Answer swellAns(SurfConditions cc) {
-        return new Answer("Swell: " + cc.getWaveHeightInFt() + "ft in " + cc.wavePeriod + "s.", floatToNL(cc.getWaveHeightInFt()) + " feet swell, in " + cc.wavePeriod + " seconds.");
+        return new Answer("Swell:   " + cc.getWaveHeightInFt() + "ft in " + cc.wavePeriod + "s",
+                floatToNL(cc.getWaveHeightInFt()) + " feet swell, in " + cc.wavePeriod + " seconds.");
     }
 
     public Answer windAns(int speed, float angle) {
@@ -61,35 +66,41 @@ public class Answers {
         int angleDeg = (int) Math.round(angle / Math.PI * 4) * 45;
         String angleNL = Direction.ANGLE_TO_LONG_STRING_DIRECTION.get(angleDeg);
 
-        float windRelativeAngle = spot.getWindRelativeAngle(angle);
-        Log.i(TAG, "windAns() | " + windRelativeAngle);
+        if (spot == null) {
+            String windNL = windToNL(speed, angleNL);
 
-        String angleRelativeNL     = spot == null ? null : windRelativeToNL(windRelativeAngle);
-        String angleRelativeString = spot == null ? null : windRelativeToString(windRelativeAngle);
+            return new Answer("Wind:   " + speed + "km/h from " + angleDir.toString() + ".", windNL + ".");
+        }
+        else {
+            float windRelativeAngle = spot.getWindRelativeAngle(angle);
+            //Log.i(TAG, "windAns() | " + windRelativeAngle);
 
-        String windNL = windToNL(speed, spot == null ? angleNL : angleRelativeNL);
+            String angleRelativeNL = windRelativeToNL(windRelativeAngle);
+            String angleRelativeString = windRelativeToString(windRelativeAngle);
 
-        if (spot != null) return new Answer("Wind: " + speed + " km/h " + angleRelativeString + " from " + angleDir.toString() + ".", windNL + ".");
-        return new Answer("Wind: " + speed + " km/h from " + angleDir.toString() + ".", windNL + ".");
+            String windNL = windToNL(speed, angleRelativeNL);
+
+            return new Answer("Wind:   " + speed + "km/h " + angleRelativeString + " " + angleDir.toString(), windNL + ".");
+        }
     }
     public Answer tideAns(TideData tideData, int plusday, long time) {
         Integer h = tideData.getTide(time);
 
-        if (h == null) return new Answer("Tide: unknown.", "Don't know tide.");
+        if (h == null) return new Answer("Tide:   unknown", "Don't know tide.");
 
         String state = tideData.getState(Common.getDay(plusday, Common.TIME_ZONE), time);
 
-        return new Answer("Tide: " + TideData.intToString(h) + "m, " + state.toLowerCase() + ".",
+        return new Answer("Tide:   " + TideData.intToString(h) + "m, " + state.toLowerCase(),
                 floatToNL(h / 100f) + " m, " + state.toLowerCase() + " tide.");
     }
     public Answer tideNowAns(TideData tideData) {
         Integer h = tideData.getNow();
 
-        if (h == null) return new Answer("Tide: unknown.", "Don't know tide.");
+        if (h == null) return new Answer("Tide:   unknown", "Don't know tide.");
 
         String state = tideData.getStateNow().toLowerCase();
 
-        return new Answer("Tide: " + TideData.intToString(h) + "m, " + state + ".",
-                floatToNL(h / 100f) + " m, " + state + " tide.");
+        return new Answer("Tide:   " + TideData.intToString(h) + "m, " + state,
+                floatToNL(h / 100f) + " m " + state + " tide.");
     }
 }

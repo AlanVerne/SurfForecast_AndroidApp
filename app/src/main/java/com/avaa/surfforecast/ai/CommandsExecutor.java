@@ -1,5 +1,7 @@
 package com.avaa.surfforecast.ai;
 
+import android.content.Intent;
+import android.net.Uri;
 import android.text.format.DateUtils;
 import android.util.Log;
 
@@ -38,7 +40,12 @@ public class CommandsExecutor {
             "swell - swag,swallow,12" + "\n" +
             "tide - dyed,guide,died,diet,dyed" + "\n" +
             "conditions - can you show us" + "\n" +
-            "waves";
+            "waves" + "\n" +
+            "camera - cam,canara,canada,kamera" + "\n" +
+            "in meters - in metres" + "\n" +
+            "cancel - forget it,exit,close" + "\n" +
+            "ok - good" + "\n" +
+            "hide ai";
 
     private static final String SOUND_LIKE_TIME_OF_DAY =
             "now - " + "\n" +
@@ -86,7 +93,7 @@ public class CommandsExecutor {
     private final Map<String, SurfSpot> sToSpot = new HashMap<>();
 
     private final Map<String, String> soundLikeDay = new HashMap<>();
-    private final Map<String, Integer> sToDay = new HashMap<>();
+    public final Map<String, Integer> sToDay = new HashMap<>();
 
     private final AppContext appContext;
     private final Answers answers;
@@ -98,6 +105,8 @@ public class CommandsExecutor {
         initSToSpot();
         initSoundLikeMap(SOUND_LIKE_KEYWORD, soundLikeKeyword);
         initSoundLikeMap(SOUND_LIKE_TIME_OF_DAY, soundLikeTimeOfDay);
+
+        c.commandsExecutor = this;
     }
 
 
@@ -169,7 +178,7 @@ public class CommandsExecutor {
     // --
 
 
-    public String recognitionResultsToCommand(Collection<String> strings) {
+    public String recognitionResultsToStringCommand(Collection<String> strings) {
         if (strings == null || strings.isEmpty()) return null;
 
         List<String> dayhits = new ArrayList<>();
@@ -223,13 +232,13 @@ public class CommandsExecutor {
 
         if (!slKeywordHits.isEmpty()) s = s == null ? slKeywordHits.get(0).getValue() : s + " " + slKeywordHits.get(0).getValue();
 
-        Log.i(TAG, "recognitionResultsToCommand() | " + spothits);
-        Log.i(TAG, "recognitionResultsToCommand() | " + slSpothits);
-        Log.i(TAG, "recognitionResultsToCommand() | " + dayhits);
-        Log.i(TAG, "recognitionResultsToCommand() | " + slDayhits);
-        Log.i(TAG, "recognitionResultsToCommand() | " + slKeywordHits);
+        Log.i(TAG, "recognitionResultsToStringCommand() | " + spothits);
+        Log.i(TAG, "recognitionResultsToStringCommand() | " + slSpothits);
+        Log.i(TAG, "recognitionResultsToStringCommand() | " + dayhits);
+        Log.i(TAG, "recognitionResultsToStringCommand() | " + slDayhits);
+        Log.i(TAG, "recognitionResultsToStringCommand() | " + slKeywordHits);
 
-        Log.i(TAG, "recognitionResultsToCommand() | " + s);
+        Log.i(TAG, "recognitionResultsToStringCommand() | " + s);
 
         if (s != null && s.length() > 1) s = s.substring(0, 1).toUpperCase() + s.substring(1);
 
@@ -237,13 +246,7 @@ public class CommandsExecutor {
     }
 
 
-    // --
-
-
-    List<String> commandsHistory = new ArrayList<>();
-
-
-    public Answer performCommand(String s) {
+    public Command stringCommandToCommand(String s) {
         if (s == null) return null;
 
         Integer day = null;
@@ -272,33 +275,91 @@ public class CommandsExecutor {
             if (ss.contains(si)) timeOfDay.add(si);
         }
 
-        if (!keywords.isEmpty()) {
-            Answer answer = new Answer();
+        return new Command(day, spot, keywords, timeOfDay);
+    }
 
-            if (keywords.contains("swell")) answer.add(answers.swellNow());
-            if (keywords.contains("tide")) answer.add(answers.tideNow());
-            if (keywords.contains("wind")) answer.add(answers.windNow());
+
+    // --
+
+
+    List<String> commandsHistory = new ArrayList<>();
+    Answer lastAnswer = null;
+
+
+    public Answer performCommand(String s) {
+        Log.i(TAG, "performCommand(String " + s + ")");
+        return performCommand(stringCommandToCommand(s), s);
+    }
+    public Answer performCommand(Command c, String sc) {
+        if (c.keywords != null && (c.keywords.contains("cancel") || c.keywords.contains("hide ai"))) {
+            lastAnswer = null;
+            return null;
+        }
+
+        if (lastAnswer != null && lastAnswer.replyVariants != null) {
+            for (String replyInterpreter : lastAnswer.replyInterpreters) {
+                String[] split = replyInterpreter.split(" - ");
+                if (c.has(split[0])) {
+                    Log.i(TAG, "performCommand(" + c.toString() + ") | replied: '" + split[0] + "', new command: '" + c.fill(split[1]) + "'");
+
+                    lastAnswer = null;
+                    lastAnswer = performCommand(c.fill(split[1]));
+                    return lastAnswer;
+                }
+            }
+        }
+
+        if (c.keywords != null) {
+            List<String> keywords = c.keywords;
+
+            lastAnswer = new Answer();
+
+            if (keywords.contains("swell")) lastAnswer.add(answers.swellNow());
+            if (keywords.contains("tide")) lastAnswer.add(answers.tideNow());
+            if (keywords.contains("wind")) lastAnswer.add(answers.windNow());
 
             if ("conditions".equals(keywords.get(0)))
-                answer.add(answers.swellNow()).add(answers.tideNow()).add(answers.windNow());
+                lastAnswer.add(answers.swellNow()).add(answers.tideNow()).add(answers.windNow());
             if ("waves".equals(keywords.get(0)))
-                answer.add(answers.swellNow()).add(answers.tideNow()).add(answers.windNow());
+                lastAnswer.add(answers.swellNow()).add(answers.tideNow()).add(answers.windNow());
 
-            return answer;
-        } else {
+            if (lastAnswer != null) {
+                lastAnswer.replyVariants = new String[]{"Ok, thank's", "For tomorrow"};
+                lastAnswer.replyInterpreters = new String[]{"kw:ok - Hide ai", "day - Conditions [day]"};
+            }
+
+            if ("camera".equals(keywords.get(0))) {
+                if (c.spot != null && c.spot.urlCam != null) {
+                    Intent browserIntent = new Intent(Intent.ACTION_VIEW, Uri.parse(c.spot.urlCam));
+                    appContext.mainActivity.startActivity(browserIntent);
+                }
+                else {
+                    lastAnswer = new Answer("Choose spot:", "For what spot?", new String[]{"Pererenan", "Old man's", "Uluwatu", "Bingin", "Cancel"}, new String[]{"spot - Camera for [spot]"});
+                }
+            }
+        }
+        else {
+            lastAnswer = null;
+
             Runnable rDay = null;
-            if (day != null) {
-                Log.i(TAG, "performCommand() | day = " + day);
-                Integer finalDay = day;
+            if (c.day != null) {
+                Log.i(TAG, "performCommand() | day = " + c.day);
+                Integer finalDay = c.day;
                 rDay = () -> appContext.mainActivity.performSelectDay(finalDay, null);
             }
 
-            if (spot != null) {
-                appContext.mainActivity.performSelectSpot(spot, rDay);
+            if (c.spot != null) {
+                appContext.mainActivity.performSelectSpot(c.spot, rDay);
             } else {
                 if (rDay != null) rDay.run();
             }
         }
-        return null;
+
+        if (lastAnswer != null) {
+            if (lastAnswer.isEmpty()) lastAnswer = null;
+            else lastAnswer.forCommand = sc;
+        }
+
+        return lastAnswer;
     }
 }

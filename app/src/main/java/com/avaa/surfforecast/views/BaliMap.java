@@ -687,7 +687,8 @@ public class BaliMap extends View {
 
             paintAdditionalText.setTextAlign(Paint.Align.CENTER);
             c.drawText(strSWELL, x, y - (rectBigTextBounds.height() + finalVisibility*dh/6 + rectSmallTextBounds.height())/2 - finalVisibility*dh / 6 * hintsVisible, paintAdditionalText);
-            c.drawText(currentConditions.waveAngleAbbr(), x, y + (rectBigTextBounds.height() + finalVisibility*dh/6 + rectSmallTextBounds.height())/2 + finalVisibility*(dh / 6 + dh / 12 + dh / 6 * hintsVisible), paintAdditionalText);
+            //c.drawText(currentConditions.waveAngleAbbr(), x, y + (rectBigTextBounds.height() + finalVisibility*dh/6 + rectSmallTextBounds.height())/2 + finalVisibility*(dh / 6 + dh / 12 + dh / 6 * hintsVisible), paintAdditionalText);
+            c.drawText(currentConditions.waveEnergy+"kJ", x, y + (rectBigTextBounds.height() + finalVisibility*dh/6 + rectSmallTextBounds.height())/2 + finalVisibility*(dh / 6 + dh / 12 + dh / 6 * hintsVisible), paintAdditionalText);
         }
 
         paintBigText.setColor((int)(j*0xff)*0x1000000 + 0x00ffffff & ConditionsDrawer.colorWaveText);

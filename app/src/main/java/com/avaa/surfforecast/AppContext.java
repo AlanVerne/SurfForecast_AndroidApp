@@ -4,6 +4,7 @@ import android.content.SharedPreferences;
 import android.util.Log;
 import android.view.View;
 
+import com.avaa.surfforecast.ai.CommandsExecutor;
 import com.avaa.surfforecast.data.BusyStateListener;
 import com.avaa.surfforecast.data.METARProvider;
 import com.avaa.surfforecast.data.SurfSpots;
@@ -23,6 +24,7 @@ public class AppContext {
     public final SurfSpots surfSpots;
     //public final TidesProvider tidesProvider;
     public final TideDataProvider tideDataProvider;
+    public CommandsExecutor commandsExecutor;
 
 
     public static AppContext instance = null;
