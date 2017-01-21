@@ -51,7 +51,7 @@ public class TwoCirclesAnimatedFrameLayout extends FrameLayout {
 
         float i = state == 1 ? FAST_OUT_SLOW_IN_INTERPOLATOR.getInterpolation(this.i) : 1 - FAST_OUT_SLOW_IN_INTERPOLATOR.getInterpolation(1 - this.i);
 
-        float r  = (height - getPaddingTop());
+        float r  = (height+300);// - getPaddingTop());
         float r2 = (getPaddingBottom());
 
         float ar = r2;//(r+r2)/2;
@@ -64,13 +64,18 @@ public class TwoCirclesAnimatedFrameLayout extends FrameLayout {
 
         Path p = new Path();
         int x = width*1/3;
-        p.addCircle(state == 2 ? width *(1 - i*2/3) : x, height, r, Path.Direction.CCW);
-        p.addCircle(state == 2 ? width *(1 - i*2/3) : x, height, r2, Path.Direction.CW);
+
+        float y = height;//+width*i;
+//        r  += width*i;
+//        r2 += width*i;
+
+        p.addCircle(state == 2 ? width *(1 - i*2/3) : x, y, r, Path.Direction.CCW);
+        p.addCircle(state == 2 ? width *(1 - i*2/3) : x, y, r2, Path.Direction.CW);
 
 //        bgShadow.setColor((int)(0xaa*i) * 0x1000000 | 0xaaaaaa);
 //        canvas.drawRect(0, 0, width, height, bgShadow);
 
-        if (this.i == 1) {
+        if (this.i == 10) {
             canvas.drawPath(p, bgMain);
             super.draw(canvas);
         }

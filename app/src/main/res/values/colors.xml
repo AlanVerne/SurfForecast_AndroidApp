@@ -2,10 +2,12 @@
 <resources>
     <color name="colorPrimary">#0091c1</color>
     <color name="colorPrimaryDark">#006283</color>
-    <color name="colorAccent">#ff4081</color>
+    <color name="colorAccent">#f06292</color>
 
     <color name="colorWaterBG">#4ac3ec</color>
     <color name="colorWater">#0091c1</color>
     <!--<color name="colorWater">#4ad2ff</color>-->
     <color name="colorTideChartBG">#006283</color>
+
+    <color name="optIcon">#e8e8e8</color>
 </resources>

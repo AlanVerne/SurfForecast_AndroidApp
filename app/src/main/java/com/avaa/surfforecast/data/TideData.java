@@ -194,6 +194,17 @@ public class TideData {
     }
 
 
+    public static int tideToHML(int tide) {
+        int t = 2;
+        if (tide < 0.7) t = 1;
+        if (tide > 1.4) t = 4;
+        return t;
+    }
+
+
+    public Integer getTide(int plusDays, int time) {
+        return getTide(Common.getDay(plusDays, Common.TIME_ZONE) + time*60);
+    }
     public Integer getTide(long time) {
         float now = time / 60;
 
@@ -245,6 +256,10 @@ public class TideData {
 
     public String getStateNow() {
         return getState(Common.getToday(TIME_ZONE), System.currentTimeMillis() / 1000);
+    }
+    public String getState(long day, int t) {
+        ClosestExtremums ce = getClosestExtremums(day, day + t*60);
+        return ce.getNowDirString();
     }
     public String getState(long day, long l) {
         ClosestExtremums ce = getClosestExtremums(day, l);

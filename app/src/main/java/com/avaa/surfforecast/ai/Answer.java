@@ -1,11 +1,16 @@
 package com.avaa.surfforecast.ai;
 
+import android.util.Log;
+
+import java.util.Arrays;
+
 /**
  * Created by Alan on 19 Jan 2017.
  */
 
 public class Answer {
     public String forCommand = null;
+    public String clarification = null;
 
     public String toShow = null;
     public String toSay = null;
@@ -27,10 +32,16 @@ public class Answer {
         this.toSay = toSay;
         this.replyVariants = replyVariants;
     }
-
     public Answer(String toShow, String toSay, String[] replyVariants, String[] replyInterpreters) {
         this.toShow = toShow;
         this.toSay = toSay;
+        this.replyVariants = replyVariants;
+        this.replyInterpreters = replyInterpreters;
+    }
+    public Answer(String toShow, String toSay, boolean waitForReply, String[] replyVariants, String[] replyInterpreters) {
+        this.toShow = toShow;
+        this.toSay = toSay;
+        this.waitForReply = waitForReply;
         this.replyVariants = replyVariants;
         this.replyInterpreters = replyInterpreters;
     }
@@ -47,13 +58,31 @@ public class Answer {
     }
     public Answer add(Answer a) {
         if (a == null) return this;
+        Log.i("Answer", "add( " + a + " )");
         toShow = toShow == null ? a.toShow : toShow + "\n\n" + a.toShow;
         toSay  = toSay  == null ? a.toSay : toSay + "\n\n" + a.toSay;
         return this;
     }
 
+    public Answer add(Answer a, boolean noWrap) {
+        if (!noWrap) return add(a);
+        if (a == null) return this;
+        toShow = toShow == null ? a.toShow : toShow + " " + a.toShow;
+        toSay  = toSay  == null ? a.toSay : toSay + " " + a.toSay;
+        return this;
+    }
+
+
     @Override
     public String toString() {
-        return toShow;
+        return "Answer{" +
+                "forCommand='" + forCommand + '\'' +
+                ", clarification='" + clarification + '\'' +
+                ", toShow='" + toShow + '\'' +
+                ", toSay='" + toSay + '\'' +
+                ", waitForReply=" + waitForReply +
+//                ", replyVariants=" + Arrays.toString(replyVariants) +
+//                ", replyInterpreters=" + Arrays.toString(replyInterpreters) +
+                '}';
     }
 }

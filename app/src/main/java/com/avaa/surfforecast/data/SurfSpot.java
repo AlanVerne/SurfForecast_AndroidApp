@@ -14,7 +14,7 @@ public class SurfSpot {
     public String[] altNames;
 
     public PointF pointOnSVG;
-    public PointF pointEarth;
+    private PointF pointEarth;
     public Direction waveDirection;
 
     public int leftright = 0; // 0 = all, -1 - right, 1 - left, 2 - peaky
@@ -30,7 +30,7 @@ public class SurfSpot {
     public double la, lo;
 
     public String urlMSW = null;
-    public String urlCam = "";
+    public String urlCam = null;
 
     public String metarName = null;
 
@@ -49,7 +49,6 @@ public class SurfSpot {
         this.pointEarth = pointEarth;
         this.waveDirection = waveDirection;
     }
-
     public SurfSpot(String name, SurfConditionsProvider conditionsProvider, PointF pointOnSVG, PointF pointEarth, Direction waveDirection, int leftright) {
         this.name = name;
         this.conditionsProvider = conditionsProvider;
@@ -58,7 +57,6 @@ public class SurfSpot {
         this.waveDirection = waveDirection;
         this.leftright = leftright;
     }
-
     public SurfSpot(String name, SurfConditionsProvider conditionsProvider, PointF pointOnSVG, PointF pointEarth, Direction waveDirection, int leftright, int tides, int minSwell, int maxSwell) {
         this.name = name;
         this.conditionsProvider = conditionsProvider;
@@ -70,7 +68,6 @@ public class SurfSpot {
         this.minSwell = minSwell;
         this.maxSwell = maxSwell;
     }
-
     public SurfSpot(String name, SurfConditionsProvider conditionsProvider, PointF pointOnSVG, PointF pointEarth, Direction waveDirection, int leftright, int tides, int minSwell, int maxSwell, String urlMSW, String urlCam, double la, double lo) {
         this.name = name;
         this.conditionsProvider = conditionsProvider;
@@ -82,12 +79,10 @@ public class SurfSpot {
         this.minSwell = minSwell;
         this.maxSwell = maxSwell;
         this.urlMSW = urlMSW;
-        this.urlCam = urlCam;
+        this.urlCam = urlCam.isEmpty() ? null : urlCam;
         this.la = la;
         this.lo = lo;
     }
-
-
     public SurfSpot(String name, String[] alt, SurfConditionsProvider conditionsProvider, PointF pointOnSVG, PointF pointEarth, Direction waveDirection, int leftright, int tides, int minSwell, int maxSwell, String urlMSW, String urlCam, double la, double lo) {
         this.name = name;
         this.altNames = alt;
@@ -100,9 +95,21 @@ public class SurfSpot {
         this.minSwell = minSwell;
         this.maxSwell = maxSwell;
         this.urlMSW = urlMSW;
-        this.urlCam = urlCam;
+        this.urlCam = urlCam.isEmpty() ? null : urlCam;
         this.la = la;
         this.lo = lo;
+    }
+
+
+    public void updateConditionsRatings() {
+
+    }
+
+
+    public String getShortName() {
+        String name = this.name;
+        if (altNames != null && altNames[0].length() < name.length()) name = altNames[0];
+        return name;
     }
 
 

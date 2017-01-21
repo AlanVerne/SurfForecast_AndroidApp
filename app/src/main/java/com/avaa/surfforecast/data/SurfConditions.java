@@ -1,11 +1,15 @@
 package com.avaa.surfforecast.data;
 
+import android.util.Log;
+
 /**
  * Created by Alan on 15 Jul 2016.
  */
 
 public class SurfConditions {
-//    public int rating;
+    public float waveRating = -1;
+    public float windRating = -1;
+    public float tideRating = -1;
 
     public int   waveHeight;
     public float waveAngle;
@@ -83,5 +87,41 @@ public class SurfConditions {
         if (windSpeed <= 28) return 4;
         if (windSpeed <= 38) return 5;
         return 6;
+    }
+
+    public float rate(SurfSpot spot, TideData tideData, int day, int time) {
+        if (waveRating != -1.0f) {
+//            Log.i("SurfConditions", "rate() | already rated: " + waveRating + ", " + windRating + ", " + tideRating);
+            return 0;
+        }
+
+        float sweelHeightAve = (spot.maxSwell - spot.minSwell) / 2;
+        waveRating = 1 - ((sweelHeightAve-spot.minSwell) == 0 ? 0 : (waveHeight-spot.minSwell-sweelHeightAve) / (sweelHeightAve-spot.minSwell));
+
+        windRating = 1f - (float)Math.abs(1f - (spot.getWindRelativeAngle(windAngle) - Math.PI) / Math.PI);
+
+        //String state = tideData.getState(day, time);
+
+        Integer tide = tideData.getTide(day, time);
+
+        tideRating = 0;
+
+        if (tide != null) {
+            int t0 = TideData.tideToHML(tide);
+            if ((spot.tides & t0) != 0) tideRating = 0.8f;
+
+            time += 60;
+            if (time > 24 * 60) { day++; time -= 24 * 60; }
+            tide = tideData.getTide(day, time);
+            if (tide != null) {
+                int t1 = TideData.tideToHML(tide);
+                if ((spot.tides & t1) != 0) tideRating -= 0.3f;
+                else tideRating += 0.2f;
+            }
+        }
+
+//        Log.i("SurfConditions", "rate() | rated: " + waveRating + ", " + windRating + ", " + tideRating);
+
+        return (waveRating - windRating) * tideRating;
     }
 }

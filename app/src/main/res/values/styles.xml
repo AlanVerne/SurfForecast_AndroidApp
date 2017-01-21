@@ -18,14 +18,31 @@
     <style name="AppTheme.PopupOverlay" parent="ThemeOverlay.AppCompat.Light" />
 
 
+    <style name="OptIV">
+        <item name="android:layout_width">wrap_content</item>
+        <item name="android:layout_height">wrap_content</item>
+        <!--<item name="android:layout_alignParentBottom">true</item>-->
+        <item name="android:layout_alignParentLeft">true</item>
+        <item name="android:layout_marginTop">6.5dp</item>
+        <item name="android:layout_marginLeft">28dp</item>
+        <!--<item name="android:scaleType">centerInside</item>-->
+    </style>
+
+
     <style name="Opt" parent="@android:style/TextAppearance.Medium">
+        <item name="android:layout_width">match_parent</item>
+        <item name="android:layout_height">wrap_content</item>
+
         <item name="android:textSize">18dp</item>
         <item name="android:textColor">@color/opt_text_color</item>
 
         <item name="android:paddingLeft">60dp</item>
         <item name="android:paddingRight">60dp</item>
+
         <item name="android:paddingTop">6dp</item>
         <item name="android:paddingBottom">6dp</item>
+
+        <item name="android:gravity">left|center_vertical</item>
 
         <item name="android:background">@drawable/opt_bg</item>
     </style>

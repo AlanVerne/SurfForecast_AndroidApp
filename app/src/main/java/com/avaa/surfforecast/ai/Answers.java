@@ -7,6 +7,7 @@ import com.avaa.surfforecast.data.Common;
 import com.avaa.surfforecast.data.Direction;
 import com.avaa.surfforecast.data.METAR;
 import com.avaa.surfforecast.data.SurfConditions;
+import com.avaa.surfforecast.data.SurfConditionsOneDay;
 import com.avaa.surfforecast.data.SurfSpot;
 import com.avaa.surfforecast.data.SurfSpots;
 import com.avaa.surfforecast.data.TideData;
@@ -52,9 +53,30 @@ public class Answers {
     // --
 
 
-    public Answer swellAns(SurfConditions cc) {
-        return new Answer("Swell:   " + cc.getWaveHeightInFt() + "ft in " + cc.wavePeriod + "s",
-                floatToNL(cc.getWaveHeightInFt()) + " feet swell, in " + cc.wavePeriod + " seconds.");
+    public Answer swell(int pd, int time) {
+        SurfConditions conditions = appContext.surfSpots.selectedSpot().conditionsProvider.get(pd).get(time);
+        if (conditions != null) return swellAns(conditions);
+
+        return null;
+    }
+    public Answer tide(int plusDays, int time) {
+        return tideAns(appContext.tideDataProvider.getTideData(Common.BENOA_PORT_ID), plusDays, time); // appContext.surfSpots.currentTideData // TODO
+    }
+    public Answer wind(int pd, int time) {
+        SurfSpot surfSpot = appContext.surfSpots.selectedSpot();
+        SurfConditions conditions = surfSpot.conditionsProvider.get(pd).get(time);
+        if (conditions != null) return windAns(conditions.windSpeed, conditions.windAngle, surfSpot);
+
+        return null;
+    }
+
+
+    // --
+
+
+    public Answer swellAns(SurfConditions c) {
+        return new Answer("Swell:   " + c.getWaveHeightInFt() + "ft in " + c.wavePeriod + "s",
+                floatToNL(c.getWaveHeightInFt()) + " feet swell, in " + c.wavePeriod + " seconds.");
     }
 
     public Answer windAns(int speed, float angle) {
@@ -80,15 +102,15 @@ public class Answers {
 
             String windNL = windToNL(speed, angleRelativeNL);
 
-            return new Answer("Wind:   " + speed + "km/h " + angleRelativeString + " " + angleDir.toString(), windNL + ".");
+            return new Answer("Wind:   " + speed + "km/h\n" + angleRelativeString + " " + angleDir.toString(), windNL + ".");
         }
     }
-    public Answer tideAns(TideData tideData, int plusday, long time) {
-        Integer h = tideData.getTide(time);
+    public Answer tideAns(TideData tideData, int plusDays, int time) {
+        Integer h = tideData.getTide(plusDays, time);
 
         if (h == null) return new Answer("Tide:   unknown", "Don't know tide.");
 
-        String state = tideData.getState(Common.getDay(plusday, Common.TIME_ZONE), time);
+        String state = tideData.getState(Common.getDay(plusDays, Common.TIME_ZONE), time);
 
         return new Answer("Tide:   " + TideData.intToString(h) + "m, " + state.toLowerCase(),
                 floatToNL(h / 100f) + " m, " + state.toLowerCase() + " tide.");

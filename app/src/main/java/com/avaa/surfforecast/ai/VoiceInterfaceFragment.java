@@ -9,17 +9,20 @@ import android.speech.RecognizerIntent;
 import android.speech.SpeechRecognizer;
 import android.speech.tts.TextToSpeech;
 import android.speech.tts.UtteranceProgressListener;
-import android.support.annotation.Dimension;
 import android.support.v4.app.Fragment;
-import android.text.BoringLayout;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ImageView;
 import android.widget.LinearLayout;
+import android.widget.RelativeLayout;
 import android.widget.TextView;
 
+import com.avaa.surfforecast.AppContext;
 import com.avaa.surfforecast.R;
+import com.avaa.surfforecast.data.Common;
+import com.avaa.surfforecast.data.SurfSpot;
 import com.avaa.surfforecast.views.CircleAnimatedFrameLayout;
 import com.avaa.surfforecast.views.CircleVoiceIndicator;
 import com.avaa.surfforecast.views.TwoCirclesAnimatedFrameLayout;
@@ -43,8 +46,14 @@ public class VoiceInterfaceFragment extends Fragment {
     CircleAnimatedFrameLayout flHint;
     LinearLayout llHint;
     TextView tvHintTitle;
+
     TextView[] tvHintOpts = new TextView[5];
+    RelativeLayout[] rlHintOpts = new RelativeLayout[5];
+    ImageView[] ivHintOpts = new ImageView[5];
     TextView tvHintOptRed;
+    RelativeLayout rlHintOptRed;
+    ImageView ivHintOptRed;
+
     TextView tvHintOptPrerecognized;
 
     public CommandsExecutor commandsExecutor = null;
@@ -109,7 +118,7 @@ public class VoiceInterfaceFragment extends Fragment {
                 Answer answer = commandsExecutor.performCommand(s);
                 if (answer != null) {
                     uiShowAnswer(answer);
-                    say(answer);
+                    flHint.postDelayed(() -> say(answer), 250);
                 }
                 else {
                     uiHideHint();
@@ -185,7 +194,7 @@ public class VoiceInterfaceFragment extends Fragment {
         tvHintOptPrerecognized.setText("...");
         tvHintOptPrerecognized.setTextColor(0x66000000);
 
-        uiSetOpts(new String[]{"Canggu", "Serangan", "Camera", "Conditions", "Tomorrow"}); //"Where to surf tomorrow?"});
+        uiSetOpts(commandsExecutor.getDefaultOpts()); //"Where to surf tomorrow?"});
 
         setHintText("Say! Or tap...");
 
@@ -214,30 +223,71 @@ public class VoiceInterfaceFragment extends Fragment {
     }
 
 
+    private static final Map<String, Integer> STRING_TO_DRAWABLE_RESOURCE = new HashMap<String, Integer>() {{
+        put("spot", R.drawable.ic_place_black_24dp);
+        put("cam", R.drawable.ic_camera_alt_black_24dp);
+        put("time", R.drawable.ic_access_time_black_24dp);
+        put("date", R.drawable.ic_event_black_24dp);
+        put("cond", R.drawable.ic_equalizer_black_24dp);
+        put("close", R.drawable.ic_clear_black_24dp);
+        put("ok", R.drawable.ic_check_black_24dp);
+    }};
+
+
     private void uiSetOpts(String[] opts) {
         int l = 0;
 
-        tvHintOptRed.setVisibility(View.GONE);
+        rlHintOptRed.setVisibility(View.GONE);
 
-        if (opts == null) opts = new String[]{"Ok, thanks"};
+        if (opts == null) opts = new String[]{"-[ok]Ok, thanks"};
 
         if (opts != null) {
             l = opts.length;
             for (int i = 0; i < l; i++) {
-                if ("Cancel".equals(opts[i])) {
-                    tvHintOptRed.setText(opts[i]);
-                    tvHintOptRed.setVisibility(View.VISIBLE);
+                if (opts[i].startsWith("-")) {
+                    String s = opts[i].substring(1);
+                    if (s.startsWith("[")) {
+                        String image = s.substring(1, s.indexOf("]"));
+                        s = s.substring(s.indexOf("]")+1);
+
+                        int d = STRING_TO_DRAWABLE_RESOURCE.get(image);
+                        if (d != 0) {
+                            ivHintOptRed.setBackgroundResource(d);
+                            ivHintOptRed.setVisibility(View.VISIBLE);
+                        }
+                        else ivHintOptRed.setVisibility(View.INVISIBLE);
+                    }
+                    else {
+                        ivHintOptRed.setVisibility(View.INVISIBLE);
+                    }
+                    tvHintOptRed.setText(s);
+                    rlHintOptRed.setVisibility(View.VISIBLE);
                 }
                 else {
-                    tvHintOpts[i].setText(opts[i]);
-                    tvHintOpts[i].setVisibility(View.VISIBLE);
+                    String s = opts[i];
+                    if (s.startsWith("[")) {
+                        String image = s.substring(1, s.indexOf("]"));
+                        s = s.substring(s.indexOf("]")+1);
+
+                        int d = STRING_TO_DRAWABLE_RESOURCE.get(image);
+                        if (d != 0) {
+                            ivHintOpts[i].setBackgroundResource(d);
+                            ivHintOpts[i].setVisibility(View.VISIBLE);
+                        }
+                        else ivHintOpts[i].setVisibility(View.INVISIBLE);
+                    }
+                    else {
+                        ivHintOpts[i].setVisibility(View.INVISIBLE);
+                    }
+                    tvHintOpts[i].setText(s);
+                    rlHintOpts[i].setVisibility(View.VISIBLE);
                 }
             }
-            if (tvHintOptRed.getVisibility() == View.VISIBLE) l--;
+            if (rlHintOptRed.getVisibility() == View.VISIBLE) l--;
         }
 
         for (int i = l; i < 5; i++) {
-            tvHintOpts[i].setVisibility(View.GONE);
+            rlHintOpts[i].setVisibility(View.GONE);
         }
     }
 
@@ -249,6 +299,7 @@ public class VoiceInterfaceFragment extends Fragment {
         flHeader.setVisibility(View.VISIBLE);
 
         ((TextView)view.findViewById(R.id.tvHeader)).setText(a.forCommand);
+        ((TextView)view.findViewById(R.id.tvHeaderClarification)).setText(a.clarification);
 
         setHintText(a.toShow);
 
@@ -311,8 +362,12 @@ public class VoiceInterfaceFragment extends Fragment {
                     @Override
                     public void onDone(String utteranceId) {
                         flHint.post(() -> {
-                            if (!waitingForAnswer) uiHideHint();
-                            else startListening();
+                            if (!waitingForAnswer) {
+                                flHint.postDelayed(() -> uiHideHint(), 3000);
+                            }
+                            else {
+                                flHint.postDelayed(() -> startListening(), 250);
+                            }
                         });
                     }
                     @Override
@@ -337,12 +392,28 @@ public class VoiceInterfaceFragment extends Fragment {
 
         llHint = (LinearLayout) view.findViewById(R.id.llHint);
         tvHintTitle = (TextView) view.findViewById(R.id.tvHintTitle);
+
+        rlHintOpts[0] = (RelativeLayout) view.findViewById(R.id.rlHintOpt1);
+        rlHintOpts[1] = (RelativeLayout) view.findViewById(R.id.rlHintOpt2);
+        rlHintOpts[2] = (RelativeLayout) view.findViewById(R.id.rlHintOpt3);
+        rlHintOpts[3] = (RelativeLayout) view.findViewById(R.id.rlHintOpt4);
+        rlHintOpts[4] = (RelativeLayout) view.findViewById(R.id.rlHintOpt5);
+        rlHintOptRed = (RelativeLayout) view.findViewById(R.id.rlHintOptRed);
+
         tvHintOpts[0] = (TextView) view.findViewById(R.id.tvHintOpt1);
         tvHintOpts[1] = (TextView) view.findViewById(R.id.tvHintOpt2);
         tvHintOpts[2] = (TextView) view.findViewById(R.id.tvHintOpt3);
         tvHintOpts[3] = (TextView) view.findViewById(R.id.tvHintOpt4);
         tvHintOpts[4] = (TextView) view.findViewById(R.id.tvHintOpt5);
         tvHintOptRed = (TextView) view.findViewById(R.id.tvHintOptRed);
+
+        ivHintOpts[0] = (ImageView) view.findViewById(R.id.ivHintOpt1);
+        ivHintOpts[1] = (ImageView) view.findViewById(R.id.ivHintOpt2);
+        ivHintOpts[2] = (ImageView) view.findViewById(R.id.ivHintOpt3);
+        ivHintOpts[3] = (ImageView) view.findViewById(R.id.ivHintOpt4);
+        ivHintOpts[4] = (ImageView) view.findViewById(R.id.ivHintOpt5);
+        ivHintOptRed = (ImageView) view.findViewById(R.id.ivHintOptRed);
+        
         tvHintOptPrerecognized = (TextView) view.findViewById(R.id.tvPrerecognized);
 
         btnMic.setOnClickListener(this::btnMicClicked);

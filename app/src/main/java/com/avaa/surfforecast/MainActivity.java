@@ -183,7 +183,7 @@ public class MainActivity extends AppCompatActivity {
             menu.getMenu().add(1, 3, 0, "MSW.com");
             menu.getMenu().add(1, 4, 0, "SF.com");
 
-            if (!spot.urlCam.isEmpty()) menu.getMenu().add(2, 5, 0, "Camera");
+            if (spot.urlCam != null) menu.getMenu().add(2, 5, 0, "Camera");
 
             menu.show();
         });

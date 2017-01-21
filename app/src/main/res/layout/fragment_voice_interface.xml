@@ -8,7 +8,7 @@
         android:id="@+id/flHint"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:paddingTop="240dp"
+        android:paddingTop="230dp"
         android:background="#00000000">
 
         <LinearLayout
@@ -16,7 +16,7 @@
             android:layout_width="match_parent"
             android:layout_height="match_parent"
             android:orientation="vertical"
-            android:paddingTop="60dp"
+            android:paddingTop="70dp"
             android:paddingLeft="0dp"
             android:paddingRight="0dp">
 
@@ -31,46 +31,87 @@
                 android:textColor="#222222"
                 android:text="Say!"/>
 
-            <TextView
-                android:id="@+id/tvHintOpt1"
-                style="@style/Opt"
+            <RelativeLayout
+                android:id="@+id/rlHintOpt1"
                 android:layout_width="match_parent"
-                android:layout_height="wrap_content"/>
-            <TextView
-                android:id="@+id/tvHintOpt2"
-                style="@style/Opt"
+                android:layout_height="wrap_content">
+                <TextView
+                    android:id="@+id/tvHintOpt1"
+                    style="@style/Opt"/>
+                <ImageView
+                    android:id="@+id/ivHintOpt1"
+                    style="@style/OptIV"/>
+            </RelativeLayout>
+            <RelativeLayout
+                android:id="@+id/rlHintOpt2"
                 android:layout_width="match_parent"
-                android:layout_height="wrap_content"/>
-            <TextView
-                android:id="@+id/tvHintOpt3"
-                style="@style/Opt"
+                android:layout_height="wrap_content">
+                <TextView
+                    android:id="@+id/tvHintOpt2"
+                    style="@style/Opt"/>
+                <ImageView
+                    android:id="@+id/ivHintOpt2"
+                    style="@style/OptIV"/>
+            </RelativeLayout>
+            <RelativeLayout
+                android:id="@+id/rlHintOpt3"
                 android:layout_width="match_parent"
-                android:layout_height="wrap_content"/>
-            <TextView
-                android:id="@+id/tvHintOpt4"
-                style="@style/Opt"
+                android:layout_height="wrap_content">
+                <TextView
+                    android:id="@+id/tvHintOpt3"
+                    style="@style/Opt"/>
+                <ImageView
+                    android:id="@+id/ivHintOpt3"
+                    style="@style/OptIV"/>
+            </RelativeLayout>
+            <RelativeLayout
+                android:id="@+id/rlHintOpt4"
                 android:layout_width="match_parent"
-                android:layout_height="wrap_content"/>
-            <TextView
-                android:id="@+id/tvHintOpt5"
-                style="@style/Opt"
+                android:layout_height="wrap_content">
+                <TextView
+                    android:id="@+id/tvHintOpt4"
+                    style="@style/Opt"/>
+                <ImageView
+                    android:id="@+id/ivHintOpt4"
+                    style="@style/OptIV"/>
+            </RelativeLayout>
+            <RelativeLayout
+                android:id="@+id/rlHintOpt5"
                 android:layout_width="match_parent"
-                android:layout_height="wrap_content"/>
-            <TextView
-                android:id="@+id/tvHintOptRed"
-                style="@style/OptRed"
+                android:layout_height="wrap_content">
+                <TextView
+                    android:id="@+id/tvHintOpt5"
+                    style="@style/Opt"/>
+                <ImageView
+                    android:id="@+id/ivHintOpt5"
+                    style="@style/OptIV"/>
+            </RelativeLayout>
+            <RelativeLayout
+                android:id="@+id/rlHintOptRed"
                 android:layout_width="match_parent"
-                android:layout_height="wrap_content"/>
+                android:layout_height="wrap_content">
+                <TextView
+                    android:id="@+id/tvHintOptRed"
+                    style="@style/OptRed"/>
+                <ImageView
+                    android:id="@+id/ivHintOptRed"
+                    style="@style/OptIV"/>
+            </RelativeLayout>
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="0dp"
+                android:layout_weight="1">
+            </LinearLayout>
 
             <TextView
                 android:id="@+id/tvPrerecognized"
                 android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
+                android:layout_height="36dp"
                 android:textSize="18dp"
+                android:layout_marginTop="24dp"
                 android:paddingLeft="60dp"
                 android:paddingRight="60dp"
-                android:paddingTop="6dp"
-                android:paddingBottom="6dp"
                 android:text="..."/>
 
         </LinearLayout>
@@ -80,10 +121,15 @@
         android:id="@+id/flHeader"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:paddingTop="120dp"
-        android:paddingBottom="375dp"
+        android:paddingTop="0dp"
+        android:paddingBottom="380dp"
         android:background="#00000000"
         android:visibility="invisible">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical">
 
         <TextView
             android:id="@+id/tvHeader"
@@ -92,9 +138,23 @@
             android:textSize="24dp"
             android:textColor="#ffffffff"
             android:paddingLeft="60dp"
-            android:paddingTop="60dp"
+            android:paddingTop="90dp"
             android:paddingRight="60dp"
+            android:paddingBottom="0dp"
             android:text="You question"/>
+
+        <TextView
+            android:id="@+id/tvHeaderClarification"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textSize="18dp"
+            android:textColor="#ffffffff"
+            android:paddingLeft="60dp"
+            android:paddingTop="12dp"
+            android:paddingRight="60dp"
+            android:text="Clarified with"/>
+
+        </LinearLayout>
 
     </com.avaa.surfforecast.views.TwoCirclesAnimatedFrameLayout>
 

@@ -26,6 +26,14 @@ public class SurfConditionsOneDay extends TreeMap<Integer, SurfConditions> {
         }
         return null;
     }
+    public SurfConditions get(int time) {
+        for (Map.Entry<Integer, SurfConditions> c : entrySet()) {
+            if (c.getKey() >= time - 90 - 60) {
+                return c.getValue();
+            }
+        }
+        return null;
+    }
 
     public SurfConditionsOneDay getFixed() {
         boolean detailed = isDetailed();

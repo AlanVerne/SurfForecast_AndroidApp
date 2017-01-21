@@ -1,6 +1,7 @@
 package com.avaa.surfforecast.ai;
 
 import com.avaa.surfforecast.AppContext;
+import com.avaa.surfforecast.data.Common;
 import com.avaa.surfforecast.data.SurfSpot;
 
 import java.util.ArrayList;
@@ -16,32 +17,61 @@ public class Command {
     public final Integer day;
     public final SurfSpot spot;
     public final List<String> keywords;
+    public Integer time;
     public final List<String> timeOfDay;
 
-    public Command(Integer day, SurfSpot spot, List<String> keywords, List<String> timeOfDay) {
+    public Command(Integer day, SurfSpot spot, List<String> keywords, Integer time, List<String> timeOfDay) {
         this.day = day;
         this.spot = spot;
-        this.keywords = keywords.isEmpty() ? null : keywords;
-        this.timeOfDay = timeOfDay.isEmpty() ? null : timeOfDay;
+        this.keywords = keywords;
+        this.time = time;
+        this.timeOfDay = timeOfDay;
     }
 
-    public boolean has(String s) {
-        String[] split = s.split(",");
-        for (String si : split) {
-            if ("spot".equals(si) && spot == null) return false;
-            if ("day".equals(si)  && day == null) return false;
-            if (si.startsWith("kw:") && (keywords == null || keywords.contains(si.substring(2)) == false)) return false;
+    public boolean fits(String s) {
+        if (spot != null && !s.contains("spot")) return false;
+        if (day  != null && !s.contains("day"))  return false;
+        if (keywords != null) {
+            for (String keyword : keywords) {
+                if (!s.contains("kw:"+keyword)) return false;
+            }
         }
+
+        String[] split = s.split(",");
+
+        for (String si : split) {
+            if ("spot".equals(si)) { if (spot == null) return false; }
+            else if ("day".equals(si)) { if (day == null) return false; }
+            else if (si.startsWith("kw:")) { if (keywords == null || keywords.contains(si.substring(2)) == false) return false; }
+        }
+
         return true;
     }
     public String fill(String s) {
-        if (spot != null) s = s.replace("[spot]", spot.name);
-        if (day  != null) {
-            for (Map.Entry<String, Integer> e : AppContext.instance.commandsExecutor.sToDay.entrySet()) {
-                if (day.equals(e.getValue())) s = s.replace("[day]",  e.getKey());
+        if (spot != null) s = s.replace("[spot]", spot.getShortName());
+
+        if (isTimeNow()) {
+            if (s.contains("[time]")) {
+                s = s.replace("[time]",  "now");
+                s = s.replace(" [day] ",  " ");
+            }
+            else s = s.replace("[day]",  "today");
+        }
+        else {
+            if (day != null) {
+                s = s.replace("[day]", AppContext.instance.commandsExecutor.intDayToNL(day));
+            }
+//            if (timeOfDay != null) s = s.replace("[time]", timeOfDay.get(0));
+            if (time != null) {
+                s = s.replace("[time]", AppContext.instance.commandsExecutor.intTimeToNL(time));
             }
         }
         return s;
+    }
+
+
+    public boolean isTimeNow() {
+        return day != null && day == 0 && time != null && (time == -1 || Math.abs(time - Common.getNowTimeInt(Common.TIME_ZONE)) < 10);
     }
 
 
@@ -49,8 +79,9 @@ public class Command {
     public String toString() {
         return "Command{" +
                 "day=" + day +
-                ", spot=" + spot +
+                ", spot=" + (spot == null ? "null" : spot.name) +
                 ", keywords=" + keywords +
+                ", time=" + time +
                 ", timeOfDay=" + timeOfDay +
                 '}';
     }
