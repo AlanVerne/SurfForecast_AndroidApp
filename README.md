@@ -11,3 +11,4 @@ TODO
 - sketch shinked wind
 - shrink wind and add energy
 - process word 'except smth'
+- animation easings impr
