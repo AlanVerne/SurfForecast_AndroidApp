@@ -42,7 +42,7 @@ public class VoiceInterfaceFragment extends Fragment {
     TwoCirclesAnimatedFrameLayout flHeader;
     CircleAnimatedFrameLayout flHint;
     LinearLayout llHint;
-    TextView tvHintTitle;
+    TextView tvHintText;
 
     TextView[] tvHintOpts = new TextView[5];
     RelativeLayout[] rlHintOpts = new RelativeLayout[5];
@@ -210,14 +210,14 @@ public class VoiceInterfaceFragment extends Fragment {
 
     private void setHintText(String text) {
         if (text.length() > 50) {
-            tvHintTitle.setTextSize(18);
-            tvHintTitle.setPadding(tvHintTitle.getPaddingLeft(), 0, tvHintTitle.getPaddingRight(), 30*3);
+            tvHintText.setTextSize(18);
+            tvHintText.setPadding(tvHintText.getPaddingLeft(), 0, tvHintText.getPaddingRight(), 30*3);
         }
         else {
-            tvHintTitle.setTextSize(24);
-            tvHintTitle.setPadding(tvHintTitle.getPaddingLeft(), 0, tvHintTitle.getPaddingRight(), 18*3);
+            tvHintText.setTextSize(24);
+            tvHintText.setPadding(tvHintText.getPaddingLeft(), 0, tvHintText.getPaddingRight(), 18*3);
         }
-        tvHintTitle.setText(text);
+        tvHintText.setText(text);
     }
 
 
@@ -303,6 +303,10 @@ public class VoiceInterfaceFragment extends Fragment {
         setHintText(a.toShow);
 
         waitingForAnswer = a.waitForReply;
+
+        final int padding = waitingForAnswer ? 23 * 3 : 43 * 3;
+        tvHintText.setPadding(60*3, 0, 90*3, padding);
+
         uiSetOpts(a.replyVariants);
     }
 
@@ -393,7 +397,7 @@ public class VoiceInterfaceFragment extends Fragment {
         flHint = (CircleAnimatedFrameLayout) view.findViewById(R.id.flHint);
 
         llHint = (LinearLayout) view.findViewById(R.id.llHint);
-        tvHintTitle = (TextView) view.findViewById(R.id.tvHintTitle);
+        tvHintText = (TextView) view.findViewById(R.id.tvHintText);
 
         rlHintOpts[0] = (RelativeLayout) view.findViewById(R.id.rlHintOpt1);
         rlHintOpts[1] = (RelativeLayout) view.findViewById(R.id.rlHintOpt2);

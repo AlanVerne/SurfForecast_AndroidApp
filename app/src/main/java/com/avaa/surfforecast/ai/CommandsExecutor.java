@@ -36,7 +36,7 @@ public class CommandsExecutor {
             "wind - winged" + "\n" +
             "swell - swag,swallow,12" + "\n" +
             "tide - dyed,guide,died,diet,dyed" + "\n" +
-            "conditions - can you show us,weather" + "\n" +
+            "conditions - can you show us,weather,auditions" + "\n" +
             "waves" + "\n" +
             "camera - cam,canara,canada,kamera" + "\n" +
             "in meters - in metres" + "\n" +
@@ -397,6 +397,7 @@ public class CommandsExecutor {
                     return lastAnswer;
                 }
             }
+            Log.i(TAG, "performCommand() | replyInterpreters checked");
         }
 
         lastAnswer = new Answer();
@@ -473,21 +474,24 @@ public class CommandsExecutor {
 
             if (bestSpot == null) lastAnswer = new Answer("IDKN");
             else {
+                bestTime += 60;
+
                 String s = "In " + bestSpot.getShortName();
-                String timeToNL = intTimeToNL(bestTime+60);
-                if (timeToNL == null) timeToNL = (bestTime / 60+1) + " o'clock";
+                String timeToNL = intTimeToNL(bestTime);
+                if (timeToNL == null) timeToNL = (bestTime / 60) + " o'clock";
                 s += " at " + timeToNL;
                 lastAnswer = new Answer(
                         s,
                         s
                 );
-                lastAnswer.waitForReply = true;
+//                lastAnswer.waitForReply = true;
                 lastAnswer.replyVariants = new String[] {
                         "[spot]" + bestSpot.getShortName() + " " + intDayToNL(plusDays),
                         "[cond]" + bestSpot.getShortName() + " " + intDayToNL(plusDays) + " at " + timeToNL,
+                        bestTime == 6*60 ? "I want to sleep at sunrise" : "I can't at " + timeToNL,
                         "[q]Where to surf now?",
                         plusDays == 0 ? "[q]Where to surf tomorrow?" : "[q]Where to surf today?",
-                        "-Ok, thanks"
+                        "-[ok]Ok, thanks"
                 };
                 lastAnswer.replyInterpreters = new String[] {
                         "kw:conditions - Conditions in " + bestSpot.getShortName() + " at " + timeToNL,
@@ -495,10 +499,12 @@ public class CommandsExecutor {
                         "kw:swell - Swell in " + bestSpot.getShortName() + " at " + timeToNL,
                         "kw:wind - Wind in " + bestSpot.getShortName() + " at " + timeToNL,
                         "kw:tide - Tide in " + bestSpot.getShortName() + " at " + timeToNL,
-                        "kw:what's up there - Conditions in " + bestSpot.getShortName() + " at " + timeToNL,
+                        "kw:what's up here - Conditions in " + bestSpot.getShortName() + " at " + timeToNL,
                         "time - Where to surf at [time]?",
                         "day - Where to surf [day]?",
-                        "time,day - Where to surf [day] at [time]?"
+                        "time,day - Where to surf [day] at [time]?",
+                        bestTime == 6*60 ? "I want to sleep at sunrise - Where to surf " + intDayToNL(plusDays) + " except sunrise?" :
+                        "I can't at " + timeToNL + " - Where to surf " + intDayToNL(plusDays) + " except " + timeToNL + "?",
                 };
             }
 
@@ -521,13 +527,13 @@ public class CommandsExecutor {
                         "In " + bestSpot.getShortName(),
                         "In " + bestSpot.getShortName()
                 );
-                lastAnswer.waitForReply = true;
+//                lastAnswer.waitForReply = true;
                 lastAnswer.replyVariants = new String[]{
                         "[cond]" + bestSpot.getShortName() + " " + "now",
                         "[spot]" + bestSpot.getShortName() + " " + intDayToNL(0),
                         "[q]Where to surf today?",
                         "[q]Where to surf tomorrow?",
-                        "-Ok, thanks"
+                        "-[ok]Ok, thanks"
                 };
                 lastAnswer.replyInterpreters = new String[] {
                         "kw:conditions - Conditions in " + bestSpot.getShortName() + " now",
@@ -559,13 +565,13 @@ public class CommandsExecutor {
                         "In " + bestSpot.getShortName(),
                         "In " + bestSpot.getShortName()
                 );
-                lastAnswer.waitForReply = true;
+//                lastAnswer.waitForReply = true;
                 lastAnswer.replyVariants = new String[]{
                         "[spot]" + bestSpot.getShortName() + " " + intDayToNL(plusDays),
                         "[spot]" + bestSpot.getShortName() + " " + intDayToNL(plusDays) + " " + intTimeToNL(c.time),
                         "[q]Where to surf now?",
                         plusDays == 0 ? "[q]Where to surf tomorrow?" : "[q]Where to surf today?",
-                        "-Ok, thanks"
+                        "-[ok]Ok, thanks"
                 };
                 lastAnswer.replyInterpreters = new String[] {
                         "time - Where to surf " + intDayToNL(plusDays) + " at [time]?",
@@ -700,6 +706,7 @@ public class CommandsExecutor {
         }
         else {
             // TODO ans for unspecified time
+            lastAnswer = new Answer();
         }
         return lastAnswer;
     }

@@ -33,6 +33,9 @@ public class CircleAnimatedFrameLayout extends FrameLayout {
     }
 
 
+    Path p = new Path();
+    float pi = -1;
+
     @Override
     public void draw(Canvas canvas) {
         int width = getWidth();
@@ -53,10 +56,14 @@ public class CircleAnimatedFrameLayout extends FrameLayout {
 
         float r = (height - getPaddingTop()) * i;
 
-        Path p = new Path();
-        p.addCircle(state == 2 ? width *(1 - i*2/3) : width *i/3, height, r, Path.Direction.CCW);
+        if (pi != i) {
+            pi = i;
+            p.reset();
+            p.addCircle(state == 2 ? width * (1 - i * 2 / 3) : width * i / 3, height, r, Path.Direction.CCW);
 
-        bgShadow.setColor((int)(0xaa*i) * 0x1000000 | 0xaaaaaa);
+            bgShadow.setColor((int)(0xaa*i) * 0x1000000 | 0xaaaaaa);
+        }
+
         canvas.drawRect(0, 0, width, height, bgShadow);
 
         if (this.i == 1) {

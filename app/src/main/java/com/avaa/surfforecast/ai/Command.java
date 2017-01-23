@@ -1,5 +1,7 @@
 package com.avaa.surfforecast.ai;
 
+import android.util.Log;
+
 import com.avaa.surfforecast.AppContext;
 import com.avaa.surfforecast.data.Common;
 import com.avaa.surfforecast.data.SurfSpot;
@@ -29,6 +31,8 @@ public class Command {
     }
 
     public boolean fits(String s) {
+//        Log.i("Command", "fits("+s+")");
+
         if (spot != null && !s.contains("spot")) return false;
         if (day  != null && !s.contains("day"))  return false;
         if (time != null && !s.contains("time")) return false;
@@ -38,13 +42,17 @@ public class Command {
             }
         }
 
+//        Log.i("Command", "fits("+s+") | 2");
+
         String[] split = s.split(",");
 
         for (String si : split) {
             if ("spot".equals(si)) { if (spot == null) return false; }
             else if ("day".equals(si)) { if (day == null) return false; }
             else if ("time".equals(si)) { if (time == null) return false; }
-            else if (si.startsWith("kw:")) { if (keywords == null || keywords.contains(si.substring(2)) == false) return false; }
+            else if (si.startsWith("kw:")) {
+                //Log.i("Command", "fits("+s+") | " + keywords + " " + si.substring(3) + " - " + keywords.contains(si.substring(3)));
+                if (keywords == null || keywords.contains(si.substring(3)) == false) return false; }
         }
 
         return true;

@@ -24,7 +24,7 @@
             android:paddingRight="0dp">
 
             <TextView
-                android:id="@+id/tvHintTitle"
+                android:id="@+id/tvHintText"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:textSize="24dp"
