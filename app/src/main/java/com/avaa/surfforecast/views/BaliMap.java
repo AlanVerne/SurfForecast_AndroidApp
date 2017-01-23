@@ -415,6 +415,11 @@ public class BaliMap extends View {
         }
     }
 
+    float prevAwakenedState = 1;
+
+    float avex = 0;
+    float avey = 0;
+
     RectF shownSpotsBoundRect = null;
     PointF shownSpotsAverage = null;
     private void updateShownSpotsBoundRect() {
@@ -422,56 +427,59 @@ public class BaliMap extends View {
 
         shownSpotsBoundRect = null;
 
-        float x = 0;
-        float y = 0;
-        float sum = 0;
+        //if (prevAwakenedState >= awakenedState) {
+            float sum = 0;
 
-        for (SurfSpot spot : surfSpotsList) {
-            float highlighted = isHighlighted(i);
+            avex = 0;
+            avey = 0;
 
-            if (highlighted > 0) {
-                x   += spot.pointOnSVG.x * highlighted;
-                y   += spot.pointOnSVG.y * highlighted;
-                sum += highlighted;
+            for (SurfSpot spot : surfSpotsList) {
+                float highlighted = isHighlighted(i);
+
+                if (highlighted > 0) {
+                    avex += spot.pointOnSVG.x * highlighted;
+                    avey += spot.pointOnSVG.y * highlighted;
+                    sum += highlighted;
+                }
+
+                i++;
             }
 
-            i++;
-        }
+            //Log.i("BM", "updateShownSpotsBoundRect"+avex+" "+avey+" "+sum);
 
-        //Log.i("BM", "updateShownSpotsBoundRect"+x+" "+y+" "+sum);
-
-        if (sum == 0) {
-            x = 0;
-            y = 0;
-        }
-        else {
-            x /= sum;
-            y /= sum;
-        }
-
-        double rad = 0;
-
-        i = 0;
-        for (SurfSpot spot : surfSpotsList) {
-            float highlighted = isHighlighted(i);
-            if (highlighted == 1) {
-                float dx = spot.pointOnSVG.x - x;
-                float dy = spot.pointOnSVG.y - y;
-                rad = Math.max(rad, Math.sqrt(dx*dx+dy*dy));
+            if (sum == 0) {
+                avex = 0;
+                avey = 0;
+            } else {
+                avex /= sum;
+                avey /= sum;
             }
-            i++;
-        }
+        //}
+
+        prevAwakenedState = awakenedState;
+//        double rad = 0;
+//
+//        i = 0;
+//        for (SurfSpot spot : surfSpotsList) {
+//            float highlighted = isHighlighted(i);
+//            if (highlighted == 1) {
+//                float dx = spot.pointOnSVG.avex - avex;
+//                float dy = spot.pointOnSVG.avey - avey;
+//                rad = Math.max(rad, Math.sqrt(dx*dx+dy*dy));
+//            }
+//            i++;
+//        }
 
         float radf = 0;
 
-        SurfSpot spot = SurfSpots.getInstance().selectedSpot();
+        SurfSpot spot = surfSpots.selectedSpot();
         if (spot != null) {
-            x = awakenedState * spot.pointOnSVG.x + (1f - awakenedState) * x;
-            y = awakenedState * spot.pointOnSVG.y + (1f - awakenedState) * y;
+            avex = awakenedState * spot.pointOnSVG.x + (1f - awakenedState) * avex;
+            avey = awakenedState * spot.pointOnSVG.y + (1f - awakenedState) * avey;
         }
 
-        shownSpotsAverage = new PointF(x, y);
-        shownSpotsBoundRect = new RectF(x-radf, y-radf, x+radf, y+radf);
+        shownSpotsAverage = new PointF(avex, avey);
+        shownSpotsBoundRect = new RectF(avex-radf, avey-radf, avex+radf, avey+radf);
     }
 
 

@@ -19,10 +19,7 @@ import android.widget.LinearLayout;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
 
-import com.avaa.surfforecast.AppContext;
 import com.avaa.surfforecast.R;
-import com.avaa.surfforecast.data.Common;
-import com.avaa.surfforecast.data.SurfSpot;
 import com.avaa.surfforecast.views.CircleAnimatedFrameLayout;
 import com.avaa.surfforecast.views.CircleVoiceIndicator;
 import com.avaa.surfforecast.views.TwoCirclesAnimatedFrameLayout;
@@ -108,7 +105,7 @@ public class VoiceInterfaceFragment extends Fragment {
             }
             Log.i(TAG, "onResults()\n" + text);
 
-            String s = commandsExecutor.recognitionResultsToStringCommand(res.values());
+            String s = commandsExecutor.toStringCommand(res.values());
 
             if (s == null) uiHideHint();
             else {
@@ -133,7 +130,7 @@ public class VoiceInterfaceFragment extends Fragment {
         @Override
         public void onPartialResults(Bundle partialResults) {
             ArrayList<String> list = partialResults.getStringArrayList(SpeechRecognizer.RESULTS_RECOGNITION);
-            String result = commandsExecutor.recognitionResultsToStringCommand(list);
+            String result = commandsExecutor.toStringCommand(list);
             if (result != null) tvHintOptPrerecognized.setText(result);
         }
 
@@ -182,6 +179,7 @@ public class VoiceInterfaceFragment extends Fragment {
             btnMic.setBackground(getContext().getResources().getDrawable(R.drawable.round_button_transparent));
         }
         circleVoiceIndicator.setAwakened(false);
+        if (flHint.getState() != 1) btnMicImage.setAlpha(0.2f);
     }
 
 
@@ -229,6 +227,7 @@ public class VoiceInterfaceFragment extends Fragment {
         put("time", R.drawable.ic_access_time_black_24dp);
         put("date", R.drawable.ic_event_black_24dp);
         put("cond", R.drawable.ic_equalizer_black_24dp);
+        put("q", R.drawable.ic_help_outline_black_24dp);
         put("close", R.drawable.ic_clear_black_24dp);
         put("ok", R.drawable.ic_check_black_24dp);
     }};
@@ -315,10 +314,13 @@ public class VoiceInterfaceFragment extends Fragment {
     }
 
 
+    public void stopListening() {
+        speech.cancel();
+        uiNotListening();
+    }
     public void startListening() {
         if (circleVoiceIndicator.isAwakened()) {
-            speech.cancel();
-            uiNotListening();
+            stopListening();
             uiHideHint();
         }
         else {
@@ -424,7 +426,10 @@ public class VoiceInterfaceFragment extends Fragment {
         circleVoiceIndicator.x = 15*getResources().getDisplayMetrics().density;
         circleVoiceIndicator.y = 15*getResources().getDisplayMetrics().density;
 
-        flHint.bgClick = this::uiHideHint;
+        flHint.bgClick = () -> {
+            uiHideHint();
+            stopListening();
+        };
 
         return view;
     }

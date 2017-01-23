@@ -11,10 +11,13 @@
         android:paddingTop="230dp"
         android:background="#00000000">
 
+        <ScrollView
+            android:layout_width="match_parent"
+            android:layout_height="match_parent">
         <LinearLayout
             android:id="@+id/llHint"
             android:layout_width="match_parent"
-            android:layout_height="match_parent"
+            android:layout_height="wrap_content"
             android:orientation="vertical"
             android:paddingTop="70dp"
             android:paddingLeft="0dp"
@@ -26,7 +29,7 @@
                 android:layout_height="wrap_content"
                 android:textSize="24dp"
                 android:paddingLeft="60dp"
-                android:paddingRight="60dp"
+                android:paddingRight="90dp"
                 android:paddingBottom="18dp"
                 android:textColor="#222222"
                 android:text="Say!"/>
@@ -109,12 +112,14 @@
                 android:layout_width="wrap_content"
                 android:layout_height="36dp"
                 android:textSize="18dp"
-                android:layout_marginTop="24dp"
+                android:paddingTop="7dp"
+                android:paddingBottom="7dp"
                 android:paddingLeft="60dp"
                 android:paddingRight="60dp"
                 android:text="..."/>
 
         </LinearLayout>
+        </ScrollView>
     </com.avaa.surfforecast.views.CircleAnimatedFrameLayout>
 
     <com.avaa.surfforecast.views.TwoCirclesAnimatedFrameLayout

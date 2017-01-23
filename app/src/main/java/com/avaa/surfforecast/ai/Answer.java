@@ -73,6 +73,12 @@ public class Answer {
     }
 
 
+    public void addClarification(String s) {
+        if (clarification == null) clarification = CommandsExecutor.upperCaseFirstLetter(s);
+        else clarification += " " + s;
+    }
+
+
     @Override
     public String toString() {
         return "Answer{" +

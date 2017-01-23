@@ -89,17 +89,23 @@ public class SurfConditions {
         return 6;
     }
 
-    public float rate(SurfSpot spot, TideData tideData, int day, int time) {
-        if (waveRating != -1.0f) {
-//            Log.i("SurfConditions", "rate() | already rated: " + waveRating + ", " + windRating + ", " + tideRating);
-            return 0;
+
+    public void resetRating() {
+        waveRating = -1;
+        windRating = -1;
+        tideRating = -1;
+    }
+    private void rateWave(SurfSpot spot) {
+        if (spot.maxSwell - spot.minSwell != 0) {
+            float sweelHeightAve = (spot.maxSwell + spot.minSwell) / 2f;
+
+            waveRating = (getWaveHeightInFt() - sweelHeightAve) / (sweelHeightAve - spot.minSwell);
+            Log.i("SurfConditions", "rateWave() | " + spot.minSwell + "-" + sweelHeightAve + "-" + spot.maxSwell + ", " + getWaveHeightInFt() + " " + waveRating);
+            waveRating *= waveRating;
+            waveRating = 1 - waveRating;
         }
-
-        float sweelHeightAve = (spot.maxSwell - spot.minSwell) / 2;
-        waveRating = 1 - ((sweelHeightAve-spot.minSwell) == 0 ? 0 : (waveHeight-spot.minSwell-sweelHeightAve) / (sweelHeightAve-spot.minSwell));
-
-        windRating = 1f - (float)Math.abs(1f - (spot.getWindRelativeAngle(windAngle) - Math.PI) / Math.PI);
-
+    }
+    private void rateTide(SurfSpot spot, TideData tideData, int day, int time) {
         //String state = tideData.getState(day, time);
 
         Integer tide = tideData.getTide(day, time);
@@ -111,17 +117,31 @@ public class SurfConditions {
             if ((spot.tides & t0) != 0) tideRating = 0.8f;
 
             time += 60;
-            if (time > 24 * 60) { day++; time -= 24 * 60; }
+            if (time > 24 * 60) {
+                day++;
+                time -= 24 * 60;
+            }
             tide = tideData.getTide(day, time);
             if (tide != null) {
                 int t1 = TideData.tideToHML(tide);
-                if ((spot.tides & t1) != 0) tideRating -= 0.3f;
-                else tideRating += 0.2f;
+                if ((spot.tides & t1) != 0) tideRating += 0.2f;
+                else tideRating -= 0.3f;
             }
         }
+    }
+    private void rateWind(SurfSpot spot) {
+        windRating = 1f - (float) Math.abs((spot.getWindRelativeAngle(windAngle) - Math.PI) / Math.PI); // angle component
+        windRating = (float)Math.pow(windRating, windSpeed/10); // let 10km\h be a normal wind
+    }
 
-//        Log.i("SurfConditions", "rate() | rated: " + waveRating + ", " + windRating + ", " + tideRating);
 
-        return (waveRating - windRating) * tideRating;
+    public float rate(SurfSpot spot, TideData tideData, int day, int time) {
+        if (waveRating == -1) rateWave(spot);
+        rateTide(spot, tideData, day, time);
+        if (windRating == -1) rateWind(spot);
+
+        Log.i("SurfConditions", "rate() | " + spot.getShortName() + ", rated: " + waveRating + ", " + windRating + ", " + tideRating);
+
+        return waveRating * windRating * tideRating;
     }
 }

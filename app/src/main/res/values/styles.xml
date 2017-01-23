@@ -23,7 +23,7 @@
         <item name="android:layout_height">wrap_content</item>
         <!--<item name="android:layout_alignParentBottom">true</item>-->
         <item name="android:layout_alignParentLeft">true</item>
-        <item name="android:layout_marginTop">6.5dp</item>
+        <item name="android:layout_marginTop">7.5dp</item>
         <item name="android:layout_marginLeft">28dp</item>
         <!--<item name="android:scaleType">centerInside</item>-->
     </style>
@@ -39,8 +39,8 @@
         <item name="android:paddingLeft">60dp</item>
         <item name="android:paddingRight">60dp</item>
 
-        <item name="android:paddingTop">6dp</item>
-        <item name="android:paddingBottom">6dp</item>
+        <item name="android:paddingTop">7dp</item>
+        <item name="android:paddingBottom">7dp</item>
 
         <item name="android:gravity">left|center_vertical</item>
 

@@ -31,6 +31,7 @@ public class Command {
     public boolean fits(String s) {
         if (spot != null && !s.contains("spot")) return false;
         if (day  != null && !s.contains("day"))  return false;
+        if (time != null && !s.contains("time")) return false;
         if (keywords != null) {
             for (String keyword : keywords) {
                 if (!s.contains("kw:"+keyword)) return false;
@@ -42,6 +43,7 @@ public class Command {
         for (String si : split) {
             if ("spot".equals(si)) { if (spot == null) return false; }
             else if ("day".equals(si)) { if (day == null) return false; }
+            else if ("time".equals(si)) { if (time == null) return false; }
             else if (si.startsWith("kw:")) { if (keywords == null || keywords.contains(si.substring(2)) == false) return false; }
         }
 
