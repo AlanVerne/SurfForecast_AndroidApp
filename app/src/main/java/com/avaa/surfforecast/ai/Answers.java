@@ -83,26 +83,38 @@ public class Answers {
         return windAns(speed, angle, null);
     }
     public Answer windAns(int speed, float angle, SurfSpot spot) {
-        Direction angleDir = Direction.angleToDirection(angle);
+        Direction angleDir = null;
+        String angleDirStr = "";
+        String angleNL = "";
 
-        int angleDeg = (int) Math.round(angle / Math.PI * 4) * 45;
-        String angleNL = Direction.ANGLE_TO_LONG_STRING_DIRECTION.get(angleDeg);
+        if (angle >= 0) {
+            angleDir = Direction.angleToDirection(angle);
+            angleDirStr = angleDir.toString();
+
+            int angleDeg = (int) Math.round(angle / Math.PI * 4) * 45;
+            angleNL = Direction.ANGLE_TO_LONG_STRING_DIRECTION.get(angleDeg);
+        }
 
         if (spot == null) {
             String windNL = windToNL(speed, angleNL);
 
-            return new Answer("Wind:   " + speed + "km/h from " + angleDir.toString() + ".", windNL + ".");
+            return new Answer("Wind:   " + speed + "km/h from " + angleDirStr + ".", windNL + ".");
         }
         else {
             float windRelativeAngle = spot.getWindRelativeAngle(angle);
             //Log.i(TAG, "windAns() | " + windRelativeAngle);
 
-            String angleRelativeNL = windRelativeToNL(windRelativeAngle);
-            String angleRelativeString = windRelativeToString(windRelativeAngle);
+            String angleRelativeNL = "";
+            String angleRelativeString = "";
+
+            if (angle >= 0) {
+                angleRelativeNL = windRelativeToNL(windRelativeAngle);
+                angleRelativeString = windRelativeToString(windRelativeAngle);
+            }
 
             String windNL = windToNL(speed, angleRelativeNL);
 
-            return new Answer("Wind:   " + speed + "km/h\n" + angleRelativeString + " " + angleDir.toString(), windNL + ".");
+            return new Answer("Wind:   " + speed + "km/h\n" + angleRelativeString + " " + angleDirStr, windNL + ".");
         }
     }
     public Answer tideAns(TideData tideData, int plusDays, int time) {

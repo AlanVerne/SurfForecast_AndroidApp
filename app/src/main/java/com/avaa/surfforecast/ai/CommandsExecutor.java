@@ -42,7 +42,7 @@ public class CommandsExecutor {
             "in meters - in metres" + "\n" +
             "cancel - forget it,exit,close" + "\n" +
             "ok - good" + "\n" +
-            "where to surf - where to go,where's the seraph,where to serve,where are to surf" + "\n" +
+            "where to surf - why the surf,where to go,where's the seraph,where to serve,where are to surf" + "\n" +
             "what's up here - what's up there,what's a panera,what's on there,what's out there" + "\n" +
             "repeat" + "\n" +
 //            "don't want to surf - don't want to go to" + "\n" +
@@ -488,7 +488,7 @@ public class CommandsExecutor {
                 lastAnswer.replyVariants = new String[] {
                         "[spot]" + bestSpot.getShortName() + " " + intDayToNL(plusDays),
                         "[cond]" + bestSpot.getShortName() + " " + intDayToNL(plusDays) + " at " + timeToNL,
-                        bestTime == 6*60 ? "I want to sleep at sunrise" : "I can't at " + timeToNL,
+                        //bestTime == 6*60 ? "[i]I want to sleep at sunrise" : "[i]I can't at " + timeToNL,
                         "[q]Where to surf now?",
                         plusDays == 0 ? "[q]Where to surf tomorrow?" : "[q]Where to surf today?",
                         "-[ok]Ok, thanks"
@@ -503,7 +503,7 @@ public class CommandsExecutor {
                         "time - Where to surf at [time]?",
                         "day - Where to surf [day]?",
                         "time,day - Where to surf [day] at [time]?",
-                        bestTime == 6*60 ? "I want to sleep at sunrise - Where to surf " + intDayToNL(plusDays) + " except sunrise?" :
+                        //bestTime == 6*60 ? "I want to sleep at sunrise - Where to surf " + intDayToNL(plusDays) + " except sunrise?" :
                         "I can't at " + timeToNL + " - Where to surf " + intDayToNL(plusDays) + " except " + timeToNL + "?",
                 };
             }

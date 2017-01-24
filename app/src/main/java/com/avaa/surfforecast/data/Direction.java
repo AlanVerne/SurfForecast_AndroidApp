@@ -31,6 +31,7 @@ public enum Direction {
         put(90, "North");
         put(180, "West");
         put(270, "South");
+        put(360, "East");
         put(0+45, "North-east");
         put(90+45, "North-west");
         put(180+45, "South-west");

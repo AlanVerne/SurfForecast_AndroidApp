@@ -3,6 +3,7 @@ package com.avaa.surfforecast.views;
 import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
+import android.graphics.Interpolator;
 import android.graphics.Matrix;
 import android.graphics.Paint;
 import android.graphics.Path;
@@ -17,6 +18,7 @@ import android.hardware.SensorEvent;
 import android.hardware.SensorEventListener;
 import android.hardware.SensorManager;
 import android.os.Build;
+import android.support.v4.view.animation.FastOutSlowInInterpolator;
 import android.util.AttributeSet;
 import android.util.Log;
 import android.view.View;
@@ -383,7 +385,10 @@ public class BaliMap extends View {
             }
         }, 10000);
     }
+    public static final android.view.animation.Interpolator FAST_OUT_SLOW_IN_INTERPOLATOR = new android.support.v4.view.animation.FastOutSlowInInterpolator();
     public void setAwakenedState(float awakenedState) {
+        awakenedState = FAST_OUT_SLOW_IN_INTERPOLATOR.getInterpolation(awakenedState);
+
         if (this.awakenedState == awakenedState) return;
         this.awakenedState = awakenedState;
         if (awakenedState == 0 && hintsVisiblePolicy > 0) {

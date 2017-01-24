@@ -22,13 +22,15 @@ import android.widget.TextView;
 import com.avaa.surfforecast.R;
 import com.avaa.surfforecast.views.CircleAnimatedFrameLayout;
 import com.avaa.surfforecast.views.CircleVoiceIndicator;
-import com.avaa.surfforecast.views.TwoCirclesAnimatedFrameLayout;
+import com.avaa.surfforecast.views.AnswerFrameLayout;
 
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Locale;
 import java.util.Map;
 import java.util.TreeMap;
+
+import static com.avaa.surfforecast.views.AnswerFrameLayout.STRING_TO_DRAWABLE_RESOURCE;
 
 public class VoiceInterfaceFragment extends Fragment {
     private static final String TAG = "VoiceIntFr";
@@ -39,7 +41,6 @@ public class VoiceInterfaceFragment extends Fragment {
     View btnMicImage;
     CircleVoiceIndicator circleVoiceIndicator;
 
-    TwoCirclesAnimatedFrameLayout flHeader;
     CircleAnimatedFrameLayout flHint;
     LinearLayout llHint;
     TextView tvHintText;
@@ -201,10 +202,13 @@ public class VoiceInterfaceFragment extends Fragment {
     private void uiApprove(TextView tv) {
 
     }
-    private void uiHideHint() {
+    private void uiHideWelcomeHint() {
         if (!circleVoiceIndicator.isAwakened()) btnMicImage.setAlpha(0.2f);
         flHint.setVisibility(View.INVISIBLE);
-        flHeader.setVisibility(View.INVISIBLE);
+    }
+    private void uiHideHint() {
+        uiHideWelcomeHint();
+        if (ans != null) ans.setVisibility(View.INVISIBLE);
     }
 
 
@@ -219,18 +223,6 @@ public class VoiceInterfaceFragment extends Fragment {
         }
         tvHintText.setText(text);
     }
-
-
-    private static final Map<String, Integer> STRING_TO_DRAWABLE_RESOURCE = new HashMap<String, Integer>() {{
-        put("spot", R.drawable.ic_place_black_24dp);
-        put("cam", R.drawable.ic_camera_alt_black_24dp);
-        put("time", R.drawable.ic_access_time_black_24dp);
-        put("date", R.drawable.ic_event_black_24dp);
-        put("cond", R.drawable.ic_equalizer_black_24dp);
-        put("q", R.drawable.ic_help_outline_black_24dp);
-        put("close", R.drawable.ic_clear_black_24dp);
-        put("ok", R.drawable.ic_check_black_24dp);
-    }};
 
 
     private void uiSetOpts(String[] opts) {
@@ -290,24 +282,29 @@ public class VoiceInterfaceFragment extends Fragment {
         }
     }
 
+    AnswerFrameLayout ans;
+    AnswerFrameLayout prevAns;
 
     boolean waitingForAnswer = false;
     private void uiShowAnswer(Answer a) {
-        uiShowHint();
+        RelativeLayout answers = (RelativeLayout)view.findViewById(R.id.rlAnswers);
 
-        flHeader.setVisibility(View.VISIBLE);
+        prevAns = ans;
 
-        ((TextView)view.findViewById(R.id.tvHeader)).setText(a.forCommand);
-        ((TextView)view.findViewById(R.id.tvHeaderClarification)).setText(a.clarification);
+        ans = new AnswerFrameLayout(getContext(), null);
+        ans.set(a);
+        ans.bgClick = () -> ans.setVisibility(View.INVISIBLE);
+        ans.optClick = clHintOpt;
+        ans.onShown = () -> {
+            answers.removeView(prevAns);
+            uiHideWelcomeHint();
+        };
 
-        setHintText(a.toShow);
+        answers.addView(ans);
+
+        ans.setVisibility(View.VISIBLE);
 
         waitingForAnswer = a.waitForReply;
-
-        final int padding = waitingForAnswer ? 23 * 3 : 43 * 3;
-        tvHintText.setPadding(60*3, 0, 90*3, padding);
-
-        uiSetOpts(a.replyVariants);
     }
 
 
@@ -391,8 +388,6 @@ public class VoiceInterfaceFragment extends Fragment {
         btnMic = view.findViewById(R.id.btnMic);
         btnMicImage = view.findViewById(R.id.btnMicImage);
         circleVoiceIndicator = (CircleVoiceIndicator) view.findViewById(R.id.cvi);
-
-        flHeader = (TwoCirclesAnimatedFrameLayout)view.findViewById(R.id.flHeader);
 
         flHint = (CircleAnimatedFrameLayout) view.findViewById(R.id.flHint);
 

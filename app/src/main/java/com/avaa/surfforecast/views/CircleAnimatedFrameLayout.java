@@ -16,7 +16,7 @@ import android.widget.FrameLayout;
  */
 
 public class CircleAnimatedFrameLayout extends FrameLayout {
-    private static final FastOutSlowInInterpolator FAST_OUT_SLOW_IN_INTERPOLATOR = new FastOutSlowInInterpolator();
+    public static final FastOutSlowInInterpolator FAST_OUT_SLOW_IN_INTERPOLATOR = new FastOutSlowInInterpolator();
 
     private final Paint bgShadow = new Paint() {{ setAntiAlias(false); setColor(0xffffffff); }};
     private final Paint bgMain   = new Paint() {{ setAntiAlias(true);  setColor(0xffffffff); }};
