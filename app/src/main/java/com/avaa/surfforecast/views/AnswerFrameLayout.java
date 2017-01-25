@@ -105,7 +105,7 @@ public class AnswerFrameLayout extends FrameLayout {
         tvHeader1.setText(a.forCommand);
 
         tvHeader2.setText(a.clarification);
-        final int padding2 = a.clarification == null ? 13 * 3 : 53 * 3;
+        final int padding2 = a.clarification == null ? 13 * 3 : 60 * 3;
         tvHeader2.setPadding(60*3, 0*3, 90*3, padding2);
 
         tvText.setText(a.toShow);
@@ -164,6 +164,7 @@ public class AnswerFrameLayout extends FrameLayout {
     public Runnable bgClick = null;
     public OnClickListener optClick = null;
     public Runnable onShown = null;
+    public Runnable onHidden = null;
 
     Path p = new Path();
     float pi = -1;
@@ -227,6 +228,11 @@ public class AnswerFrameLayout extends FrameLayout {
             super.draw(canvas);
         }
         else {
+            if (this.i == 0 && state == 2) {
+                onHidden.run();
+                onHidden = null;
+            }
+
             canvas.save();
             canvas.clipPath(p);
 

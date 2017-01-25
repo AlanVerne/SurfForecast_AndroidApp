@@ -371,6 +371,7 @@ public class MyList extends FeaturedScrollView {
     public boolean onInterceptTouchEvent(MotionEvent ev) {
         if (ev.getAction() == MotionEvent.ACTION_DOWN) {
             //Log.i(TAG, "onInterceptTouchEvent() | " + awake + " " + prevTime + " " + awakeState);
+            if (awakeState == 0 && ev.getY() > dh*3) return false;
             if (!awake) {
                 ignoreSelectedViewSelection = true;
             }
@@ -383,7 +384,10 @@ public class MyList extends FeaturedScrollView {
     public boolean onTouchEvent(MotionEvent ev) {
         pointers = ev.getPointerCount();
 
-        if (ev.getAction() == MotionEvent.ACTION_DOWN) awake();
+        if (ev.getAction() == MotionEvent.ACTION_DOWN) {
+            if (awakeState == 0 && ev.getY() > dh*3) return false;
+            awake();
+        }
         if (ev.getAction() == MotionEvent.ACTION_MOVE) awake();
         else if (ev.getAction() == MotionEvent.ACTION_UP) {
             pointers--;

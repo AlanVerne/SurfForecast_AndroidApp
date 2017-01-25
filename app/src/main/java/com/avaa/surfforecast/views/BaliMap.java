@@ -18,6 +18,7 @@ import android.hardware.SensorManager;
 import android.os.Build;
 import android.util.AttributeSet;
 import android.util.Log;
+import android.view.MotionEvent;
 import android.view.View;
 import android.widget.Scroller;
 
@@ -353,6 +354,27 @@ public class BaliMap extends View {
         @Override
         public void onAccuracyChanged(Sensor sensor, int i) { }
     };
+
+
+    @Override
+    public boolean onTouchEvent(MotionEvent ev) {
+        Log.i(TAG, "onTouchEvent() | " + ev.getAction());
+
+        if (hintsVisiblePolicy == 1) {
+            if (hintsVisible != 1) {
+                if (!mScrollerHints.isFinished()) {
+                    mScrollerHints.abortAnimation();
+                    int dx = 1000 - mScrollerHints.getCurrX();
+                    mScrollerHints.startScroll(mScrollerHints.getCurrX(), 0, dx, 0, 333 * dx / 1000);
+                } else {
+                    mScrollerHints.startScroll(0, 0, 1000, 0, 333);
+                }
+            }
+            rescheduleHintsHide();
+        }
+
+        return super.onTouchEvent(ev);
+    }
 
 
     @Override

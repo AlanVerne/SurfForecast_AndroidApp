@@ -42,7 +42,9 @@ public class CommandsExecutor {
             "in meters - in metres" + "\n" +
             "cancel - forget it,exit,close" + "\n" +
             "ok - good" + "\n" +
-            "where to surf - why the surf,where to go,where's the seraph,where to serve,where are to surf" + "\n" +
+            "where to surf - where's the surf,where's the service,why the surf,where to go,where's the seraph,where to serve,where are to surf,what to serve" + "\n" +
+            "best spot - best sport,best sports,baysport,passport at"  + "\n" +
+//            "best waves"  + "\n" +
             "what's up here - what's up there,what's a panera,what's on there,what's out there" + "\n" +
             "repeat" + "\n" +
 //            "don't want to surf - don't want to go to" + "\n" +
@@ -73,7 +75,7 @@ public class CommandsExecutor {
             "Kuta - puta,cota,guta" + "\n" +
             "Balangan - bellingham,malanga,mehlingen,milan gun" + "\n" +
             "Dreamland - greenland,dream land,keeneland,finland,timland" + "\n" +
-            "Bingin - didn't get,bending,binging,ben king,ninjin,engine,bingen,benjen,bingeon,binging" + "\n" +
+            "Bingin - mingin,minghin,mean king,new king,eugene,didn't get,bending,binging,ben king,ninjin,engine,bingen,benjen,bingeon,binging" + "\n" +
             "Impossibles - impossible,imposibles,kim possible,kim possible's" + "\n" +
             "Padang-Padang - padang padang,pandanan,adam adam,adam,badung,banana banana,badonkadonk,padam padam,button button" + "\n" +
             "Uluwatu - palo alto,hello weather,all weather,all the weather,blue waffle,hello motto,aluminum,uidaho,all idaho,old idaho,idaho,lovato,all lotto,or lotto,whole lotta,holy water" + "\n" +
@@ -258,8 +260,8 @@ public class CommandsExecutor {
         else if (!slDayhits.isEmpty()) s = s == null ? slDayhits.get(0).getValue() : s + " " + slDayhits.get(0).getValue();
 
         if (!(!dayhits.isEmpty() && dayhits.contains("now") || dayhits.isEmpty() && !slDayhits.isEmpty() && "now".equals(slDayhits.get(0)))) {
-            if (!timehits.isEmpty()) s = s == null ? timehits.get(0) : s + " " + timehits.get(0);
-            else if (!slTimeHits.isEmpty()) s = s == null ? slTimeHits.get(0).getValue() : s + " " + slTimeHits.get(0).getValue();
+            if (!timehits.isEmpty()) s = s == null ? timehits.get(0) : s + " at " + timehits.get(0);
+            else if (!slTimeHits.isEmpty()) s = s == null ? slTimeHits.get(0).getValue() : s + " at " + slTimeHits.get(0).getValue();
         }
 
         if (s != null ) {
@@ -334,9 +336,12 @@ public class CommandsExecutor {
     }
     public String intTimeToNL(int time) {
         for (Map.Entry<String, Integer> e : AppContext.instance.commandsExecutor.sToTime.entrySet()) {
-            if (time == e.getValue()) return e.getKey().trim();
+            if (time == e.getValue()) {
+                if (time == -1) return e.getKey().trim();
+                else return "at " + e.getKey().trim();
+            }
         }
-        return null;
+        return "at " + (time / 60) + " o'clock";
     }
 
 
@@ -405,7 +410,8 @@ public class CommandsExecutor {
         if (c.keywords != null) {
             List<String> keywords = c.keywords;
 
-            if (keywords.contains("where to surf")) {
+            if (keywords.contains("where to surf")
+                    || keywords.contains("best spot")) {
                 lastAnswer = commandWhereToSurf(c);
             }
             else if (keywords.contains("camera")) {
@@ -442,6 +448,9 @@ public class CommandsExecutor {
     private Answer commandWhereToSurf(Command c) {
         int nowTimeInt = Common.getNowTimeInt(Common.TIME_ZONE);
 
+        String prefix = "";
+        if (c.keywords.contains("where to surf")) prefix = "In ";
+
         lastAnswer = new Answer();
 
         float best = -1000;
@@ -460,9 +469,11 @@ public class CommandsExecutor {
             TideData tideData = appContext.tideDataProvider.getTideData(Common.BENOA_PORT_ID);
             for (SurfSpot surfSpot : appContext.surfSpots.getFavoriteSurfSpotsList()) {
                 SurfConditionsOneDay surfConditionsOneDay = surfSpot.conditionsProvider.get(plusDays);
+                if (surfConditionsOneDay == null) continue;
                 for (Map.Entry<Integer, SurfConditions> entry : surfConditionsOneDay.entrySet()) {
                     Integer time = entry.getKey();
-                    if ((plusDays == 0 && time < nowTimeInt-120) || time < 5*60 || time > 19*60) continue;
+                    if ((plusDays == 0 && time < nowTimeInt - 120) || time < 5 * 60 || time > 19 * 60)
+                        continue;
                     float rate = entry.getValue().rate(surfSpot, tideData, plusDays, time);
                     if (rate > best) {
                         best = rate;
@@ -474,46 +485,52 @@ public class CommandsExecutor {
 
             if (bestSpot == null) lastAnswer = new Answer("IDKN");
             else {
+                String intDayToNL = intDayToNL(plusDays);
+
                 bestTime += 60;
 
-                String s = "In " + bestSpot.getShortName();
+                String s = prefix + bestSpot.getShortName();
                 String timeToNL = intTimeToNL(bestTime);
-                if (timeToNL == null) timeToNL = (bestTime / 60) + " o'clock";
-                s += " at " + timeToNL;
+                s += " " + timeToNL;
+
                 lastAnswer = new Answer(
                         s,
                         s
                 );
 //                lastAnswer.waitForReply = true;
                 lastAnswer.replyVariants = new String[] {
-                        "[spot]" + bestSpot.getShortName() + " " + intDayToNL(plusDays),
-                        "[cond]" + bestSpot.getShortName() + " " + intDayToNL(plusDays) + " at " + timeToNL,
+                        "[spot]" + bestSpot.getShortName() + " " + intDayToNL,
+                        //"[cond]" + bestSpot.getShortName() + " " + intDayToNL + " " + timeToNL,
+                        "[cond]Conditions will be?",
                         //bestTime == 6*60 ? "[i]I want to sleep at sunrise" : "[i]I can't at " + timeToNL,
-                        "[q]Where to surf now?",
-                        plusDays == 0 ? "[q]Where to surf tomorrow?" : "[q]Where to surf today?",
+                        "[q]Now?", //"[q]Where to surf now?",
+                        //plusDays == 0 ? "[q]Where to surf tomorrow?" : "[q]Where to surf today?",
+                        plusDays == 0 ? "[q]Tomorrow?" : "[q]Today?",
+                        bestTime > 12*60 ? "[q]At sunrise?" : "[q]At sunset?",
                         "-[ok]Ok, thanks"
                 };
                 lastAnswer.replyInterpreters = new String[] {
-                        "kw:conditions - Conditions in " + bestSpot.getShortName() + " at " + timeToNL,
-                        "kw:waves - Waves in " + bestSpot.getShortName() + " at " + timeToNL,
-                        "kw:swell - Swell in " + bestSpot.getShortName() + " at " + timeToNL,
-                        "kw:wind - Wind in " + bestSpot.getShortName() + " at " + timeToNL,
-                        "kw:tide - Tide in " + bestSpot.getShortName() + " at " + timeToNL,
-                        "kw:what's up here - Conditions in " + bestSpot.getShortName() + " at " + timeToNL,
-                        "time - Where to surf at [time]?",
+                        "kw:conditions - Conditions in " + bestSpot.getShortName() + " " + intDayToNL + " " + timeToNL,
+                        "kw:waves - Waves in " + bestSpot.getShortName() + " " + timeToNL,
+                        "kw:swell - Swell in " + bestSpot.getShortName() + " " + timeToNL,
+                        "kw:wind - Wind in " + bestSpot.getShortName() + " " + timeToNL,
+                        "kw:tide - Tide in " + bestSpot.getShortName() + " " + timeToNL,
+                        "kw:what's up here - Conditions in " + bestSpot.getShortName() + " " + timeToNL,
+                        "time,day - Where to surf [day] [time]?",
+                        "time - Where to surf " + intDayToNL + " [time]?",
                         "day - Where to surf [day]?",
-                        "time,day - Where to surf [day] at [time]?",
                         //bestTime == 6*60 ? "I want to sleep at sunrise - Where to surf " + intDayToNL(plusDays) + " except sunrise?" :
-                        "I can't at " + timeToNL + " - Where to surf " + intDayToNL(plusDays) + " except " + timeToNL + "?",
+                        "I can't at " + timeToNL + " - Where to surf " + intDayToNL + " except " + timeToNL + "?",
                 };
             }
 
             if (c.day == null) lastAnswer.addClarification(intDayToNL(plusDays));
         }
-        else if (c.day == 0 && c.time == -1) {      //      time now
+        else if ((c.day != null && c.day == 0) && c.time == -1) {      //      time now
             TideData tideData = appContext.tideDataProvider.getTideData(Common.BENOA_PORT_ID);
             for (SurfSpot surfSpot : appContext.surfSpots.getFavoriteSurfSpotsList()) {
                 SurfConditions surfConditions = surfSpot.conditionsProvider.getNow();
+                if (surfConditions == null) continue;
                 float rate = surfConditions.rate(surfSpot, tideData, 0, nowTimeInt);
                 if (rate > best) {
                     best = rate;
@@ -524,15 +541,15 @@ public class CommandsExecutor {
             if (bestSpot == null) lastAnswer = new Answer("IDKN");
             else {
                 lastAnswer = new Answer(
-                        "In " + bestSpot.getShortName(),
-                        "In " + bestSpot.getShortName()
+                        prefix + bestSpot.getShortName(),
+                        prefix + bestSpot.getShortName()
                 );
 //                lastAnswer.waitForReply = true;
                 lastAnswer.replyVariants = new String[]{
-                        "[cond]" + bestSpot.getShortName() + " " + "now",
+                        "[cond]Conditions are?",
                         "[spot]" + bestSpot.getShortName() + " " + intDayToNL(0),
-                        "[q]Where to surf today?",
-                        "[q]Where to surf tomorrow?",
+                        "[q]Today?",
+                        "[q]Tomorrow?",
                         "-[ok]Ok, thanks"
                 };
                 lastAnswer.replyInterpreters = new String[] {
@@ -542,9 +559,9 @@ public class CommandsExecutor {
                         "kw:wind - Wind in " + bestSpot.getShortName() + " now",
                         "kw:tide - Tide in " + bestSpot.getShortName() + " now",
                         "kw:what's up there - Conditions in " + bestSpot.getShortName() + " now",
-                        "time - Where to surf at [time]?",
+                        "time - Where to surf [time]?",
                         "day - Where to surf [day]?",
-                        "time,day - Where to surf [day] at [time]?"
+                        "time,day - Where to surf [day] [time]?"
                 };
             }
         }
@@ -552,6 +569,7 @@ public class CommandsExecutor {
             TideData tideData = appContext.tideDataProvider.getTideData(Common.BENOA_PORT_ID);
             for (SurfSpot surfSpot : appContext.surfSpots.getFavoriteSurfSpotsList()) {
                 SurfConditions surfConditions = surfSpot.conditionsProvider.get(plusDays).get((int)(c.time));
+                if (surfConditions == null) continue;
                 float rate = surfConditions.rate(surfSpot, tideData, plusDays, c.time);
                 if (rate > best) {
                     best = rate;
@@ -562,21 +580,23 @@ public class CommandsExecutor {
             if (bestSpot == null) lastAnswer = new Answer("IDKN");
             else {
                 lastAnswer = new Answer(
-                        "In " + bestSpot.getShortName(),
-                        "In " + bestSpot.getShortName()
+                        prefix + bestSpot.getShortName(),
+                        prefix + bestSpot.getShortName()
                 );
 //                lastAnswer.waitForReply = true;
                 lastAnswer.replyVariants = new String[]{
                         "[spot]" + bestSpot.getShortName() + " " + intDayToNL(plusDays),
-                        "[spot]" + bestSpot.getShortName() + " " + intDayToNL(plusDays) + " " + intTimeToNL(c.time),
+                        "[cond]Conditions will be?",
                         "[q]Where to surf now?",
-                        plusDays == 0 ? "[q]Where to surf tomorrow?" : "[q]Where to surf today?",
+                        plusDays == 0 ? "[q]Tomorrow?" : "[q]Today?",
+                        c.time > 12*60 ? "[q]At sunrise?" : "[q]At sunset?",
                         "-[ok]Ok, thanks"
                 };
                 lastAnswer.replyInterpreters = new String[] {
-                        "time - Where to surf " + intDayToNL(plusDays) + " at [time]?",
+                        "kw:conditions - Conditions in " + bestSpot.getShortName() + " " + intDayToNL(plusDays) + " " + intTimeToNL(c.time),
+                        "time - Where to surf " + intDayToNL(plusDays) + " [time]?",
                         "day - Where to surf [day]?",
-                        "time,day - Where to surf [day] at [time]?"
+                        "time,day - Where to surf [day] [time]?"
                 };
             }
         }
@@ -688,19 +708,29 @@ public class CommandsExecutor {
                 lastAnswer.add(forNowTime ? answers.windNow() : answers.wind(plusDays, time));
 
             if (!lastAnswer.isEmpty() && lastAnswer.toSay != null) {
-                lastAnswer.replyVariants = new String[]{
-                        "[spot]" + surfSpot.getShortName() + " " + intDayToNL(plusDays),
-                        "[q]Where to surf now?",
-                        "[q]Where to surf today?",
-                        "[q]Where to surf tomorrow?",
-                        "-[ok]Ok, thanks"};
+                if (nowTimeInt > 18*60) {
+                    lastAnswer.replyVariants = new String[]{
+                            "[spot]" + surfSpot.getShortName() + " " + intDayToNL(plusDays),
+                            "[q]Where to surf tomorrow?",
+                            "[q]Where to surf tomorrow at sunrise?",
+                            "[q]Where to surf tomorrow at sunset?",
+                            "-[ok]Ok, thanks"};
+                }
+                else {
+                    lastAnswer.replyVariants = new String[]{
+                            "[spot]" + surfSpot.getShortName() + " " + intDayToNL(plusDays),
+                            "[q]Where to surf now?",
+                            "[q]Where to surf today?",
+                            "[q]Where to surf tomorrow?",
+                            "-[ok]Ok, thanks"};
+                }
                 lastAnswer.replyInterpreters = new String[]{
                         "kw:ok - Hide ai",
                         "day,time,spot - Conditions [day] [time] for [spot]",
                         "day,time - Conditions [day] [time]",
-                        "kw:tide - Tide for " + surfSpot.getShortName() + " at " + intTimeToNL(time) + " " + intDayToNL(plusDays),
-                        "kw:swell - Swell in " + surfSpot.getShortName() + " at " + intTimeToNL(time) + " " + intDayToNL(plusDays),
-                        "kw:wind - Wind in " + surfSpot.getShortName() + " at " + intTimeToNL(time) + " " + intDayToNL(plusDays)
+                        "kw:tide - Tide for " + surfSpot.getShortName() + " " + intTimeToNL(time) + " " + intDayToNL(plusDays),
+                        "kw:swell - Swell in " + surfSpot.getShortName() + " " + intTimeToNL(time) + " " + intDayToNL(plusDays),
+                        "kw:wind - Wind in " + surfSpot.getShortName() + " " + intTimeToNL(time) + " " + intDayToNL(plusDays)
                 };
             }
         }

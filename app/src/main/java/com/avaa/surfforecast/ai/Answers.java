@@ -125,7 +125,7 @@ public class Answers {
         String state = tideData.getState(Common.getDay(plusDays, Common.TIME_ZONE), time);
 
         return new Answer("Tide:   " + TideData.intToString(h) + "m, " + state.toLowerCase(),
-                floatToNL(h / 100f) + " m, " + state.toLowerCase() + " tide.");
+                floatToMeters(h / 100f) + ", " + state + " tide.");
     }
     public Answer tideNowAns(TideData tideData) {
         Integer h = tideData.getNow();
@@ -135,6 +135,13 @@ public class Answers {
         String state = tideData.getStateNow().toLowerCase();
 
         return new Answer("Tide:   " + TideData.intToString(h) + "m, " + state,
-                floatToNL(h / 100f) + " m " + state + " tide.");
+                floatToMeters(h / 100f) + ", " + state + " tide.");
+    }
+
+    // --
+
+    private static String floatToMeters(float f) {
+        String floatToNL = floatToNL(f);
+        return ("1".equals(floatToNL) ? "1 meter" : floatToNL + " meters");
     }
 }

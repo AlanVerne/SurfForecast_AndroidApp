@@ -7,7 +7,7 @@
     <uses-permission android:name="android.permission.RECORD_AUDIO"/>
     <application
         android:allowBackup="true"
-        android:icon="@mipmap/ico6"
+        android:icon="@mipmap/ico6r2"
         android:label="@string/app_name"
         android:supportsRtl="true"
         android:theme="@style/AppTheme.NoActionBar">

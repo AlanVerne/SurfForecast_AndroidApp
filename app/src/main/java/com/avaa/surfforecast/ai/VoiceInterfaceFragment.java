@@ -168,7 +168,7 @@ public class VoiceInterfaceFragment extends Fragment {
         }
         else {
             startListening();
-            uiShowHint();
+            uiShowWelcomeHint();
         }
     }
 
@@ -190,8 +190,8 @@ public class VoiceInterfaceFragment extends Fragment {
     }
 
 
-    private void uiShowHint() {
-        if (flHint.getState() == 1) return;
+    private void uiShowWelcomeHint() {
+        if (flHint.getState() == 1 || (ans != null && ans.getState() <= 1)) return;
 
         btnMicImage.setAlpha(0.95f);
         flHint.setVisibility(View.VISIBLE);
@@ -299,10 +299,18 @@ public class VoiceInterfaceFragment extends Fragment {
 
         ans = new AnswerFrameLayout(getContext(), null);
         ans.set(a);
-        ans.bgClick = () -> ans.setVisibility(View.INVISIBLE);
+        ans.bgClick = () -> {
+            ans.setVisibility(View.INVISIBLE);
+        };
         ans.optClick = clHintOpt;
         ans.onShown = () -> {
             answers.removeView(prevAns);
+            prevAns = null;
+            uiHideWelcomeHint();
+        };
+        ans.onHidden = () -> {
+            answers.removeView(ans);
+            ans = null;
             uiHideWelcomeHint();
         };
 
@@ -330,7 +338,10 @@ public class VoiceInterfaceFragment extends Fragment {
             uiListening();
 
             Intent intent = new Intent(RecognizerIntent.ACTION_RECOGNIZE_SPEECH);
-//            intent.putExtra(RecognizerIntent.EXTRA_LANGUAGE, Locale.ENGLISH.toString());
+
+            intent.putExtra(RecognizerIntent.EXTRA_LANGUAGE, Locale.ENGLISH.toString());
+            intent.putExtra("android.speech.extra.EXTRA_ADDITIONAL_LANGUAGES", new String[]{Locale.ENGLISH.toString()});
+
 //            intent.putExtra("android.speech.extra.EXTRA_ADDITIONAL_LANGUAGES", new String[]{new Locale("ru", "RU").toString()});
 //            intent.putExtra(RecognizerIntent.EXTRA_WEB_SEARCH_ONLY, false);
 //            intent.putExtra(RecognizerIntent.EXTRA_SPEECH_INPUT_MINIMUM_LENGTH_MILLIS, 5000);
@@ -369,7 +380,7 @@ public class VoiceInterfaceFragment extends Fragment {
                     public void onDone(String utteranceId) {
                         flHint.post(() -> {
                             if (!waitingForAnswer) {
-                                flHint.postDelayed(() -> uiHideHint(), 3000);
+                                //flHint.postDelayed(() -> uiHideHint(), 6000);
                             }
                             else {
                                 flHint.postDelayed(() -> startListening(), 250);
