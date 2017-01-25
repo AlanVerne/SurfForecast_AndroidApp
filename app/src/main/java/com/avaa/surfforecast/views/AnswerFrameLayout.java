@@ -8,6 +8,7 @@ import android.os.Build;
 import android.os.SystemClock;
 import android.support.v4.view.animation.FastOutSlowInInterpolator;
 import android.util.AttributeSet;
+import android.util.TypedValue;
 import android.view.ViewGroup;
 import android.widget.FrameLayout;
 import android.widget.LinearLayout;
@@ -18,6 +19,7 @@ import android.widget.TextView;
 import com.avaa.surfforecast.AppContext;
 import com.avaa.surfforecast.R;
 import com.avaa.surfforecast.ai.Answer;
+import com.avaa.surfforecast.drawers.MetricsAndPaints;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -27,18 +29,22 @@ import java.util.Map;
  */
 
 public class AnswerFrameLayout extends FrameLayout {
-    ScrollView sv;
-    LinearLayout ll;
-    TextView tvHeader1;
-    TextView tvHeader2;
+    private final MetricsAndPaints metricsAndPaints;
 
-    TextView tvText;
+    private ScrollView sv;
+    private LinearLayout ll;
+    private TextView tvHeader1;
+    private TextView tvHeader2;
 
-    RelativeLayout[] rlOpts;
+    private TextView tvText;
+
+    private RelativeLayout[] rlOpts;
 
 
     public AnswerFrameLayout(Context context, AttributeSet attrs) {
         super(context, attrs);
+
+        metricsAndPaints = AppContext.instance.metricsAndPaints;
 
         setLayoutParams(new LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT));
 
@@ -51,19 +57,19 @@ public class AnswerFrameLayout extends FrameLayout {
 
         tvHeader1 = new TextView(context);
         tvHeader1.setTextColor(0xffffffff);
-        tvHeader1.setTextSize(24);
+        tvHeader1.setTextSize(TypedValue.COMPLEX_UNIT_PX, metricsAndPaints.fontHeader);
         tvHeader1.setPadding(60*3, 60*3, 90*3, 23*3);
         tvHeader1.setLayoutParams(new LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT));
 
         tvHeader2 = new TextView(context);
         tvHeader2.setTextColor(0xffffffff);
-        tvHeader2.setTextSize(18);
+        tvHeader2.setTextSize(TypedValue.COMPLEX_UNIT_PX, metricsAndPaints.fontBig);
         tvHeader2.setPadding(60*3, 0*3, 90*3, 43*3);
         tvHeader2.setLayoutParams(new LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT));
 
         tvText = new TextView(context);
         tvText.setTextColor(0xff000000);
-        tvText.setTextSize(18);
+        tvText.setTextSize(TypedValue.COMPLEX_UNIT_PX, metricsAndPaints.fontBig);
         tvText.setPadding(60*3, 43*3, 90*3, 23*3);
         tvText.setLayoutParams(new LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT));
 
@@ -104,8 +110,8 @@ public class AnswerFrameLayout extends FrameLayout {
 
         tvText.setText(a.toShow);
 
-        if (a.toShow.length() > 50) tvText.setTextSize(18);
-        else tvText.setTextSize(24);
+        if (a.toShow.length() > 50) tvText.setTextSize(TypedValue.COMPLEX_UNIT_PX, metricsAndPaints.fontBig);
+        else tvText.setTextSize(TypedValue.COMPLEX_UNIT_PX, metricsAndPaints.fontHeader);
 
         final int padding = a.waitForReply ? 23 * 3 : 43 * 3;
         tvText.setPadding(60*3, 63*3, 90*3, padding);
@@ -132,6 +138,7 @@ public class AnswerFrameLayout extends FrameLayout {
                 }
 
                 ((TextView)rlOpts[i].findViewById(R.id.tv)).setText(s);
+                ((TextView)rlOpts[i].findViewById(R.id.tv)).setTextSize(TypedValue.COMPLEX_UNIT_PX, metricsAndPaints.fontBig);;
 
                 int finalI = i;
                 rlOpts[i].findViewById(R.id.tv).setOnClickListener(v -> {

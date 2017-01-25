@@ -18,8 +18,8 @@ import android.widget.HorizontalScrollView;
 import android.widget.LinearLayout;
 
 import com.avaa.surfforecast.AppContext;
-import com.avaa.surfforecast.drawers.ConditionsDrawer;
 import com.avaa.surfforecast.MainActivity;
+import com.avaa.surfforecast.drawers.ForecastBitmapsAsyncDrawer;
 import com.avaa.surfforecast.drawers.TideDrawer;
 import com.avaa.surfforecast.data.Common;
 import com.avaa.surfforecast.data.SurfSpot;
@@ -58,13 +58,12 @@ public class SurfConditionsForecastView extends HorizontalScrollView { //extends
     private TideDrawer tideDrawer = null;
 
     public final ForecastBitmaps[] bitmaps = new ForecastBitmaps[7];
-    public final ConditionsDrawer condDrawer;
     private int dh = 0;
 
 
     public static class ForecastBitmaps {
-        Bitmap wave;
-        Bitmap wind;
+        public Bitmap wave;
+        public Bitmap wind;
     }
 
     public interface OnScrollChangedListener {
@@ -153,14 +152,10 @@ public class SurfConditionsForecastView extends HorizontalScrollView { //extends
     }
     public SurfConditionsForecastView(Context context, AttributeSet attrs) {
         super(context, attrs);
-        float density = getResources().getDisplayMetrics().density;
-        condDrawer = new ConditionsDrawer(density);
         init();
     }
     public SurfConditionsForecastView(Context context, AttributeSet attrs, int defStyleAttr) {
         super(context, attrs, defStyleAttr);
-        float density = getResources().getDisplayMetrics().density;
-        condDrawer = new ConditionsDrawer(density);
         init();
     }
     private void init() {
@@ -203,7 +198,7 @@ public class SurfConditionsForecastView extends HorizontalScrollView { //extends
         if (this.dh == dh) return;
 
         this.dh = dh;
-        condDrawer.setDH(dh);
+        //condDrawer.setDH(dh);
 
         paintLabels = new Paint() {{
             setAntiAlias(true);
@@ -216,7 +211,7 @@ public class SurfConditionsForecastView extends HorizontalScrollView { //extends
         labelsY = (dh - textH)/2;
         paintHours = new Paint() {{
             setAntiAlias(true);
-            setTextSize(condDrawer.conditionsFontSize);
+            setTextSize(AppContext.instance.metricsAndPaints.font);
             setColor(0x66ffffff);
             setTextAlign(Align.RIGHT);
         }};
@@ -227,8 +222,8 @@ public class SurfConditionsForecastView extends HorizontalScrollView { //extends
         iv.setMinimumHeight(getHeight());
         iv.setLayoutParams(new LayoutParams(dh * 16 * 7, getHeight()));
 
-        if (tideDrawer == null) tideDrawer = new TideDrawer(this, condDrawer);
-        else tideDrawer.updateDrawer(condDrawer);
+        if (tideDrawer == null) tideDrawer = new TideDrawer(this);
+        else tideDrawer.updateDrawer();
 
         redrawSurfConditions();
 
@@ -321,7 +316,7 @@ public class SurfConditionsForecastView extends HorizontalScrollView { //extends
             canvas.translate(dh + getScrollX() - labelsY, getHeight());
             canvas.rotate(-90);
 
-            paintLabels.setColor(((int) (0x66 * visible)) << 24 | 0xffffff);
+            paintLabels.setColor(((int)(0x66 * visible)) << 24 | 0xffffff);
 
             Calendar calendar = GregorianCalendar.getInstance(Common.TIME_ZONE);
             calendar.set(calendar.get(Calendar.YEAR), calendar.get(Calendar.MONTH), calendar.get(Calendar.DAY_OF_MONTH), 0, 0, 0);
@@ -425,14 +420,14 @@ public class SurfConditionsForecastView extends HorizontalScrollView { //extends
 
 
 
-    ForecastImagesAsyncDrawer fiad = null;
+    public ForecastBitmapsAsyncDrawer forecastBitmapsAsyncDrawer = null;
     public void redrawSurfConditions() {
         Log.i(TAG, "redrawSurfConditions() | 1");
         if (dh == 0) return;
         Integer[] shownDays = getShownDays();
         SurfSpot surfSpot = SurfSpots.getInstance().selectedSpot();
 
-        if (fiad != null && fiad.getStatus() != AsyncTask.Status.FINISHED) fiad.cancel(true);
+        if (forecastBitmapsAsyncDrawer != null && forecastBitmapsAsyncDrawer.getStatus() != AsyncTask.Status.FINISHED) forecastBitmapsAsyncDrawer.cancel(true);
 
         if (surfSpot == null || surfSpot.conditionsProvider.isNoData()) {
             Log.i(TAG, "redrawSurfConditions() | cancelled" +
@@ -448,8 +443,8 @@ public class SurfConditionsForecastView extends HorizontalScrollView { //extends
         }
         Log.i(TAG, "redrawSurfConditions() | 2");
 
-        fiad = new ForecastImagesAsyncDrawer(surfSpot, 0, new ArrayList<>(Arrays.asList(shownDays)), this);
-        fiad.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
+        forecastBitmapsAsyncDrawer = new ForecastBitmapsAsyncDrawer(surfSpot, 0, new ArrayList<>(Arrays.asList(shownDays)), this);
+        forecastBitmapsAsyncDrawer.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
     }
     public void redrawTide() {
         if (tideDrawer != null && tideDrawer.updateBitmaps()) {

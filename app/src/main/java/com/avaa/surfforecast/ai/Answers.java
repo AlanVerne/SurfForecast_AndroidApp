@@ -114,7 +114,7 @@ public class Answers {
 
             String windNL = windToNL(speed, angleRelativeNL);
 
-            return new Answer("Wind:   " + speed + "km/h\n" + angleRelativeString + " " + angleDirStr, windNL + ".");
+            return new Answer("Wind:   " + speed + "km/h " + angleDirStr + "\n" + angleRelativeString, windNL + ".");
         }
     }
     public Answer tideAns(TideData tideData, int plusDays, int time) {

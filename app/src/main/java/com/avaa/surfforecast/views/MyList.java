@@ -232,7 +232,7 @@ public class MyList extends FeaturedScrollView {
 
 
     private boolean isViewSelectable(View v) {
-        return ((TextView)v).getTextSize() >= dh;
+        return ((TextView)v).getTextSize() > dh/2f;
     }
 
 
@@ -261,6 +261,7 @@ public class MyList extends FeaturedScrollView {
         select(view);
     }
     public void select(View view) {
+        if (view == null) return;
         //Log.i(TAG, "select() | " + "ignoreSelectedViewSelection = " + ignoreSelectedViewSelection);
         if (ignoreSelectedViewSelection) {
             ignoreSelectedViewSelection = false;

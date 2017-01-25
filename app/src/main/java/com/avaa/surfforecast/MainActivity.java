@@ -30,6 +30,7 @@ import com.avaa.surfforecast.data.SurfConditionsProvider;
 import com.avaa.surfforecast.data.SurfSpot;
 import com.avaa.surfforecast.data.SurfSpots;
 import com.avaa.surfforecast.data.TideDataProvider;
+import com.avaa.surfforecast.drawers.MetricsAndPaints;
 import com.avaa.surfforecast.views.BaliMap;
 import com.avaa.surfforecast.views.MyList;
 import com.avaa.surfforecast.views.OneDayConditionsSmallView;
@@ -365,6 +366,8 @@ public class MainActivity extends AppCompatActivity {
             int maxDH = (int)(Math.min(mainLayout.getWidth(), mainLayout.getHeight()) / 6.5 / 2);
             dh = Math.min(maxDH, Math.max(minDH, dh));
 
+            appContext.metricsAndPaints = new MetricsAndPaints(density, dh);
+
             forecast.setDH(dh);
 
             ViewGroup.LayoutParams mParams = spotsRL.getLayoutParams();
@@ -438,13 +441,16 @@ public class MainActivity extends AppCompatActivity {
         int i = 0;
         SurfSpots surfSpots = appContext.surfSpots;
         int ssi = surfSpots.selectedSpotI;
+
+        MetricsAndPaints metricsAndPaints = appContext.metricsAndPaints;
+
         for (com.avaa.surfforecast.data.SurfSpot SurfSpot : surfSpots.getAll()) {
             if (surfSpots.categories.containsKey(i)) {
                 TextView textView = new TextView(this);
                 FrameLayout.LayoutParams lparams = new FrameLayout.LayoutParams(FrameLayout.LayoutParams.MATCH_PARENT, dh*2);
                 lparams.setMargins(0, 0, 0, 0);
                 textView.setLayoutParams(lparams);
-                textView.setTextSize(TypedValue.COMPLEX_UNIT_PX, dh/2);
+                textView.setTextSize(TypedValue.COMPLEX_UNIT_PX, metricsAndPaints.font);
                 textView.setTextColor(0x99000000 | colorTextSpotNames);
                 textView.setText(surfSpots.categories.get(i));
                 textView.setAlpha(0);
@@ -457,7 +463,7 @@ public class MainActivity extends AppCompatActivity {
             FrameLayout.LayoutParams lparams = new FrameLayout.LayoutParams(FrameLayout.LayoutParams.MATCH_PARENT, dh*2);
             lparams.setMargins(0,0,0,0);
             textView.setLayoutParams(lparams);
-            textView.setTextSize(TypedValue.COMPLEX_UNIT_PX, dh);
+            textView.setTextSize(TypedValue.COMPLEX_UNIT_PX, metricsAndPaints.fontHeader);
             textView.setTextColor(0xff000000 | colorTextSpotNames);
             textView.setText(SurfSpot.name + (SurfSpot.favorite ? "   " + "\u2605" : "")); //2605");
             textView.setAlpha(i == ssi ? 1 : 0);

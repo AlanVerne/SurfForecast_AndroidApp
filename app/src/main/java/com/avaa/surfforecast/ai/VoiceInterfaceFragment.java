@@ -84,7 +84,6 @@ public class VoiceInterfaceFragment extends Fragment {
         public void onError(int error) {
             //Log.i(TAG, "rl::onError() | " + error);
             uiNotListening();
-            uiHideHint();
         }
 
         @Override
@@ -163,7 +162,14 @@ public class VoiceInterfaceFragment extends Fragment {
 
 
     public void btnMicClicked(View view) {
-        startListening();
+        if (circleVoiceIndicator.isAwakened()) {
+            stopListening();
+            uiHideHint();
+        }
+        else {
+            startListening();
+            uiShowHint();
+        }
     }
 
 
@@ -180,7 +186,7 @@ public class VoiceInterfaceFragment extends Fragment {
             btnMic.setBackground(getContext().getResources().getDrawable(R.drawable.round_button_transparent));
         }
         circleVoiceIndicator.setAwakened(false);
-        if (flHint.getState() != 1) btnMicImage.setAlpha(0.2f);
+        if (flHint.getState() != 1) btnMicImage.setAlpha(0.2f); // TODO fix
     }
 
 
@@ -320,13 +326,8 @@ public class VoiceInterfaceFragment extends Fragment {
         uiNotListening();
     }
     public void startListening() {
-        if (circleVoiceIndicator.isAwakened()) {
-            stopListening();
-            uiHideHint();
-        }
-        else {
+        if (!circleVoiceIndicator.isAwakened() && recognitionAvailable) {
             uiListening();
-            uiShowHint();
 
             Intent intent = new Intent(RecognizerIntent.ACTION_RECOGNIZE_SPEECH);
 //            intent.putExtra(RecognizerIntent.EXTRA_LANGUAGE, Locale.ENGLISH.toString());
@@ -346,11 +347,13 @@ public class VoiceInterfaceFragment extends Fragment {
     }
 
 
+    boolean recognitionAvailable = false;
+
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-//        boolean recognitionAvailable = SpeechRecognizer.isRecognitionAvailable(getActivity().getApplicationContext());
+        recognitionAvailable = SpeechRecognizer.isRecognitionAvailable(getActivity().getApplicationContext());
 
         speech = SpeechRecognizer.createSpeechRecognizer(getActivity().getApplicationContext());
         speech.setRecognitionListener(rl);

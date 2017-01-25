@@ -75,7 +75,7 @@ public class OneDayConditionsSmallView extends LinearLayout {
 
     public void setTextSize(int size) {
         tvDate.setTextSize(TypedValue.COMPLEX_UNIT_PX, size);
-        tvDayOfWeek.setTextSize(TypedValue.COMPLEX_UNIT_PX, size*2/3);
+        tvDayOfWeek.setTextSize(TypedValue.COMPLEX_UNIT_PX, size/1.33f);
     }
 
 

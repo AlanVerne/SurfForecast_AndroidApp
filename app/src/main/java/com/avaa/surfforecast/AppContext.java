@@ -10,6 +10,7 @@ import com.avaa.surfforecast.data.METARProvider;
 import com.avaa.surfforecast.data.SurfSpots;
 import com.avaa.surfforecast.data.TideDataProvider;
 import com.avaa.surfforecast.data.TidesProvider;
+import com.avaa.surfforecast.drawers.MetricsAndPaints;
 
 /**
  * Created by Alan on 7 Oct 2016.
@@ -25,6 +26,7 @@ public class AppContext {
     //public final TidesProvider tidesProvider;
     public final TideDataProvider tideDataProvider;
     public CommandsExecutor commandsExecutor;
+    public MetricsAndPaints metricsAndPaints;
 
 
     public static AppContext instance = null;

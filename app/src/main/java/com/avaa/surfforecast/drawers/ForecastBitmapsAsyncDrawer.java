@@ -1,14 +1,14 @@
-package com.avaa.surfforecast.views;
+package com.avaa.surfforecast.drawers;
 
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
 import android.os.AsyncTask;
-import android.os.Trace;
 import android.util.Log;
 
+import com.avaa.surfforecast.AppContext;
 import com.avaa.surfforecast.data.SurfConditions;
 import com.avaa.surfforecast.data.SurfSpot;
-import com.avaa.surfforecast.drawers.ConditionsDrawer;
+import com.avaa.surfforecast.views.SurfConditionsForecastView;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -21,7 +21,7 @@ import java.util.TreeMap;
  * Created by Alan on 16 Jan 2017.
  */
 
-public class ForecastImagesAsyncDrawer extends AsyncTask<Void, Void, Map<Integer, SurfConditionsForecastView.ForecastBitmaps>> {
+public class ForecastBitmapsAsyncDrawer extends AsyncTask<Void, Void, Map<Integer, SurfConditionsForecastView.ForecastBitmaps>> {
     private static final String TAG = "ForecastImagesAD";
 
     final SurfSpot surfSpot;
@@ -30,10 +30,10 @@ public class ForecastImagesAsyncDrawer extends AsyncTask<Void, Void, Map<Integer
     final Map<Integer, SortedMap<Integer, SurfConditions>> conditions = new HashMap<>();
     final int orientationF;
     final SurfConditionsForecastView view;
-    final ConditionsDrawer drawer;
+    final ConditionsBitmapsDrawer drawer;
 
-    public ForecastImagesAsyncDrawer(SurfSpot surfSpot, int step, List<Integer> daysToDraw, SurfConditionsForecastView view) {
-        Log.i(TAG, "ForecastImagesAsyncDrawer() | surfSpot = " + surfSpot.name);
+    public ForecastBitmapsAsyncDrawer(SurfSpot surfSpot, int step, List<Integer> daysToDraw, SurfConditionsForecastView view) {
+        Log.i(TAG, "ForecastBitmapsAsyncDrawer() | surfSpot = " + surfSpot.name);
 
         this.surfSpot = surfSpot;
         this.step = step;
@@ -44,11 +44,10 @@ public class ForecastImagesAsyncDrawer extends AsyncTask<Void, Void, Map<Integer
         for (Integer day : daysToDraw) {
             SortedMap<Integer, SurfConditions> sc = surfSpot.conditionsProvider.getFixed(day);
             conditions.put(day, sc);
-            //Log.i(TAG, "ForecastImagesAsyncDrawer() | day = " + day + (sc == null ? ", sc null" : ", sc ok"));
+            //Log.i(TAG, "ForecastBitmapsAsyncDrawer() | day = " + day + (sc == null ? ", sc null" : ", sc ok"));
         }
 
-        drawer = new ConditionsDrawer(view.condDrawer.density);
-        drawer.setDH(view.condDrawer.dh);
+        drawer = new ConditionsBitmapsDrawer(AppContext.instance.metricsAndPaints);
     }
 
     @Override
@@ -63,7 +62,7 @@ public class ForecastImagesAsyncDrawer extends AsyncTask<Void, Void, Map<Integer
         Log.i(TAG, "doInBackground() | daysToDraw = " + daysToDraw.toString()); //surfSpot.name + " "
 
         Bitmap b = null;
-        if (step == 0) b = Bitmap.createBitmap(drawer.dh * 16, drawer.dh * 16, Bitmap.Config.ARGB_8888);
+        if (step == 0) b = Bitmap.createBitmap(drawer.dh * 16, drawer.dh * 4, Bitmap.Config.ARGB_8888);
 
         Map<Integer, SurfConditionsForecastView.ForecastBitmaps> bitmaps = new TreeMap<>();
         for (Integer day : daysToDraw) {
@@ -114,15 +113,15 @@ public class ForecastImagesAsyncDrawer extends AsyncTask<Void, Void, Map<Integer
             view.bitmaps[fb.getKey()].wave = fb.getValue().wave;
         }
 
-        if (step == 0) {
+        if (step == 0) { // TODO тоже нахер отсюда эту логику
             view.postInvalidate();
 
             ArrayList<Integer> days = new ArrayList<>();
             for (int i = 0; i < 7; i++) {
                 if (!forecastBitmaps.keySet().contains(i)) days.add(i);
             }
-            view.fiad = new ForecastImagesAsyncDrawer(surfSpot, 1, days, view);
-            view.fiad.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
+            view.forecastBitmapsAsyncDrawer = new ForecastBitmapsAsyncDrawer(surfSpot, 1, days, view);
+            view.forecastBitmapsAsyncDrawer.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
         }
 //        Trace.endSection();
     }

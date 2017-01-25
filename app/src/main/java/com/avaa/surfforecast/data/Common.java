@@ -26,8 +26,11 @@ public class Common {
     public static final String strSWELL_U = "SWELL";
     public static final String strTIDE_U  = "TIDE";
 
+    public static final String strNOW  = "now";
+
     public static final String noWindData  = "No wind data";
     public static final String noSwellData = "No swell data";
+    public static final String noTideData  = "No tide data";
 
 
     public static int strToInt(String s, int def) {

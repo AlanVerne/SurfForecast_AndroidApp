@@ -4,7 +4,6 @@ import android.annotation.TargetApi;
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
 import android.graphics.Paint;
-import android.graphics.Rect;
 import android.os.AsyncTask;
 import android.os.Build;
 import android.os.Trace;
@@ -23,12 +22,15 @@ import java.util.Calendar;
 import java.util.List;
 
 import static com.avaa.surfforecast.data.Common.TIME_ZONE;
-
+import static com.avaa.surfforecast.data.Common.noTideData;
+import static com.avaa.surfforecast.data.Common.strM;
+import static com.avaa.surfforecast.data.Common.strNOW;
+import static com.avaa.surfforecast.data.Common.strTIDE;
+import static com.avaa.surfforecast.drawers.MetricsAndPaints.*;
 
 /**
  * Created by Alan on 6 Aug 2016.
  */
-
 
 @TargetApi(Build.VERSION_CODES.JELLY_BEAN_MR2)
 public class TideDrawer {
@@ -38,53 +40,75 @@ public class TideDrawer {
     private long drawnForDay = 0;
     private Bitmap[] bitmaps = new Bitmap[MainActivity.NDAYS];
     private final TideDataProvider tideDataProvider;
-    private ConditionsDrawer condDrawer;
+    private MetricsAndPaints metricsAndPaints;
+    public TideData tideData = null;
     private int dh;
-
     private int dayWidth;
     public int h;
 
-    Paint paint;
-    Rect bounds;
 
-    public TideData tideData = null;
+    private Paint paintBGNoData = new Paint() {{
+        setColor(colorTideChartBG);
+        setStyle(Style.FILL);
+    }};
+    private Paint paintFontNoData = new Paint() {{
+        setColor(colorTideChartBG);
+        setStyle(Style.FILL);
+    }};
+
+    private Paint paintCircle = new Paint() {{
+        setAntiAlias(true);
+        setColor(colorTideBG);
+        setStyle(Style.FILL);
+    }};
+    private Paint paintFont = new Paint() {{
+        setAntiAlias(true);
+        setColor(0xFFFFFFFF);
+        setTextAlign(Align.CENTER);
+    }};
+    private Paint paintFontSmall = new Paint(paintFont) {{
+        setColor(0xFFFFFFFF);
+        setTextAlign(Align.LEFT);
+    }};
+
+    private float strMWidth;
 
 
-    public TideDrawer(SurfConditionsForecastView view, ConditionsDrawer condDrawer) {
+    public TideDrawer(SurfConditionsForecastView view) {
         this.view = view;
         this.tideDataProvider = AppContext.instance.tideDataProvider;
-
-        updateDrawer(condDrawer);
+        updateDrawer();
     }
 
 
-    public void updateDrawer(ConditionsDrawer condDrawer) {
-        this.condDrawer = condDrawer;
-        this.dh = condDrawer.dh;
+    public void updateDrawer() {
+        this.metricsAndPaints = AppContext.instance.metricsAndPaints;
+
+        this.dh = metricsAndPaints.dh;
 
         dayWidth = dh*16;
         h        = dh*4;
 
-        paint = new Paint() {{
-            setAntiAlias(true);
-            setTextSize(condDrawer.conditionsFontSize);
-            setColor(0xFFFFFFFF);
-            setTextAlign(Align.CENTER);
+        paintFont.setTextSize(metricsAndPaints.font);
+        paintFontSmall.setTextSize(metricsAndPaints.fontSmall);
+
+        paintFontNoData = new Paint() {{
+            setTextAlign(Paint.Align.CENTER);
+            setColor(getColorMinor(colorTideText));
+            setTextSize(metricsAndPaints.font);
         }};
 
-//        bounds = new Rect();
-//        paint.getTextBounds("0", 0, 1, bounds);
+        strMWidth = paintFontSmall.measureText(strM);
 
         updateBitmaps();
     }
 
 
-
-    int nowx = 0, nowy = 0;
+    private int nowx = 0, nowy = 0;
     public void draw(Canvas c, int w, int h, int dx, int orientation) {
         Integer nowTime = Common.getNowTimeInt(TIME_ZONE);
 
-        tideData = tideDataProvider.getTideData(Common.BENOA_PORT_ID);
+        tideData = tideDataProvider.getTideData(Common.BENOA_PORT_ID); // TODO вынести это нахер отсюда, добавить листенер на TideProvider
         Integer now = tideData == null ? null : tideData.getNow();
 
         if (now != null) {
@@ -92,121 +116,68 @@ public class TideDrawer {
             nowy = h - this.h + dh * 3 / 2 - now * dh * 3 / 2 / 300;
         }
 
-        //if (bitmaps == null || bitmaps.isEmpty()) return;
         int si = dx / dayWidth;
         int ei = Math.min(MainActivity.NDAYS-1, (dx+w) / dayWidth);
         int x = si * dayWidth;
         for (int i = si; i <= ei; i++) {
-            if (bitmaps[i] == null) {
-                c.drawRect(x, h-this.h*2/3, x+dayWidth, h, new Paint(){{setColor(ConditionsDrawer.colorTideChartBG);}});
-                Paint paintText = new Paint(condDrawer.paintHourlyTides);
-                paintText.setTextAlign(Paint.Align.CENTER);
-                c.drawText("No tide data", x+dayWidth/2, h-this.h/2 + condDrawer.conditionsFontH, paintText);
+            if (bitmaps[i] != null) {
+                c.drawBitmap(bitmaps[i], x, h - this.h, null);
             }
-            else c.drawBitmap(bitmaps[i], x, h - this.h, null);
+            else {
+                c.drawRect(x, h - this.h * 2/3, x + dayWidth, h, paintBGNoData);
+                c.drawText(noTideData, x + dayWidth/2, h - this.h/2 + metricsAndPaints.fontH, paintFontNoData);
+            }
             x += dayWidth;
         }
 
         if (now != null && bitmaps[0] != null) {
-            condDrawer.paint.setColor(ConditionsDrawer.colorTideBG); //0xFF000000); //0xff000000);
-            c.drawCircle(nowx, nowy, condDrawer.dh*0.6f, condDrawer.paint);
+            String tide = String.valueOf(Math.round(now / 10f) / 10f);
 
-            if (orientation == 1) {
-                c.rotate(-90);
-                c.drawText(String.valueOf(Math.round(now / 10f) / 10f), -nowy, nowx + condDrawer.conditionsFontH / 2, paint);
-                c.rotate(90);
+            if (AppContext.instance.usageStat.userLevel != 2) {
+                c.drawCircle(nowx, nowy, dh * 0.6f, paintCircle);
+                if (orientation == 1) {
+                    c.rotate(-90);
+                    c.drawText(tide, -nowy, nowx + metricsAndPaints.fontHDiv2, paintFont);
+                    c.rotate(90);
+                } else {
+                    c.drawText(tide, nowx, nowy + metricsAndPaints.fontHDiv2, paintFont);
+                }
             }
             else {
-                c.drawText(String.valueOf(Math.round(now/10f)/10f), nowx, nowy + condDrawer.conditionsFontH/2, paint);
-            }
-        }
-    }
-
-
-    //
-
-
-    private static class TideBitmapsAsyncDrawer extends AsyncTask<Void, Void, List<Bitmap>> {
-        private int startFromDay;
-        private final ConditionsDrawer condDrawer;
-        private final TideDrawer tideDrawer;
-
-        public TideBitmapsAsyncDrawer(int startFromDay, TideDrawer tideDrawer) {
-            this.startFromDay = startFromDay;
-            this.condDrawer = new ConditionsDrawer(tideDrawer.condDrawer.density);
-            condDrawer.setDH(tideDrawer.condDrawer.dh);
-            this.tideDrawer = tideDrawer;
-        }
-
-        @Override
-        protected List<Bitmap> doInBackground(Void... params) {
-            Trace.beginSection("doInBackground");
-
-            Log.i(TAG, "doInBackground() | startFromDay = " + startFromDay + " ");
-            if (isCancelled()) return null;
-
-            Bitmap bitmapForWarming = null;
-            if (startFromDay == 0) bitmapForWarming = Bitmap.createBitmap(condDrawer.dh * 16, condDrawer.dh * 4, Bitmap.Config.ARGB_8888);
-
-            List<Bitmap> bitmaps = new ArrayList<>();
-            int endDay = startFromDay == 0 ? 2 : MainActivity.NDAYS;
-
-            TideData tideData = tideDrawer.tideDataProvider.getTideData(Common.BENOA_PORT_ID);
-            if (tideData == null) return null;
-
-            for (int i = startFromDay; i < endDay; i++) {
-                Bitmap bi = condDrawer.drawTide(tideData, i, false);
-
-                if (startFromDay == 0 && bi != null) {
-                    Trace.beginSection("inBG warming");
-                    Canvas c = new Canvas(bitmapForWarming);
-                    //for (int i = 0; i < 4; i++) {
-                    Trace.beginSection("inBG warming i");
-                    c.drawBitmap(bi, 0, -1, null);
-                    Trace.endSection();
-                    //}
-                    Trace.endSection();
+                c.drawCircle(nowx, nowy, dh * 1.0f, paintCircle);
+                if (orientation == 1) {
+                    c.rotate(-90);
+                    c.drawText(tide, -nowy, nowx + metricsAndPaints.fontHDiv2, paintFont);
+                    c.drawText(tide, -nowy, nowx + metricsAndPaints.fontHDiv2, paintFont);
+                    c.rotate(90);
                 }
-                bitmaps.add(bi);
+                else {
+                    float strTideWidth = paintFont.measureText(tide);
+
+                    paintFontSmall.setTextAlign(Paint.Align.CENTER);
+                    c.drawText(strTIDE, nowx, nowy - metricsAndPaints.fontHDiv2 - metricsAndPaints.fontSmallSpacing, paintFontSmall);
+                    c.drawText(strNOW, nowx , nowy + metricsAndPaints.fontHDiv2 + metricsAndPaints.fontSmallH + metricsAndPaints.fontSmallSpacing, paintFontSmall);
+
+                    nowy += metricsAndPaints.fontSmallH/12;
+
+                    paintFontSmall.setTextAlign(Paint.Align.LEFT);
+                    c.drawText(tide, nowx - strMWidth/3, nowy + metricsAndPaints.fontHDiv2, paintFont);
+                    c.drawText(strM, nowx - strMWidth/3 + strTideWidth/2, nowy + metricsAndPaints.fontHDiv2, paintFontSmall);
+                }
             }
-
-            Trace.endSection();
-            return bitmaps;
-        }
-
-        @Override
-        protected void onPostExecute(List<Bitmap> bitmaps) {
-            Trace.beginSection("onPostExecute");
-
-            if (bitmaps == null) return;
-
-            for (Bitmap bitmap : bitmaps) tideDrawer.bitmaps[startFromDay++] = bitmap;
-            tideDrawer.view.postInvalidate();
-
-            if (startFromDay < MainActivity.NDAYS) {
-                tideDrawer.tbad = new TideBitmapsAsyncDrawer(startFromDay, tideDrawer);
-                tideDrawer.tbad.execute();
-            }
-
-            Trace.endSection();
         }
     }
 
 
-    private TideBitmapsAsyncDrawer tbad = null;
+    private TideBitmapsAsyncDrawer tideBitmapsAsyncDrawer = null;
     public boolean updateBitmaps() {
-//        if (dh <= 0) {
-//            Log.i(TAG, "updateBitmaps() | " + "cancelled. dh = " + dh);
-//            return false;
-//        }
-
         if (tideDataProvider.getTideData(Common.BENOA_PORT_ID) == null) {
             Log.i(TAG, "updateBitmaps() | " + "cancelled. tideDataProvider.get() == null");
             return false;
         }
 
-        if (tbad != null && tbad.getStatus() != AsyncTask.Status.FINISHED) {
-            tbad.cancel(true);
+        if (tideBitmapsAsyncDrawer != null && tideBitmapsAsyncDrawer.getStatus() != AsyncTask.Status.FINISHED) {
+            tideBitmapsAsyncDrawer.cancel(true);
             Log.i(TAG, "updateBitmaps() | " + "cancelled async drawer");
         }
 
@@ -214,7 +185,7 @@ public class TideDrawer {
         long time = todaysStartTime.getTime().getTime();
 
         if (drawnForDay == 0) {
-            tbad = new TideBitmapsAsyncDrawer(0, this);
+            tideBitmapsAsyncDrawer = new TideBitmapsAsyncDrawer(0, this);
         }
         else {
 //            int offset = (int) ((time - drawnForDay) / 1000 / 60 / 60 / 24);
@@ -224,13 +195,22 @@ public class TideDrawer {
 //                bitmaps[i - offset] = bitmaps[i];
 //                if (bitmaps[i-offset] != null) si = i-offset+1;
 //            }
-//            tbad = new TideBitmapsAsyncDrawer(si, this); //MainActivity.NDAYS - offset);
-            tbad = new TideBitmapsAsyncDrawer(0, this);
+//            tideBitmapsAsyncDrawer = new TideBitmapsAsyncDrawer(si, this); //MainActivity.NDAYS - offset);
+            tideBitmapsAsyncDrawer = new TideBitmapsAsyncDrawer(0, this);
         }
-        tbad.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
+        tideBitmapsAsyncDrawer.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
 
         drawnForDay = time;
 
         return false;
+    }
+    public void bitmapsReady(List<Bitmap> bitmaps, int fromDay) {
+        for (Bitmap bitmap : bitmaps) this.bitmaps[fromDay++] = bitmap;
+        view.postInvalidate();
+
+        if (fromDay < MainActivity.NDAYS) {
+            tideBitmapsAsyncDrawer = new TideBitmapsAsyncDrawer(fromDay, this);
+            tideBitmapsAsyncDrawer.execute();
+        }
     }
 }

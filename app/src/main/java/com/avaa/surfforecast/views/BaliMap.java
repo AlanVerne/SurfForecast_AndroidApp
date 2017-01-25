@@ -3,13 +3,11 @@ package com.avaa.surfforecast.views;
 import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
-import android.graphics.Interpolator;
 import android.graphics.Matrix;
 import android.graphics.Paint;
 import android.graphics.Path;
 import android.graphics.Point;
 import android.graphics.PointF;
-import android.graphics.Rect;
 import android.graphics.RectF;
 import android.graphics.Region;
 import android.graphics.Typeface;
@@ -18,14 +16,12 @@ import android.hardware.SensorEvent;
 import android.hardware.SensorEventListener;
 import android.hardware.SensorManager;
 import android.os.Build;
-import android.support.v4.view.animation.FastOutSlowInInterpolator;
 import android.util.AttributeSet;
 import android.util.Log;
 import android.view.View;
 import android.widget.Scroller;
 
 import com.avaa.surfforecast.AppContext;
-import com.avaa.surfforecast.drawers.ConditionsDrawer;
 import com.avaa.surfforecast.R;
 import com.avaa.surfforecast.data.Common;
 import com.avaa.surfforecast.data.METAR;
@@ -34,6 +30,7 @@ import com.avaa.surfforecast.data.SurfSpot;
 import com.avaa.surfforecast.data.SurfSpots;
 import com.avaa.surfforecast.data.TideData;
 import com.avaa.surfforecast.data.TideDataProvider;
+import com.avaa.surfforecast.drawers.MetricsAndPaints;
 import com.avaa.surfforecast.drawers.SVGPathToAndroidPath;
 
 import java.io.ByteArrayOutputStream;
@@ -45,6 +42,7 @@ import java.util.Timer;
 import java.util.TimerTask;
 
 import static com.avaa.surfforecast.data.Common.*;
+import static com.avaa.surfforecast.drawers.MetricsAndPaints.*;
 
 /**
  * Created by Alan on 9 Jul 2016.
@@ -75,12 +73,12 @@ public class BaliMap extends View {
 
     private float density = 3;
 
-    private float smallTextSize = 14;
-    private float bigTextSize = smallTextSize * 1.25f;
+//    private float smallTextSize = 14;
+//    private float bigTextSize = smallTextSize * 1.25f;
 
     public int colorWaterColor = 0xffacb5b8; //0xffa3b1b6; //0xff819faa; //0xff2e393d;
-    private int colorTideWater = ConditionsDrawer.colorWaveBG;
-    private int colorTideAir   = ConditionsDrawer.colorWindBG;
+    private int colorTideWater = colorWaveBG;
+    private int colorTideAir   = MetricsAndPaints.colorWindBG;
 
     private int colorSwellBG = 0xffffffff;
     private int colorWindBG  = 0xffffffff;
@@ -96,12 +94,12 @@ public class BaliMap extends View {
     private float tideCircleVisible = 0;
 
 
-    private Paint paintSmallText = new Paint() {{
+    private Paint paintFont = new Paint() {{
         setFlags(Paint.ANTI_ALIAS_FLAG);
         setTextAlign(Paint.Align.CENTER);
-        setColor(ConditionsDrawer.colorWhite);
+        setColor(MetricsAndPaints.colorWhite);
     }};
-    private Paint paintBigText = new Paint(paintSmallText) {{
+    private Paint paintFontBig = new Paint(paintFont) {{
         setTypeface(Typeface.create(Typeface.DEFAULT, Typeface.BOLD));
     }};
     private Paint paintBG = new Paint() {{
@@ -115,30 +113,34 @@ public class BaliMap extends View {
     }};
     private Paint paintWaveLines = new Paint() {{
         setFlags(Paint.ANTI_ALIAS_FLAG);
-        setColor(0x88ffffff);//ConditionsDrawer.colorWhite);
+        setColor(0x88ffffff);
         setStyle(Style.STROKE);
         setStrokeCap(Cap.ROUND);
     }};
     private Paint paintAdditionalText = new Paint() {{
         setFlags(Paint.ANTI_ALIAS_FLAG);
     }};
-    private Rect rectSmallTextBounds = new Rect();
-    private Rect rectBigTextBounds = new Rect();
 
     private Timer timerHintsHide = null;
     private Scroller mScrollerHints;
 
     private int dh = 0;
 
+    MetricsAndPaints metricsAndPaints;
 
+    float fontBigH;
+    float fontH;
+    
     public void setDh(int dh) {
         if (dh == 0) return;
         if (this.dh == dh) return;
         if (this.dh != 0) bmpMapZoomedOut.eraseColor(0x00000000);
 
         this.dh = dh;
-        smallTextSize = dh/2;
-        bigTextSize = smallTextSize*1.25f;
+        metricsAndPaints = AppContext.instance.metricsAndPaints;
+
+//        smallTextSize = ;
+//        bigTextSize = smallTextSize*1.25f;
 
         bmpMapZoomedInForSpotI = -1;
 
@@ -202,8 +204,8 @@ public class BaliMap extends View {
 
         density = getResources().getDisplayMetrics().density;
 
-        smallTextSize *= density;
-        bigTextSize   *= density;
+//        smallTextSize *= density;
+//        bigTextSize   *= density;
 
 //        if (hintsVisiblePolicy > 0) {
 //            hintsVisible = 1;
@@ -509,7 +511,7 @@ public class BaliMap extends View {
         Path cp = new Path();
         cp.addCircle(x, y, r, Path.Direction.CCW);
 
-        paintBG.setColor(ConditionsDrawer.colorTideBG);
+        paintBG.setColor(MetricsAndPaints.colorTideBG);
 
         final RectF oval = new RectF();
         oval.set(x - r, y - r, x + r, y + r);
@@ -518,7 +520,7 @@ public class BaliMap extends View {
         myPath.arcTo(oval, aa, 2 * 63.4f, true);
         c.drawPath(myPath, paintBG);
 
-        paintBG.setColor(colorWaterColor); //ConditionsDrawer.colorWaveBG);
+        paintBG.setColor(colorWaterColor);
         myPath = new Path();
         myPath.arcTo(oval, aa, 2 * 63.4f - 360f, true);
         c.drawPath(myPath, paintBG);
@@ -582,9 +584,9 @@ public class BaliMap extends View {
         if (vbr) c.drawCircle(ax, ay, windArrowR, paintBG);
         else c.drawPath(getArrow(ax, ay, a, windArrowR), paintBG);
 
-        paintSmallText.setColor((int)(j*0xff)*0x1000000 + 0x00ffffff & ConditionsDrawer.colorWindText);
+        paintFont.setColor((int)(j*0xff)*0x1000000 + 0x00ffffff & MetricsAndPaints.colorWindText);
 
-//        ay = ay + rectSmallTextBounds.height()/2;
+//        ay = ay + fontH/2;
 //        if (hintsVisible > 0) {
 //            ay -= dh/3/2 * hintsVisible;
 //            c.drawText("km/h", ax, ay + dh / 3, paintAdditionalText);
@@ -621,20 +623,17 @@ public class BaliMap extends View {
                 c.drawPath(p, paintAdditionalArrow);
             }
 
-            ay += rectSmallTextBounds.height()/2;
-            ay += windArrowVisibleFinal * dh / 24 * hintsVisible;
-            c.drawText(strWIND, ax, ay - rectSmallTextBounds.height() - windArrowVisibleFinal*dh / 6 * hintsVisible, paintAdditionalText);
-            c.drawText(strKMH, ax, ay + windArrowVisibleFinal*(dh / 6 + dh / 12 + dh / 6 * hintsVisible), paintAdditionalText);
-        }
-        else {
-            ay += rectSmallTextBounds.height()/2;
+            ay -= metricsAndPaints.fontSmallH/16 * hintsVisible * windArrowVisibleFinal;
+            c.drawText(strWIND, ax, ay - fontH/2 - windArrowVisibleFinal*metricsAndPaints.fontSmallSpacing * hintsVisible, paintAdditionalText);
+            c.drawText(strKMH, ax, ay + fontH/2 + metricsAndPaints.fontSmallH + windArrowVisibleFinal*metricsAndPaints.fontSmallSpacing * hintsVisible, paintAdditionalText);
+            ay += metricsAndPaints.fontSmallH/12 * hintsVisible * windArrowVisibleFinal;
         }
 
         int windSpeed = currentMETAR != null ? currentMETAR.windSpeed : currentConditions.windSpeed;
-        //paintSmallText.setColor(currentMETAR != null ? 0xff000000 : 0x88000000);
-        c.drawText(String.valueOf(windSpeed), ax, ay, paintSmallText);
+        //paintFont.setColor(currentMETAR != null ? 0xff000000 : 0x88000000);
+        c.drawText(String.valueOf(windSpeed), ax, ay + fontH/2, paintFont);
 
-        //c.drawCircle(ax - dh*4/10, ay - rectSmallTextBounds.height()/2, rectSmallTextBounds.height()/6, paintSmallText);
+        //c.drawCircle(ax - dh*4/10, ay - fontH/2, fontH/6, paintFont);
     }
 
 
@@ -685,8 +684,8 @@ public class BaliMap extends View {
 
             c.drawPath(p, paintAdditionalArrow);
 
-            float strWaveHeightWidth = paintBigText.measureText(strWaveHeight);
-            float strWavePeriodWidth = paintSmallText.measureText(strWavePeriod);
+            float strWaveHeightWidth = paintFontBig.measureText(strWaveHeight);
+            float strWavePeriodWidth = paintFont.measureText(strWavePeriod);
 
             strFtWidth = paintAdditionalText.measureText(strFT) * hintsVisible;
             strSWidth = paintAdditionalText.measureText(strS) * hintsVisible;
@@ -695,20 +694,20 @@ public class BaliMap extends View {
             y += dh / 24 * hintsVisible * finalVisibility;
 
             paintAdditionalText.setTextAlign(Paint.Align.LEFT);
-            c.drawText(strFT, x - strFtWidth/3 + strWaveHeightWidth/2, y - (rectBigTextBounds.height() + dh/6 + rectSmallTextBounds.height())/2 + rectBigTextBounds.height(), paintAdditionalText);
-            c.drawText(strS,  x - strSWidth/3 + strWavePeriodWidth/2, y + (rectBigTextBounds.height() + dh/6 + rectSmallTextBounds.height())/2, paintAdditionalText);
+            c.drawText(strFT, x - strFtWidth/3 + strWaveHeightWidth/2, y - (fontBigH + dh/6 + fontH)/2 + fontBigH, paintAdditionalText);
+            c.drawText(strS,  x - strSWidth/3 + strWavePeriodWidth/2, y + (fontBigH + dh/6 + fontH)/2, paintAdditionalText);
 
             paintAdditionalText.setTextAlign(Paint.Align.CENTER);
-            c.drawText(strSWELL, x, y - (rectBigTextBounds.height() + finalVisibility*dh/6 + rectSmallTextBounds.height())/2 - finalVisibility*dh / 6 * hintsVisible, paintAdditionalText);
-            //c.drawText(currentConditions.waveAngleAbbr(), x, y + (rectBigTextBounds.height() + finalVisibility*dh/6 + rectSmallTextBounds.height())/2 + finalVisibility*(dh / 6 + dh / 12 + dh / 6 * hintsVisible), paintAdditionalText);
-            c.drawText(currentConditions.waveEnergy+"kJ", x, y + (rectBigTextBounds.height() + finalVisibility*dh/6 + rectSmallTextBounds.height())/2 + finalVisibility*(dh / 6 + dh / 12 + dh / 6 * hintsVisible), paintAdditionalText);
+            c.drawText(strSWELL, x, y - (fontBigH + finalVisibility*dh/6 + fontH)/2 - finalVisibility*dh / 6 * hintsVisible, paintAdditionalText);
+            c.drawText(currentConditions.waveAngleAbbr(), x, y + (fontBigH + finalVisibility*dh/6 + fontH)/2 + finalVisibility*(dh / 6 + dh / 12 + dh / 6 * hintsVisible), paintAdditionalText);
+            //c.drawText(currentConditions.waveEnergy+"kJ", x, y + (fontBigH + finalVisibility*dh/6 + fontH)/2 + finalVisibility*(dh / 6 + dh / 12 + dh / 6 * hintsVisible), paintAdditionalText);
         }
 
-        paintBigText.setColor((int)(j*0xff)*0x1000000 + 0x00ffffff & ConditionsDrawer.colorWaveText);
-        c.drawText(strWaveHeight, x - strFtWidth/3, y - (rectBigTextBounds.height() + dh/6 + rectSmallTextBounds.height())/2 + rectBigTextBounds.height(), paintBigText);
+        paintFontBig.setColor((int)(j*0xff)*0x1000000 + 0x00ffffff & MetricsAndPaints.colorWaveText);
+        c.drawText(strWaveHeight, x - strFtWidth/3, y - (fontBigH + dh/6 + fontH)/2 + fontBigH, paintFontBig);
 
-        paintSmallText.setColor((int)(j*0xff)*0x1000000 + 0x00ffffff & ConditionsDrawer.colorWaveText);
-        c.drawText(String.valueOf(currentConditions.wavePeriod), x - strSWidth/3, y + (rectBigTextBounds.height() + dh/6 + rectSmallTextBounds.height())/2, paintSmallText);
+        paintFont.setColor((int)(j*0xff)*0x1000000 + 0x00ffffff & MetricsAndPaints.colorWaveText);
+        c.drawText(String.valueOf(currentConditions.wavePeriod), x - strSWidth/3, y + (fontBigH + dh/6 + fontH)/2, paintFont);
     }
 
     long nowTideUpdatedTime;
@@ -779,16 +778,14 @@ public class BaliMap extends View {
         pp = Common.applyParallax(userX, userY, userZ, ox + nowx, oy + nowy, dh*circlesH);
         x = pp.x; y = pp.y;
 
-        paintSmallText.setColor(ConditionsDrawer.colorTideBG);
-        c.drawCircle(x, y, dotR + finalVisibility*hintsVisible*dh/4, paintSmallText);
+        paintFont.setColor(MetricsAndPaints.colorTideBG);
+        c.drawCircle(x, y, dotR + finalVisibility*hintsVisible*dh/4, paintFont);
 
-        paintSmallText.setColor((int)(j*0xff)*0x1000000 + 0x00ffffff);
+        paintFont.setColor((int)(j*0xff)*0x1000000 + 0x00ffffff);
 
         String strTide = String.valueOf(Math.round(nowTide/10f)/10f);
-        float strTideWidth = paintSmallText.measureText(strTide);
 
-        y += rectSmallTextBounds.height() / 2f;
-
+//        float strTideWidth = paintFont.measureText(strTide);
 //        if (hintsVisible > 0) {
 //            float strMWidth = paintAdditionalText.measureText(strM);
 //            x -= strMWidth / 3f * hintsVisible;
@@ -798,15 +795,15 @@ public class BaliMap extends View {
 //        }
 
         if (hintsVisible > 0) {
-            y += dh/24 * hintsVisible * finalVisibility;
+            y += metricsAndPaints.fontSmallH/12 * hintsVisible * finalVisibility;
             paintAdditionalText.setColor((int)(j*hintsVisible*0xff)<<24 | 0xffffff);
             paintAdditionalText.setTextAlign(Paint.Align.CENTER);
-            c.drawText(strTIDE, x, y - rectSmallTextBounds.height() - finalVisibility*dh/6*hintsVisible, paintAdditionalText);
-
-            c.drawText(strM, x, y + finalVisibility*(dh/6 + dh/12 + dh/6*hintsVisible), paintAdditionalText);
+            c.drawText(strTIDE, x, y - fontH/2 - finalVisibility*metricsAndPaints.fontSmallSpacing*hintsVisible, paintAdditionalText);
+            c.drawText(strM, x, y + fontH/2 + metricsAndPaints.fontSmallH + finalVisibility*metricsAndPaints.fontSmallSpacing*hintsVisible, paintAdditionalText);
+            y += metricsAndPaints.fontSmallH/8 * hintsVisible * finalVisibility;
         }
 
-        c.drawText(strTide, x, y, paintSmallText);
+        c.drawText(strTide, x, y + fontH/2, paintFont);
     }
 
     private final Matrix matrix = new Matrix();
@@ -892,9 +889,7 @@ public class BaliMap extends View {
 
         super.onDraw(canvas);
 
-
         boolean needRepaint = computeArrowsAnimation();
-
 
         int h = getHeight() - (int)((paddingTop+paddingBottom) * dh);
 
@@ -946,11 +941,10 @@ public class BaliMap extends View {
             canvas.drawBitmap(bmpMapZoomedOut, null, rectfTemp, paint);
         }
 
-        paintBigText.setTextSize(awakenedState*bigTextSize);
-        paintBigText.getTextBounds("00.0", 0, 4, rectBigTextBounds);
-
-        paintSmallText.setTextSize(awakenedState*smallTextSize);
-        paintSmallText.getTextBounds("0.00", 0, 4, rectSmallTextBounds);
+        paintFontBig.setTextSize(awakenedState * metricsAndPaints.fontBig);
+        fontBigH = awakenedState * metricsAndPaints.fontBigH;
+        paintFont.setTextSize(awakenedState * metricsAndPaints.font);
+        fontH = awakenedState * metricsAndPaints.fontH;
 
         int selectedSpotI = surfSpots.selectedSpotI;
 
@@ -998,26 +992,24 @@ public class BaliMap extends View {
         //if (true) return;
 
         float hintsVisbleToAwakened = Math.max(0, Math.min((awakenedState - 0.66f) * 3f, 1f));
-        float smallr = (dh-density) * awakenedState + density;
 
         final float finalHintsVisbleToAwakened = hintsVisbleToAwakened;
-        paintAdditionalText = new Paint(paintSmallText) {{
-            setColor((int)(hintsVisible * finalHintsVisbleToAwakened *0xff)<<24 | 0x00ffffff & ConditionsDrawer.colorWindText);
-            setTextSize(awakenedState * dh/3);
-        }};
+
+        paintAdditionalText.setColor((int)(hintsVisible * finalHintsVisbleToAwakened *0xff)<<24 | 0x00ffffff & MetricsAndPaints.colorWindText);
+        paintAdditionalText.setTextSize(awakenedState * metricsAndPaints.fontSmall);
 
         hintsVisbleToAwakened = Math.max(0, Math.min((windArrowVisible * awakenedState - 0.66f) * 3f, 1f));
         paintSpotCircle(canvas, x, y, r, hintsVisbleToAwakened);
 
         float k = windArrowVisible * (float)Math.max(0, (Math.PI - Math.abs(windArrowAngle - Math.PI) - 2));
-        x -= Math.max(0, k * dh / 2f);
+        x -= awakenedState * Math.max(0, k * dh / 2f);
         //Log.i(TAG, "wind spacing: " + a + " | " + k);
 
         x -= awakenedState * (1.5+1+0.75+0.25*hintsVisible) * dh;
         y += awakenedState * dh/2;
 
         hintsVisbleToAwakened = Math.max(0, Math.min((swellArrowVisible * awakenedState - 0.66f) * 3f, 1f));
-        smallr = (dh-density) * swellArrowVisible * awakenedState + density;
+        float smallr = (dh-density) * swellArrowVisible * awakenedState + density;
         paintSwellCircle(canvas, x, y, smallr, hintsVisbleToAwakened);
 
         x -= awakenedState * (1+1+0.5+0.5*hintsVisible) * dh;
