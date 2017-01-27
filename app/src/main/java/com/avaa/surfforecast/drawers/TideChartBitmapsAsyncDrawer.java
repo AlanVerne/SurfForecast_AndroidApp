@@ -3,7 +3,6 @@ package com.avaa.surfforecast.drawers;
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
 import android.os.AsyncTask;
-import android.os.Trace;
 import android.util.Log;
 
 import com.avaa.surfforecast.AppContext;
@@ -18,26 +17,26 @@ import java.util.List;
  * Created by Alan on 25 Jan 2017.
  */
 
-public class TideBitmapsAsyncDrawer extends AsyncTask<Void, Void, List<Bitmap>> {
-    private static final String TAG = "TideBitmapsAsyncDrawer";
+public class TideChartBitmapsAsyncDrawer extends AsyncTask<Void, Void, List<Bitmap>> {
+    private static final String TAG = "TideChartBitmapsAsyncDrawer";
 
     private final TideDrawer tideDrawer;
 
     private final int startFromDay;
 
     private final TideData tideData;
-    private final TideChartBitmapDrawer drawer;
+    private final TideChartBitmapsDrawer drawer;
 
     private final int dh;
 
 
-    public TideBitmapsAsyncDrawer(int startFromDay, TideDrawer tideDrawer) {
+    public TideChartBitmapsAsyncDrawer(int startFromDay, TideDrawer tideDrawer) {
         this.tideDrawer = tideDrawer;
 
         this.startFromDay = startFromDay;
 
         this.tideData = AppContext.instance.tideDataProvider.getTideData(Common.BENOA_PORT_ID);
-        this.drawer = new TideChartBitmapDrawer(AppContext.instance.metricsAndPaints);
+        this.drawer = new TideChartBitmapsDrawer(AppContext.instance.metricsAndPaints);
 
         this.dh = AppContext.instance.metricsAndPaints.dh;
     }

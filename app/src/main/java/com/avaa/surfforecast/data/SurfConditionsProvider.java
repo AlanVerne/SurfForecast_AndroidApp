@@ -4,6 +4,8 @@ import android.content.SharedPreferences;
 import android.os.AsyncTask;
 import android.util.Log;
 
+import com.avaa.surfforecast.AppContext;
+
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
@@ -32,11 +34,12 @@ public class SurfConditionsProvider {
         void onUpdate(SurfConditionsProvider surfConditionsProvider);
     }
 
+    private boolean loaded = false;
+
     public String url = "";
     public String urlfull = "";
     public String urlfullweek = "";
 
-    private final SharedPreferences sp;
     public  TreeMap<Long, SurfConditions> conditions = null;
     public  long lastUpdate = 0;
     private List<UpdateListener> uls = new ArrayList<>();
@@ -47,14 +50,10 @@ public class SurfConditionsProvider {
 
 
 
-    public SurfConditionsProvider(SharedPreferences sp, String url) {
-        this.sp = sp;
-
+    public SurfConditionsProvider(String url) {
         this.url = url;
         this.urlfull = "http://www.surf-forecast.com/breaks/" + url + "/forecasts/latest";
         this.urlfullweek = this.urlfull + "/six_day";
-
-        load();
     }
 
 
@@ -86,6 +85,8 @@ public class SurfConditionsProvider {
 
     public SurfConditionsOneDay get() { return get(0); }
     public SurfConditionsOneDay get(int plusDays) {
+        if (!loaded) load();
+
         if (conditions == null) {
             update();
             return null;
@@ -126,7 +127,7 @@ public class SurfConditionsProvider {
         return (int)((new Date().getTime() - lastUpdate)/1000/60/60);
     }
     public boolean needUpdate() {
-        return hoursFromLastUpdate() > 4;
+        return hoursFromLastUpdate() > 3;
     }
     public boolean updateIfNeed() {
         if (needUpdate()) {
@@ -160,6 +161,8 @@ public class SurfConditionsProvider {
 
 
     private boolean load() {
+        SharedPreferences sp = AppContext.instance.sharedPreferences;
+
         lastUpdate = sp.getLong(SPKEY_SF_LAST_UPDATE + url, 0);
 
         Set<String> tideTimes = sp.getStringSet(SPKEY_SF_SET + url, null);
@@ -172,9 +175,13 @@ public class SurfConditionsProvider {
             conditions.put(Long.valueOf(split[0]), SurfConditions.fromString(split[1]));
         }
 
+        loaded = true;
+
         return needUpdate();
     }
     public void save() {
+        SharedPreferences sp = AppContext.instance.sharedPreferences;
+
         Set<String> tidesStringSet = new HashSet<>();
         for (Map.Entry<Long, SurfConditions> i : conditions.entrySet()) {
             tidesStringSet.add(i.getKey().toString() + "\n" + i.getValue().toString());

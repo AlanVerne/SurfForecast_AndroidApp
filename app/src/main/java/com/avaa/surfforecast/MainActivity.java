@@ -101,6 +101,7 @@ public class MainActivity extends AppCompatActivity {
             //Log.i(TAG, "busyCount: " + busyCount);
         };
 
+
         appContext = AppContext.getInstance(this, sharedPreferences, bsl);
 
         appContext.surfSpots.addChangeListener(changes -> {
@@ -111,6 +112,7 @@ public class MainActivity extends AppCompatActivity {
                 updateSurfConditionsImages();
             }
         });
+
 
         density = getResources().getDisplayMetrics().density;
 
@@ -145,8 +147,8 @@ public class MainActivity extends AppCompatActivity {
                 switch (item.getItemId()) {
                 case 0:
                     spot.conditionsProvider.update();
-                    METARProvider.getInstance().update(spot.metarName);
-                    TideDataProvider.getInstance().fetchIfNeed(Common.BENOA_PORT_ID);
+                    appContext.metarProvider.update(spot.metarName);
+                    appContext.tideDataProvider.fetchIfNeed(Common.BENOA_PORT_ID);
                     return true;
                 case 1:
                     appContext.surfSpots.swapFavorite(spot);
@@ -254,6 +256,8 @@ public class MainActivity extends AppCompatActivity {
                 btnMenu.setAlpha(awakeState);
             }
         };
+
+        appContext.init();
 
         resetDates();
 

@@ -6,7 +6,6 @@ import android.graphics.Canvas;
 import android.graphics.Paint;
 import android.os.AsyncTask;
 import android.os.Build;
-import android.os.Trace;
 import android.util.Log;
 
 import com.avaa.surfforecast.AppContext;
@@ -17,7 +16,6 @@ import com.avaa.surfforecast.data.TideData;
 import com.avaa.surfforecast.data.TideDataProvider;
 import com.avaa.surfforecast.views.SurfConditionsForecastView;
 
-import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.List;
 
@@ -35,16 +33,19 @@ import static com.avaa.surfforecast.drawers.MetricsAndPaints.*;
 @TargetApi(Build.VERSION_CODES.JELLY_BEAN_MR2)
 public class TideDrawer {
     private static final String TAG = "TideDrawer";
+
     private final SurfConditionsForecastView view;
 
-    private long drawnForDay = 0;
-    private Bitmap[] bitmaps = new Bitmap[MainActivity.NDAYS];
+    private final Bitmap[] bitmaps = new Bitmap[MainActivity.NDAYS];
     private final TideDataProvider tideDataProvider;
+
     private MetricsAndPaints metricsAndPaints;
-    public TideData tideData = null;
     private int dh;
     private int dayWidth;
-    public int h;
+    private int h;
+
+    private long drawnForDay = 0;
+    public TideData tideData = null;
 
 
     private Paint paintBGNoData = new Paint() {{
@@ -133,7 +134,7 @@ public class TideDrawer {
         if (now != null && bitmaps[0] != null) {
             String tide = String.valueOf(Math.round(now / 10f) / 10f);
 
-            if (AppContext.instance.usageStat.userLevel != 2) {
+            if (AppContext.instance.usageStat.getSpotsShownCount() > 2) {
                 c.drawCircle(nowx, nowy, dh * 0.6f, paintCircle);
                 if (orientation == 1) {
                     c.rotate(-90);
@@ -169,15 +170,15 @@ public class TideDrawer {
     }
 
 
-    private TideBitmapsAsyncDrawer tideBitmapsAsyncDrawer = null;
+    private TideChartBitmapsAsyncDrawer tideChartBitmapsAsyncDrawer = null;
     public boolean updateBitmaps() {
         if (tideDataProvider.getTideData(Common.BENOA_PORT_ID) == null) {
             Log.i(TAG, "updateBitmaps() | " + "cancelled. tideDataProvider.get() == null");
             return false;
         }
 
-        if (tideBitmapsAsyncDrawer != null && tideBitmapsAsyncDrawer.getStatus() != AsyncTask.Status.FINISHED) {
-            tideBitmapsAsyncDrawer.cancel(true);
+        if (tideChartBitmapsAsyncDrawer != null && tideChartBitmapsAsyncDrawer.getStatus() != AsyncTask.Status.FINISHED) {
+            tideChartBitmapsAsyncDrawer.cancel(true);
             Log.i(TAG, "updateBitmaps() | " + "cancelled async drawer");
         }
 
@@ -185,7 +186,7 @@ public class TideDrawer {
         long time = todaysStartTime.getTime().getTime();
 
         if (drawnForDay == 0) {
-            tideBitmapsAsyncDrawer = new TideBitmapsAsyncDrawer(0, this);
+            tideChartBitmapsAsyncDrawer = new TideChartBitmapsAsyncDrawer(0, this);
         }
         else {
 //            int offset = (int) ((time - drawnForDay) / 1000 / 60 / 60 / 24);
@@ -195,10 +196,10 @@ public class TideDrawer {
 //                bitmaps[i - offset] = bitmaps[i];
 //                if (bitmaps[i-offset] != null) si = i-offset+1;
 //            }
-//            tideBitmapsAsyncDrawer = new TideBitmapsAsyncDrawer(si, this); //MainActivity.NDAYS - offset);
-            tideBitmapsAsyncDrawer = new TideBitmapsAsyncDrawer(0, this);
+//            tideChartBitmapsAsyncDrawer = new TideChartBitmapsAsyncDrawer(si, this); //MainActivity.NDAYS - offset);
+            tideChartBitmapsAsyncDrawer = new TideChartBitmapsAsyncDrawer(0, this);
         }
-        tideBitmapsAsyncDrawer.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
+        tideChartBitmapsAsyncDrawer.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
 
         drawnForDay = time;
 
@@ -209,8 +210,8 @@ public class TideDrawer {
         view.postInvalidate();
 
         if (fromDay < MainActivity.NDAYS) {
-            tideBitmapsAsyncDrawer = new TideBitmapsAsyncDrawer(fromDay, this);
-            tideBitmapsAsyncDrawer.execute();
+            tideChartBitmapsAsyncDrawer = new TideChartBitmapsAsyncDrawer(fromDay, this);
+            tideChartBitmapsAsyncDrawer.execute();
         }
     }
 }

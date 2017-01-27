@@ -4,6 +4,8 @@ import android.content.SharedPreferences;
 import android.os.AsyncTask;
 import android.util.Log;
 
+import com.avaa.surfforecast.AppContext;
+
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -14,15 +16,6 @@ import java.util.Map;
  */
 
 public class METARProvider {
-    public static METARProvider getInstance() {
-        return instance;
-    }
-    public static METARProvider getInstance(SharedPreferences sp, BusyStateListener bsl) {
-        if (instance == null) instance = new METARProvider(sp, bsl);
-        return instance;
-    }
-
-
     public METAR get(String name) {
         if (name == null) return null;
         METAR metar = metars.get(name);
@@ -63,9 +56,6 @@ public class METARProvider {
     private static final String SPKEY_METARS = "METARs";
     private static final String TAG = "metarProvider";
 
-    private static METARProvider instance = null;
-
-    private final SharedPreferences sp;
     private final List<UpdateListener> uls = new ArrayList<>();
 
     public BusyStateListener bsl = null;
@@ -74,9 +64,12 @@ public class METARProvider {
     private Map<String, METARRetriever> tasks = new HashMap<>();
 
 
-    private METARProvider(SharedPreferences sp, BusyStateListener bsl) {
-        this.sp = sp;
+    public METARProvider(BusyStateListener bsl) {
         this.bsl = bsl;
+    }
+
+
+    public void init() {
         load();
         update(SurfSpots.WADD);
     }
@@ -101,6 +94,8 @@ public class METARProvider {
 
 
     private void load() {
+        SharedPreferences sp = AppContext.instance.sharedPreferences;
+
         String s = sp.getString(SPKEY_METARS, null);
         if (s == null) return;
         String[] split = s.split("\n");
@@ -112,6 +107,8 @@ public class METARProvider {
         }
     }
     public void save() {
+        SharedPreferences sp = AppContext.instance.sharedPreferences;
+
         Log.i(TAG, "save()");
         String s = "";
         long currentTimeMillis = System.currentTimeMillis();

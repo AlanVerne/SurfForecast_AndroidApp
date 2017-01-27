@@ -19,7 +19,8 @@ import android.widget.LinearLayout;
 
 import com.avaa.surfforecast.AppContext;
 import com.avaa.surfforecast.MainActivity;
-import com.avaa.surfforecast.drawers.ForecastBitmapsAsyncDrawer;
+import com.avaa.surfforecast.data.SurfConditionsProvider;
+import com.avaa.surfforecast.drawers.SurfConditionsOneDayBitmapsAsyncDrawer;
 import com.avaa.surfforecast.drawers.TideDrawer;
 import com.avaa.surfforecast.data.Common;
 import com.avaa.surfforecast.data.SurfSpot;
@@ -57,11 +58,11 @@ public class SurfConditionsForecastView extends HorizontalScrollView { //extends
 
     private TideDrawer tideDrawer = null;
 
-    public final ForecastBitmaps[] bitmaps = new ForecastBitmaps[7];
+    public final SurfConditionsOneDatBitmaps[] bitmaps = new SurfConditionsOneDatBitmaps[7];
     private int dh = 0;
 
 
-    public static class ForecastBitmaps {
+    public static class SurfConditionsOneDatBitmaps {
         public Bitmap wave;
         public Bitmap wind;
     }
@@ -170,7 +171,7 @@ public class SurfConditionsForecastView extends HorizontalScrollView { //extends
         );
 
         for (int i = 0; i < bitmaps.length; i++) {
-            bitmaps[i] = new ForecastBitmaps();
+            bitmaps[i] = new SurfConditionsOneDatBitmaps();
         }
 
         iv.setMinimumWidth(getWidth()*7);
@@ -283,10 +284,11 @@ public class SurfConditionsForecastView extends HorizontalScrollView { //extends
         paintBGs.setColor(0xfff4f4f4);
         int w = dh * 16;
         int i = 0;
-        for (ForecastBitmaps b : bitmaps) {
+        SurfConditionsProvider conditionsProvider = AppContext.instance.surfSpots.selectedSpot().conditionsProvider;
+        for (SurfConditionsOneDatBitmaps b : bitmaps) {
             if (x + w > getScrollX()) {
                 if (x > getScrollX() + getWidth()) break;
-                if (SurfSpots.getInstance().selectedSpot().conditionsProvider.isDetailed(i)) {
+                if (conditionsProvider.isDetailed(i)) {
                     canvas.drawRect(x + 0, 0, x + dh * 6, dh * 8, paintBGs);
                     canvas.drawRect(x + dh * 12, 0, x + dh * 16, dh * 8, paintBGs);
                 }
@@ -311,7 +313,7 @@ public class SurfConditionsForecastView extends HorizontalScrollView { //extends
         int ddd = (dh*16 - getWidth())/2;
         int k = Math.abs((sx-ddd+dh*8)%(dh*16)-dh*8);
         float visible = Math.max(0f, Math.min(1f, (dh - k)/(dh/2f)));
-        if (visible > 0) {
+        if (visible > 0) {  // TODO move to TideDrawer
             canvas.save();
             canvas.translate(dh + getScrollX() - labelsY, getHeight());
             canvas.rotate(-90);
@@ -420,14 +422,14 @@ public class SurfConditionsForecastView extends HorizontalScrollView { //extends
 
 
 
-    public ForecastBitmapsAsyncDrawer forecastBitmapsAsyncDrawer = null;
+    public SurfConditionsOneDayBitmapsAsyncDrawer surfConditionsOneDayBitmapsAsyncDrawer = null;
     public void redrawSurfConditions() {
         Log.i(TAG, "redrawSurfConditions() | 1");
         if (dh == 0) return;
         Integer[] shownDays = getShownDays();
-        SurfSpot surfSpot = SurfSpots.getInstance().selectedSpot();
+        SurfSpot surfSpot = AppContext.instance.surfSpots.selectedSpot();
 
-        if (forecastBitmapsAsyncDrawer != null && forecastBitmapsAsyncDrawer.getStatus() != AsyncTask.Status.FINISHED) forecastBitmapsAsyncDrawer.cancel(true);
+        if (surfConditionsOneDayBitmapsAsyncDrawer != null && surfConditionsOneDayBitmapsAsyncDrawer.getStatus() != AsyncTask.Status.FINISHED) surfConditionsOneDayBitmapsAsyncDrawer.cancel(true);
 
         if (surfSpot == null || surfSpot.conditionsProvider.isNoData()) {
             Log.i(TAG, "redrawSurfConditions() | cancelled" +
@@ -435,7 +437,7 @@ public class SurfConditionsForecastView extends HorizontalScrollView { //extends
                     (surfSpot != null ? ", isNoData = " + surfSpot.conditionsProvider.isNoData() : "")
             );
 
-            for (ForecastBitmaps bitmap : bitmaps) {
+            for (SurfConditionsOneDatBitmaps bitmap : bitmaps) {
                 bitmap.wind = null;
                 bitmap.wave = null;
             }
@@ -443,8 +445,8 @@ public class SurfConditionsForecastView extends HorizontalScrollView { //extends
         }
         Log.i(TAG, "redrawSurfConditions() | 2");
 
-        forecastBitmapsAsyncDrawer = new ForecastBitmapsAsyncDrawer(surfSpot, 0, new ArrayList<>(Arrays.asList(shownDays)), this);
-        forecastBitmapsAsyncDrawer.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
+        surfConditionsOneDayBitmapsAsyncDrawer = new SurfConditionsOneDayBitmapsAsyncDrawer(surfSpot, 0, new ArrayList<>(Arrays.asList(shownDays)), this);
+        surfConditionsOneDayBitmapsAsyncDrawer.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
     }
     public void redrawTide() {
         if (tideDrawer != null && tideDrawer.updateBitmaps()) {

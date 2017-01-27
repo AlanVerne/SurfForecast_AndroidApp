@@ -6,6 +6,8 @@ import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.util.Log;
 
+import com.avaa.surfforecast.AppContext;
+
 import java.io.BufferedReader;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
@@ -35,7 +37,6 @@ public class TideDataProvider {
 
     protected final SortedMap<String, TideData> portIDToTideData = new TreeMap<>();
     private final Map<String, TideDataRetriever> asyncTasks = new HashMap<>();
-    private final SharedPreferences sharedPreferences;
 
     public interface TideDataProviderListener {
         void updated(String portID);
@@ -43,18 +44,6 @@ public class TideDataProvider {
     }
     private final List<TideDataProviderListener> listeners = new ArrayList<>();
     public void addListener(TideDataProviderListener l) { listeners.add(l); }
-
-
-    public static TideDataProvider instance = null;
-    public static TideDataProvider getInstance() {
-        return instance;
-    }
-    public static TideDataProvider getInstance(SharedPreferences sharedPreferences) {
-        if (instance == null) {
-            instance = new TideDataProvider(sharedPreferences);
-        }
-        return instance;
-    }
 
 
     public void newDataFetched(String portID, TideData tideData) {
@@ -87,7 +76,7 @@ public class TideDataProvider {
         TideDataRetriever asyncTask = asyncTasks.get(portID);
         if (asyncTask == null || asyncTask.getStatus().equals(AsyncTask.Status.FINISHED)) {
             fireLoadingStateChanged(portID, true);
-            asyncTask = new TideDataRetriever(getInstance(), portID, widgetsRunnable);
+            asyncTask = new TideDataRetriever(this, portID, widgetsRunnable);
             asyncTasks.put(portID, asyncTask);
             asyncTask.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
         }
@@ -115,8 +104,7 @@ public class TideDataProvider {
     }
 
 
-    private TideDataProvider(SharedPreferences sharedPreferences) {
-        this.sharedPreferences = sharedPreferences;
+    public void init() {
         load();
     }
 
@@ -139,12 +127,14 @@ public class TideDataProvider {
 
 
     private void load() {
-        Set<String> portIDs = sharedPreferences.getStringSet(SPKEY_SAVED_PORT_IDS, null);
+        SharedPreferences sp = AppContext.instance.sharedPreferences;
+
+        Set<String> portIDs = sp.getStringSet(SPKEY_SAVED_PORT_IDS, null);
         if (portIDs == null) return;
 
         for (String portID : portIDs) {
-            String precise   = sharedPreferences.getString(SPKEY_TIDE_DATA_PRECISE   + portID, null);
-            String extremums = sharedPreferences.getString(SPKEY_TIDE_DATA_EXTREMUMS + portID, null);
+            String precise   = sp.getString(SPKEY_TIDE_DATA_PRECISE   + portID, null);
+            String extremums = sp.getString(SPKEY_TIDE_DATA_EXTREMUMS + portID, null);
             if (precise != null && extremums != null) {
                 TideData tideData = new TideData(precise, extremums);
                 if (tideData.hasDays() > 0) portIDToTideData.put(portID, tideData);
@@ -154,7 +144,9 @@ public class TideDataProvider {
 
 
     private void save(String id) {
-        SharedPreferences.Editor edit = sharedPreferences.edit();
+        SharedPreferences sp = AppContext.instance.sharedPreferences;
+
+        SharedPreferences.Editor edit = sp.edit();
 
         edit.putStringSet(SPKEY_SAVED_PORT_IDS, portIDToTideData.keySet());
 

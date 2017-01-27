@@ -1,8 +1,9 @@
-package com.avaa.surfforecast;
+package com.avaa.surfforecast.data;
 
 import android.content.SharedPreferences;
 import android.util.Log;
 
+import com.avaa.surfforecast.AppContext;
 import com.avaa.surfforecast.data.BusyStateListener;
 
 import java.util.ArrayList;
@@ -22,21 +23,13 @@ public class UsageStat {
     public int userLevel = 2;
 
 
-    public static UsageStat getInstance() {
-        return instance;
-    }
-    public static UsageStat getInstance(SharedPreferences sp) {
-        if (instance == null) instance = new UsageStat(sp);
-        return instance;
+    public UsageStat(SharedPreferences sharedPreferences) {
+        load(sharedPreferences);
     }
 
 
-    private static UsageStat instance = null;
-
-
-    public UsageStat(SharedPreferences sp) {
-        spotsShownCount = sp.getInt(SPKEY_SPOTS_SHOWN_COUNT, 0);
-        if (spotsShownCount > 10) userLevel = 2;
+    public int getSpotsShownCount() {
+        return spotsShownCount;
     }
 
 
@@ -70,6 +63,10 @@ public class UsageStat {
     }
 
 
+    private void load(SharedPreferences sharedPreferences) {
+        spotsShownCount = sharedPreferences.getInt(SPKEY_SPOTS_SHOWN_COUNT, 0);
+        if (spotsShownCount > 10) userLevel = 1;
+    }
     public void save() {
         SharedPreferences.Editor spe = AppContext.instance.sharedPreferences.edit();
         spe.putInt(SPKEY_SPOTS_SHOWN_COUNT, spotsShownCount);

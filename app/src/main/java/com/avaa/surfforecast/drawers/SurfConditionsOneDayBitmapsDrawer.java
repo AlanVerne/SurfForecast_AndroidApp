@@ -19,23 +19,21 @@ import static com.avaa.surfforecast.drawers.MetricsAndPaints.*;
  * Created by Alan on 25 May 2016.
  */
 
-public class ConditionsBitmapsDrawer {
-    private float density;
+public class SurfConditionsOneDayBitmapsDrawer {
+    private static final float RK = 0.7f;
 
-    private float rk = 0.7f;
+    private final float density;
+    private final int dh;
 
-    private float font;
-    private int fontHDiv2;
+    private final int fontHDiv2;
 
-    public int dh = 0;
-
-    private Paint paintDirection;
-    private Paint paintFontWavePeriod;
-    private Paint paintFontBigBoldWaveHeight;
-    private Paint paintFontWind;
+    private final Paint paintDirection;
+    private final Paint paintFontWavePeriod;
+    private final Paint paintFontBigBoldWaveHeight;
+    private final Paint paintFontWind;
 
 
-    public ConditionsBitmapsDrawer(MetricsAndPaints metricsAndPaints) {
+    public SurfConditionsOneDayBitmapsDrawer(MetricsAndPaints metricsAndPaints) {
         this.density = metricsAndPaints.density;
         this.dh = metricsAndPaints.dh;
 
@@ -68,11 +66,16 @@ public class ConditionsBitmapsDrawer {
     }
 
 
+    public Bitmap getBitmapForWarming() {
+        return Bitmap.createBitmap(dh * 16, dh * 4, Bitmap.Config.ARGB_8888);
+    }
+
+
     public Bitmap drawWave(Map<Integer, SurfConditions> conditions, boolean vertical) {
         int width  = dh * 16;
         int height = dh * 3;
 
-        int r = (int)(dh * rk);
+        int r = (int)(dh * RK);
         int circlesY = dh;
 
         Bitmap b = Bitmap.createBitmap(width, height, Bitmap.Config.ARGB_8888);
@@ -149,11 +152,12 @@ public class ConditionsBitmapsDrawer {
         return b;
     }
 
+
     public Bitmap drawWind(Map<Integer, SurfConditions> conditions, Direction offshore, boolean vertical) {
         int width  = dh * 16;
         int height = dh * 2;
 
-        int r = (int)(dh * rk);
+        int r = (int)(dh * RK);
         int circlesY = dh;
 
         Bitmap b = Bitmap.createBitmap(width, height, Bitmap.Config.ARGB_8888);

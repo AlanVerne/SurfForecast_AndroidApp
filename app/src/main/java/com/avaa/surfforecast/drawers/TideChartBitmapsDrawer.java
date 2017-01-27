@@ -23,16 +23,16 @@ import static com.avaa.surfforecast.drawers.MetricsAndPaints.getColorMinor;
  * Created by Alan on 25 Jan 2017.
  */
 
-public class TideChartBitmapDrawer {
-    private int dh;
-    private float fontHDiv2;
+public class TideChartBitmapsDrawer {
+    private final int dh;
+    private final float fontHDiv2;
 
-    private Paint paintHourly3Tides;
-    private Paint paintHourlyTides;
-    private Paint paintHourly3Hour;
+    private final Paint paintHourly3Tides;
+    private final Paint paintHourlyTides;
+    private final Paint paintHourly3Hour;
 
 
-    public TideChartBitmapDrawer(MetricsAndPaints metricsAndPaints) {
+    public TideChartBitmapsDrawer(MetricsAndPaints metricsAndPaints) {
         dh = metricsAndPaints.dh;
         fontHDiv2 = metricsAndPaints.fontHDiv2;
 
@@ -52,6 +52,7 @@ public class TideChartBitmapDrawer {
             setColor(colorMinorTideText);
         }};
     }
+
 
     public Bitmap drawTide(TideData tideData, int plusDays, boolean vertical) {
         int width = dh * 16;
