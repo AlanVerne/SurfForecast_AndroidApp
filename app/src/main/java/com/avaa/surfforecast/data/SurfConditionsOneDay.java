@@ -54,7 +54,7 @@ public class SurfConditionsOneDay extends TreeMap<Integer, SurfConditions> { // 
             fixedConditions.put((int)(16.5 * 60), super.get(17 * 60));
         }
 
-        Log.i("SurfConditionsOneDay", "getFixed() | " + this + "\n" + isDetailed() + "\n" + fixedConditions);
+//        Log.i("SurfConditionsOneDay", "getFixed() | " + this + "\n" + isDetailed() + "\n" + fixedConditions);
         return fixedConditions;
     }
 

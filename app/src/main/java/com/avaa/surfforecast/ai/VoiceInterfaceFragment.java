@@ -19,6 +19,7 @@ import android.widget.LinearLayout;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
 
+import com.avaa.surfforecast.AppContext;
 import com.avaa.surfforecast.R;
 import com.avaa.surfforecast.views.CircleAnimatedFrameLayout;
 import com.avaa.surfforecast.views.CircleVoiceIndicator;
@@ -105,7 +106,7 @@ public class VoiceInterfaceFragment extends Fragment {
             }
             Log.i(TAG, "onResults()\n" + text);
 
-            String s = commandsExecutor.toStringCommand(res.values());
+            String s = AppContext.instance.voiceRecognitionHelper.toStringCommand(res.values());
 
             if (s == null) uiHideHint();
             else {
@@ -130,7 +131,7 @@ public class VoiceInterfaceFragment extends Fragment {
         @Override
         public void onPartialResults(Bundle partialResults) {
             ArrayList<String> list = partialResults.getStringArrayList(SpeechRecognizer.RESULTS_RECOGNITION);
-            String result = commandsExecutor.toStringCommand(list);
+            String result = AppContext.instance.voiceRecognitionHelper.toStringCommand(list);
             if (result != null) tvHintOptPrerecognized.setText(result);
         }
 

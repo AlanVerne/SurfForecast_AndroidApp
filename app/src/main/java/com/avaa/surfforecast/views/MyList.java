@@ -31,11 +31,11 @@ public class MyList extends FeaturedScrollView {
     private static final int FALLING_ASLEEP_TIME = 160;
     private static final int AWAKENING_TIME = 240;
 
-    int dh = 0;
+    private int dh = 0;
 
-    public static int spacing = 0;
-    public static int paddingLeft = 0;
-    public static int paddingTop  = 0; //paddingLeft - spacing/2;
+    private int spacing = 0;
+    private int paddingLeft = 0;
+    private int paddingTop  = 0; //paddingLeft - spacing/2;
 
     private final LinearLayout layout;
 
@@ -46,19 +46,39 @@ public class MyList extends FeaturedScrollView {
     volatile private boolean awake = false;
     volatile private float   awakeState = 0; // 0 - not awakened - no list, 1 - awakened - all spots list
 
-    long prevTime = -1;
+    private long prevTime = -1;
 
-    boolean firedAwaken = true;
-    boolean firedSlept  = true;
-
-
-    public OnSelectedListener onSelected = (i) -> {};
     public interface OnSelectedListener {
         void onSelected(int i);
     }
+    public OnSelectedListener onSelected = (i) -> {};
 
-    Runnable afterAwakened = null;
-    Runnable afterSlept    = null;
+    private Runnable afterAwakened = null;
+    private Runnable afterSlept    = null;
+
+    private Timer timerSleep = null;
+
+    private final Handler handlerSleep = new Handler(msg -> {
+        sleep();
+        return true;
+    });
+
+    private class TimerTaskSleep extends TimerTask {
+        @Override
+        public void run() {
+            handlerSleep.sendEmptyMessage(0);
+        }
+    }
+
+    public interface ScrollListener {
+        void scrolled(float shownI, float firstI, float lastI, float awakeState);
+        void scrolled(float awakeState);
+    }
+    public ScrollListener sl = null;
+
+    int pointers = 0;
+
+    boolean ignoreSelectedViewSelection = false;
 
 
     public MyList(Context context, AttributeSet attrs, int defStyleAttr) {
@@ -74,6 +94,7 @@ public class MyList extends FeaturedScrollView {
     public MyList(Context context) {
         this(context, null);
     }
+
 
     private void init() {
         //float density = getResources().getDisplayMetrics().density;
@@ -143,20 +164,6 @@ public class MyList extends FeaturedScrollView {
         }
     }
 
-    private Timer timerSleep = null;
-
-    private final Handler handlerSleep = new Handler(msg -> {
-        sleep();
-        return true;
-    });
-
-    private class TimerTaskSleep extends TimerTask {
-        @Override
-        public void run() {
-            handlerSleep.sendEmptyMessage(0);
-        }
-    }
-
 
     private void resetSleepTimer() {
         if (timerSleep != null) timerSleep.cancel();
@@ -170,6 +177,7 @@ public class MyList extends FeaturedScrollView {
             timerSleep = null;
         }
     }
+
 
     public void awake(Runnable r) {
         if (awakeState == 1) r.run();
@@ -240,7 +248,7 @@ public class MyList extends FeaturedScrollView {
         layout.removeAllViews();
         this.views = views;
         for (View view : views) {
-            view.setPadding(MyList.paddingLeft, 0, MyList.spacing, 0);
+            view.setPadding(paddingLeft, 0, spacing, 0);
             if (isViewSelectable(view)) view.setOnClickListener(this::select);
             layout.addView(view);
         }
@@ -291,13 +299,6 @@ public class MyList extends FeaturedScrollView {
 //        super.onSizeChanged(w, h, oldw, oldh);
 //        if (views != null && !views.isEmpty()) updatePadding();
 //    }
-
-
-    public interface ScrollListener {
-        void scrolled(float shownI, float firstI, float lastI, float awakeState);
-        void scrolled(float awakeState);
-    }
-    public ScrollListener sl = null;
 
 
     protected void onScrollStart() {
@@ -362,10 +363,6 @@ public class MyList extends FeaturedScrollView {
         if (sl != null) sl.scrolled(si, fi, Math.min(i-1f, li), awakeState);
     }
 
-    int pointers = 0;
-
-
-    boolean ignoreSelectedViewSelection = false;
 
     @Override
     public boolean onInterceptTouchEvent(MotionEvent ev) {

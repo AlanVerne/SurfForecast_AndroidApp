@@ -3,6 +3,7 @@ package com.avaa.surfforecast;
 import android.content.SharedPreferences;
 
 import com.avaa.surfforecast.ai.CommandsExecutor;
+import com.avaa.surfforecast.ai.VoiceRecognitionHelper;
 import com.avaa.surfforecast.data.BusyStateListener;
 import com.avaa.surfforecast.data.METARProvider;
 import com.avaa.surfforecast.data.SurfSpots;
@@ -25,6 +26,7 @@ public class AppContext {
     public final SurfSpots surfSpots;
     public final TideDataProvider tideDataProvider;
 
+    public VoiceRecognitionHelper voiceRecognitionHelper;
     public CommandsExecutor commandsExecutor;
 
     public MetricsAndPaints metricsAndPaints;

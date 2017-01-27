@@ -8,6 +8,7 @@ import android.graphics.Rect;
 import android.graphics.RectF;
 import android.graphics.Typeface;
 
+import com.avaa.surfforecast.AppContext;
 import com.avaa.surfforecast.data.Direction;
 import com.avaa.surfforecast.data.SurfConditions;
 
@@ -25,17 +26,27 @@ public class SurfConditionsOneDayBitmapsDrawer {
     private final float density;
     private final int dh;
 
+    private final boolean drawMeasures;
+
     private final int fontHDiv2;
+    private final int fontBigHDiv2;
 
     private final Paint paintDirection;
     private final Paint paintFontWavePeriod;
     private final Paint paintFontBigBoldWaveHeight;
     private final Paint paintFontWind;
 
+    private final int colorMinorWindText;
+    private final Paint paintWaveHeightTextHalf;
+
+    private final Paint paintFontSmall;
+
 
     public SurfConditionsOneDayBitmapsDrawer(MetricsAndPaints metricsAndPaints) {
         this.density = metricsAndPaints.density;
         this.dh = metricsAndPaints.dh;
+
+        drawMeasures = AppContext.instance.usageStat.userLevel == 2;
 
         paintDirection = new Paint() {{
             setAntiAlias(true);
@@ -62,7 +73,20 @@ public class SurfConditionsOneDayBitmapsDrawer {
             setTextAlign(Align.CENTER);
         }};
 
+        colorMinorWindText = getColorMinor(colorWaveText);
+
+        paintWaveHeightTextHalf = new Paint(paintFontBigBoldWaveHeight) {{
+            setColor(colorMinorWindText);
+            //setTextSize(density*font);
+            setTextAlign(Align.LEFT);
+            setTypeface(Typeface.create(Typeface.DEFAULT, Typeface.NORMAL));
+        }};
+
+        paintFontSmall = new Paint(metricsAndPaints.paintFontSmall);
+        paintFontSmall.setTextAlign(Paint.Align.LEFT);
+
         fontHDiv2 = metricsAndPaints.fontHDiv2;
+        fontBigHDiv2 = metricsAndPaints.fontBigH / 2;
     }
 
 
@@ -81,11 +105,7 @@ public class SurfConditionsOneDayBitmapsDrawer {
         Bitmap b = Bitmap.createBitmap(width, height, Bitmap.Config.ARGB_8888);
         Canvas c = new Canvas(b);
 
-        int colorMinorWindText = getColorMinor(colorWaveText);
         paintDirection.setColor(colorMinorWindText);
-        Rect bounds = new Rect();
-        paintFontBigBoldWaveHeight.getTextBounds("0", 0, 1, bounds);
-        int whH = bounds.height();
 
         if (vertical) {
             c.save();
@@ -129,24 +149,32 @@ public class SurfConditionsOneDayBitmapsDrawer {
             paintFontWavePeriod.setColor(minute >= 360 && minute <= 1080 ? colorWaveText : colorMinorWindText);
             paintFontBigBoldWaveHeight.setColor(minute >= 360 && minute <= 1080 ? colorWaveText : colorMinorWindText);
             String sWaveHeight = String.valueOf(h2 / 2);
-            if (h2 % 2 != 0) {
+            if (h2 % 2 != 0 && !drawMeasures) {
                 //c.drawText(String.valueOf(h2 / 2) + "\u00BD", x, circlesY + whH / 2, paintFontBigBoldWaveHeight);
-                c.drawText(sWaveHeight, tx, ty + whH / 2, paintFontBigBoldWaveHeight);
-                Paint paintWaveHeightTextHalf = new Paint(paintFontBigBoldWaveHeight) {{
-                    setColor(colorMinorWindText);
-                    //setTextSize(density*font);
-                    setTextAlign(Align.LEFT);
-                    setTypeface(Typeface.create(Typeface.DEFAULT, Typeface.NORMAL));
-                }};
-                paintFontBigBoldWaveHeight.getTextBounds(sWaveHeight, 0, sWaveHeight.length(), bounds);
-                c.drawText("+", tx + (int)(bounds.width()*0.6), ty + whH / 2, paintWaveHeightTextHalf);
+                c.drawText(sWaveHeight, tx, ty + fontBigHDiv2, paintFontBigBoldWaveHeight);
+
+                float w = paintFontBigBoldWaveHeight.measureText(sWaveHeight);
+                c.drawText("+", tx + w*0.5f, ty + fontBigHDiv2, paintWaveHeightTextHalf);
                 //c.drawText("\u00BD", x + (int)(bounds.width()*0.6), circlesY + whH / 2, paintWaveHeightTextHalf);
             }
             else {
-                c.drawText(sWaveHeight, tx, ty + whH / 2, paintFontBigBoldWaveHeight);
+                c.drawText(sWaveHeight, tx, ty + fontBigHDiv2, paintFontBigBoldWaveHeight);
             }
-            if (vertical) c.drawText(String.valueOf(iconditions.wavePeriod), tx + (int)(dh*1.5), ty + fontHDiv2, paintFontWavePeriod);
-            else c.drawText(String.valueOf(iconditions.wavePeriod), tx, ty + (int)(dh*1.5) + fontHDiv2, paintFontWavePeriod);
+
+            if (drawMeasures) {
+                float w = paintFontBigBoldWaveHeight.measureText(sWaveHeight);
+                c.drawText("ft", tx + w*0.5f, ty + fontBigHDiv2, paintFontSmall);
+            }
+
+            String sWavePeriod = String.valueOf(iconditions.wavePeriod);
+
+            if (vertical) c.drawText(sWavePeriod, tx + (int)(dh*1.5), ty + fontHDiv2, paintFontWavePeriod);
+            else c.drawText(sWavePeriod, tx, ty + (int)(dh*1.5) + fontHDiv2, paintFontWavePeriod);
+
+            if (drawMeasures) {
+                float w = paintFontWavePeriod.measureText(sWavePeriod);
+                c.drawText("s", tx + w*0.5f, ty + dh*1.5f + fontHDiv2, paintFontSmall);
+            }
         }
 
         return b;

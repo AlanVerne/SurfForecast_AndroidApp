@@ -19,7 +19,7 @@ public class METARProvider {
     public METAR get(String name) {
         if (name == null) return null;
         METAR metar = metars.get(name);
-        Log.i(TAG, "get() " + toString(name, metar));
+//        Log.i(TAG, "get() " + toString(name, metar));
         long currentTimeMillis = System.currentTimeMillis();
         if (metar == null || (metar.isMinutePassedFromLastFetch(currentTimeMillis) && metar.isOld(currentTimeMillis))) update(name);
         if (metar == null) return null;
@@ -29,11 +29,11 @@ public class METARProvider {
 
 
     public void update(String name) {
-        Log.i(TAG, "update() " + name);
+//        Log.i(TAG, "update() " + name);
         if (name == null) return;
         METARRetriever task = tasks.get(name);
         if (task != null && task.getStatus() != AsyncTask.Status.FINISHED) {
-            Log.i(TAG, "UPDATE IS ALREADY RUNNING");
+//            Log.i(TAG, "UPDATE IS ALREADY RUNNING");
             return;
         }
         task = new METARRetriever(this, name);
@@ -102,21 +102,27 @@ public class METARProvider {
         if (split.length % 2 == 1) return;
         for (int i = 0; i < split.length; i += 2) {
             METAR metar = METAR.fromSavableString(split[i + 1]);
-            Log.i(TAG, "load() loaded for " + split[i] + " | " + metar.toString());
+//            Log.i(TAG, "load() | loaded for " + split[i] + " | " + metar.toString());
             if (!metar.isVeryOld()) metars.put(split[i], metar);
         }
     }
     public void save() {
-        SharedPreferences sp = AppContext.instance.sharedPreferences;
-
-        Log.i(TAG, "save()");
-        String s = "";
+//        Log.i(TAG, "save()");
+        StringBuilder sb = new StringBuilder(100);
         long currentTimeMillis = System.currentTimeMillis();
         for (Map.Entry<String, METAR> entry : metars.entrySet()) {
-            if (!entry.getValue().isVeryOld(currentTimeMillis)) s += "\n" + entry.getKey() + "\n" + entry.getValue().toSavableString();
+            if (!entry.getValue().isVeryOld(currentTimeMillis)) {
+                sb.append('\n');
+                sb.append(entry.getKey());
+                sb.append('\n');
+                sb.append(entry.getValue().toSavableString());
+            }
         }
-        if (s.isEmpty()) s = null;
-        else s = s.substring(1);
+
+        String s = null;
+        if (sb.length() > 0) s = sb.substring(1);
+
+        SharedPreferences sp = AppContext.instance.sharedPreferences;
         sp.edit().putString(SPKEY_METARS, s).apply();
     }
 }

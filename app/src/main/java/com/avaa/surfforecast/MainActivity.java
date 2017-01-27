@@ -192,8 +192,7 @@ public class MainActivity extends AppCompatActivity {
         });
 
         mainLayout.setBackgroundColor(colorBG);
-        baliMap.colorAccent = colorAccent;
-        baliMap.colorWaterColor = colorAccent;
+        baliMap.setAccentColor(colorAccent);
 
         //baliMap.surfSpotsList = surfSpots.getAll();
 
