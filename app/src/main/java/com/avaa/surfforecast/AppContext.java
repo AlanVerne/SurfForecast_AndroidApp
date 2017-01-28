@@ -42,9 +42,10 @@ public class AppContext {
 
 
     public void init() {
-        surfSpots.init();
         tideDataProvider.init();
         metarProvider.init();
+
+        surfSpots.init();
     }
 
 

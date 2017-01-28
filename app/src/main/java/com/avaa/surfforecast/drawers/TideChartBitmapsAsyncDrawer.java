@@ -18,9 +18,9 @@ import java.util.List;
  */
 
 public class TideChartBitmapsAsyncDrawer extends AsyncTask<Void, Void, List<Bitmap>> {
-    private static final String TAG = "TideChartBitmapsAsyncDrawer";
+    private static final String TAG = "TideChartBmpsAD";
 
-    private final TideDrawer tideDrawer;
+    private final TideChartDrawer tideChartDrawer;
 
     private final int startFromDay;
 
@@ -30,8 +30,8 @@ public class TideChartBitmapsAsyncDrawer extends AsyncTask<Void, Void, List<Bitm
     private final int dh;
 
 
-    public TideChartBitmapsAsyncDrawer(int startFromDay, TideDrawer tideDrawer) {
-        this.tideDrawer = tideDrawer;
+    public TideChartBitmapsAsyncDrawer(int startFromDay, TideChartDrawer tideChartDrawer) {
+        this.tideChartDrawer = tideChartDrawer;
 
         this.startFromDay = startFromDay;
 
@@ -83,7 +83,7 @@ public class TideChartBitmapsAsyncDrawer extends AsyncTask<Void, Void, List<Bitm
     protected void onPostExecute(List<Bitmap> bitmaps) {
 //        Trace.beginSection("onPostExecute");
         if (bitmaps == null) return;
-        tideDrawer.bitmapsReady(bitmaps, startFromDay);
+        tideChartDrawer.bitmapsReady(bitmaps, startFromDay);
 //        Trace.endSection();
     }
 }

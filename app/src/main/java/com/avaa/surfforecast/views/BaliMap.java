@@ -194,8 +194,9 @@ public class BaliMap extends View {
             currentConditions = surfSpots.currentConditions;
             currentMETAR = surfSpots.currentMETAR;
 
-            Integer windSpeed = currentMETAR != null ? currentMETAR.windSpeed : currentConditions != null ? currentConditions.windSpeed : null;
-            strWindSpeed = windSpeed != null ? String.valueOf(windSpeed) : null;
+            if (currentMETAR != null) strWindSpeed = String.valueOf(currentMETAR.windSpeed);
+            else if (currentConditions != null) strWindSpeed = String.valueOf(currentConditions.windSpeed);
+            else strWindSpeed = null;
 
             if (currentConditions != null) {
                 strWaveHeight = String.valueOf(currentConditions.getWaveHeightInFt());
@@ -230,16 +231,7 @@ public class BaliMap extends View {
 
         density = getResources().getDisplayMetrics().density;
 
-//        smallTextSize *= density;
-//        bigTextSize   *= density;
-
-//        if (hintsVisiblePolicy > 0) {
-//            hintsVisible = 1;
-//        }
-
-        AppContext.instance.usageStat.addUserLevelListener(l -> {
-            setHintsVisiblePolicy(l);
-        });
+        AppContext.instance.usageStat.addUserLevelListener(this::setHintsVisiblePolicy);
 
         setAwakenedState(1);
 
@@ -434,7 +426,7 @@ public class BaliMap extends View {
         timerHintsHide.schedule(new TimerTask() {
             synchronized public void run() {
                 //Log.i("BM", "start hiding");
-                mScrollerHints.startScroll(1000, 0, -1000, 0, 6660);
+                mScrollerHints.startScroll(1000, 0, -1000, 0, 666);
                 repaint();
             }
         }, 10000);
@@ -863,7 +855,7 @@ public class BaliMap extends View {
     private Bitmap bmpMapZoomedIn = null;
     private int bmpMapZoomedInForSpotI = -1;
 
-    private static final float paddingTop = 3;
+    private static final float paddingTop = 4f;
     private static final float paddingBottom = 4.8f;
 
     private static final float rOut = 200;

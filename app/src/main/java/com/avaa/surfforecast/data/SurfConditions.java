@@ -43,8 +43,7 @@ public class SurfConditions {
         String[] split = s.split("\t");
         try {
             Direction.valueOf(split[1]);
-        }
-        catch (IllegalArgumentException ignored) {
+        } catch (IllegalArgumentException ignored) {
             return new SurfConditions(Integer.valueOf(split[0]),
                     Float.valueOf(split[1]),
                     Integer.valueOf(split[2]),
@@ -61,7 +60,7 @@ public class SurfConditions {
     }
 
     public float getWaveHeightInFt() {
-        return Math.round(waveHeight * 3.28084f / 5.0f)/2f;
+        return Math.round(waveHeight * 3.28084f / 5.0f) / 2f;
     }
 
     @Override
@@ -90,6 +89,14 @@ public class SurfConditions {
     }
 
 
+    public void addMETAR(METAR metar) {
+        if (metar != null) {
+            windSpeed = metar.windSpeed;
+            windAngle = metar.windAngle;
+        }
+    }
+
+
     public void resetRating() {
         waveRating = -1;
         windRating = -1;
@@ -97,12 +104,16 @@ public class SurfConditions {
     }
     private void rateWave(SurfSpot spot) {
         if (spot.maxSwell - spot.minSwell != 0) {
-            float sweelHeightAve = (spot.maxSwell + spot.minSwell) / 2f;
+            float swellHeightAve = (spot.maxSwell + spot.minSwell) / 2f;
 
-            waveRating = (getWaveHeightInFt() - sweelHeightAve) / (sweelHeightAve - spot.minSwell);
-            Log.i("SurfConditions", "rateWave() | " + spot.minSwell + "-" + sweelHeightAve + "-" + spot.maxSwell + ", " + getWaveHeightInFt() + " " + waveRating);
-            waveRating *= waveRating;
-            waveRating = 1 - waveRating;
+            waveRating = (getWaveHeightInFt() - swellHeightAve) / (swellHeightAve - spot.minSwell);
+//            Log.i("SurfConditions", "rateWave() | " + spot.minSwell + "-" + swellHeightAve + "-" + spot.maxSwell + ", " + getWaveHeightInFt() + " " + waveRating);
+
+            waveRating = Math.max(0f, 1f - waveRating*waveRating);
+//            Log.i("SurfConditions", "rateWave() | " + waveRating);
+
+            waveRating *= Math.max(0f, Math.min(1f, (wavePeriod-5) / 15f));
+//            Log.i("SurfConditions", "rateWave() | " + waveRating);
         }
     }
     private void rateTide(SurfSpot spot, TideData tideData, int day, int time) {
@@ -125,7 +136,7 @@ public class SurfConditions {
             if (tide != null) {
                 int t1 = TideData.tideToHML(tide);
                 if ((spot.tides & t1) != 0) tideRating += 0.2f;
-                else tideRating -= 0.3f;
+                else if (tideRating > 0.3f) tideRating -= 0.3f;
             }
         }
     }
@@ -136,11 +147,13 @@ public class SurfConditions {
 
 
     public float rate(SurfSpot spot, TideData tideData, int day, int time) {
-        if (waveRating == -1) rateWave(spot);
+//        if (waveRating == -1)
+        rateWave(spot);
         rateTide(spot, tideData, day, time);
-        if (windRating == -1) rateWind(spot);
+//        if (windRating == -1)
+        rateWind(spot);
 
-        Log.i("SurfConditions", "rate() | " + spot.getShortName() + ", rated: " + waveRating + ", " + windRating + ", " + tideRating);
+//        Log.i("SurfConditions", "rate() | " + spot.getShortName() + ", rated: " + waveRating + ", " + windRating + ", " + tideRating);
 
         return waveRating * windRating * tideRating;
     }

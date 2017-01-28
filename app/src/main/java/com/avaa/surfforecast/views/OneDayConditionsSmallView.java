@@ -18,6 +18,7 @@ import android.widget.RelativeLayout;
 import android.widget.TextView;
 
 import com.avaa.surfforecast.data.SurfConditions;
+import com.avaa.surfforecast.drawers.MetricsAndPaints;
 
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
@@ -69,13 +70,13 @@ public class OneDayConditionsSmallView extends LinearLayout {
     }
     public void setColorText(int colorText) {
         this.colorText = colorText;
-        p.setColor(0xbb000000 | colorText);
+        p.setColor(0xdd000000 | colorText);
     }
 
 
-    public void setTextSize(int size) {
-        tvDate.setTextSize(TypedValue.COMPLEX_UNIT_PX, size);
-        tvDayOfWeek.setTextSize(TypedValue.COMPLEX_UNIT_PX, size/1.33f);
+    public void setMetrics(MetricsAndPaints metrics) {
+        tvDate.setTextSize(TypedValue.COMPLEX_UNIT_PX, metrics.font);
+        tvDayOfWeek.setTextSize(TypedValue.COMPLEX_UNIT_PX, metrics.fontSmall);
     }
 
 

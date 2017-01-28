@@ -25,15 +25,16 @@ import android.widget.TextView;
 import com.avaa.surfforecast.ai.CommandsExecutor;
 import com.avaa.surfforecast.data.BusyStateListener;
 import com.avaa.surfforecast.data.Common;
-import com.avaa.surfforecast.data.METARProvider;
+import com.avaa.surfforecast.data.SurfConditions;
 import com.avaa.surfforecast.data.SurfConditionsProvider;
 import com.avaa.surfforecast.data.SurfSpot;
 import com.avaa.surfforecast.data.SurfSpots;
-import com.avaa.surfforecast.data.TideDataProvider;
+import com.avaa.surfforecast.data.TideData;
 import com.avaa.surfforecast.drawers.MetricsAndPaints;
 import com.avaa.surfforecast.views.BaliMap;
 import com.avaa.surfforecast.views.MyList;
 import com.avaa.surfforecast.views.OneDayConditionsSmallView;
+import com.avaa.surfforecast.views.RatingView;
 import com.avaa.surfforecast.views.SurfConditionsForecastView;
 import com.avaa.surfforecast.ai.VoiceInterfaceFragment;
 
@@ -82,6 +83,8 @@ public class MainActivity extends AppCompatActivity {
     FrameLayout btnMenu;
     ProgressBar progressBar;
 
+    LinearLayout llRating;
+
     SharedPreferences sharedPreferences;
 
     int busyCount = 0;
@@ -111,6 +114,22 @@ public class MainActivity extends AppCompatActivity {
             if (changes.contains(SurfSpots.Change.CONDITIONS)) {
                 updateSurfConditionsImages();
             }
+
+            //rating
+
+            SurfSpot surfSpot = appContext.surfSpots.selectedSpot();
+            SurfConditions now = surfSpot.conditionsProvider.getNow();
+
+            if (now != null) {
+                now.addMETAR(appContext.surfSpots.currentMETAR);
+
+                TideData tideData = appContext.tideDataProvider.getTideData(Common.BENOA_PORT_ID);
+                if (tideData != null) {
+                    float rate = now.rate(surfSpot, tideData, 0, Common.getNowTimeInt(Common.TIME_ZONE));
+                    //((TextView)findViewById(R.id.tvRating)).setText("Rating: " + rate + "\nWave: " + now.waveRating + "\nWind: " + now.windRating + "\nTide: " + now.tideRating);
+                    ((RatingView)findViewById(R.id.ratingView)).setRating(rate, now.waveRating);
+                }
+            }
         });
 
 
@@ -127,11 +146,13 @@ public class MainActivity extends AppCompatActivity {
         mainLayout = findViewById(R.id.mainlayout);
         baliMap = (BaliMap) findViewById(R.id.balimap);
         daysScroller = (ImageView) findViewById(R.id.ivDaysScroller);
-        listSpots = (MyList) findViewById(R.id.spots);
+        listSpots = (MyList) findViewById(R.id.svSpots);
         forecast = (SurfConditionsForecastView) findViewById(R.id.rlBottom);
         progressBar = (MaterialProgressBar)findViewById(R.id.progressBar);
         rlDays = (RelativeLayout)findViewById(R.id.vllDays);
         btnMenu = (FrameLayout)findViewById(R.id.menu);
+
+        llRating = (LinearLayout)findViewById(R.id.llRating);
 
         vif.commandsExecutor = new CommandsExecutor(appContext);
 
@@ -197,7 +218,7 @@ public class MainActivity extends AppCompatActivity {
         //baliMap.surfSpotsList = surfSpots.getAll();
 
         daysScroller.setLayoutParams(new RelativeLayout.LayoutParams(0, (int) (density * 2)));
-        daysScroller.setBackgroundColor(0xbb000000 | colorConditionsPreviews);
+        daysScroller.setBackgroundColor(0xdd000000 | colorConditionsPreviews);
 
         forecast.onTouchActionDown = () -> listSpots.sleep();
 
@@ -240,19 +261,21 @@ public class MainActivity extends AppCompatActivity {
             public void scrolled(float shownI, float firstI, float lastI, float awakeState) {
                 awakeState = 1f - awakeState;
                 baliMap.show(shownI, firstI, lastI, awakeState);
-                rlDays.setVisibility(awakeState == 0 ? View.INVISIBLE : View.VISIBLE);
-                rlDays.setAlpha(awakeState);
-                btnMenu.setVisibility(awakeState == 0 ? View.INVISIBLE : View.VISIBLE);
-                btnMenu.setAlpha(awakeState);
+                changed(awakeState);
             }
             @Override
             public void scrolled(float awakeState) {
                 awakeState = 1f - awakeState;
                 baliMap.setAwakenedState(awakeState);
+                changed(awakeState);
+            }
+            private void changed(float awakeState) {
                 rlDays.setVisibility(awakeState == 0 ? View.INVISIBLE : View.VISIBLE);
                 rlDays.setAlpha(awakeState);
                 btnMenu.setVisibility(awakeState == 0 ? View.INVISIBLE : View.VISIBLE);
                 btnMenu.setAlpha(awakeState);
+                llRating.setVisibility(awakeState == 0 ? View.INVISIBLE : View.VISIBLE);
+                llRating.setAlpha(awakeState);
             }
         };
 
@@ -345,6 +368,85 @@ public class MainActivity extends AppCompatActivity {
     }
 
 
+    private void setMetrics(MetricsAndPaints metrics) {
+        forecast.setDH(dh);
+
+        float fontRating = metrics.font;
+        int starH = (int)(fontRating*1.2);
+        LinearLayout.LayoutParams rvlp = new LinearLayout.LayoutParams(starH * 10, starH);
+        rvlp.gravity = Gravity.CENTER_VERTICAL;
+        //rvlp.leftMargin = (int)fontRating/2;
+        findViewById(R.id.ratingView).setLayoutParams(rvlp);
+
+        RelativeLayout.LayoutParams llRatingLP = new RelativeLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, dh);
+        llRatingLP.topMargin = (int)(dh*2.5);
+        llRatingLP.leftMargin = (int)(dh);
+        llRating.setLayoutParams(llRatingLP);
+
+        ((TextView)findViewById(R.id.tvRating)).setTextSize(TypedValue.COMPLEX_UNIT_PX, fontRating);
+
+        final RelativeLayout spotsRL = (RelativeLayout)findViewById(R.id.top);
+
+        ViewGroup.LayoutParams mParams = spotsRL.getLayoutParams();
+
+        int h = (int)(dh * 10.1);
+        mParams.height = mainLayout.getHeight() - h;
+        spotsRL.setLayoutParams(mParams);
+
+        mParams = MainActivity.this.forecast.getLayoutParams();
+        mParams.height = h;
+        MainActivity.this.forecast.setLayoutParams(mParams);
+
+        spotsRL.invalidate();
+        MainActivity.this.forecast.invalidate();
+        mainLayout.invalidate();
+
+        int daysBottom = (int)(dh*0.75);
+
+        RelativeLayout.LayoutParams vllDaysLayoutParams = (RelativeLayout.LayoutParams) rlDays.getLayoutParams();
+        vllDaysLayoutParams.height = (int)(dh*3 + daysBottom);
+
+        View rlDaysScroller = findViewById(R.id.rlDaysScroller);
+        RelativeLayout.LayoutParams rlDaysScrollerLayoutParams = (RelativeLayout.LayoutParams)rlDaysScroller.getLayoutParams();
+        rlDaysScrollerLayoutParams.bottomMargin = (int)(daysBottom - density);
+        rlDaysScroller.setLayoutParams(rlDaysScrollerLayoutParams);
+
+        RelativeLayout.LayoutParams lp = new RelativeLayout.LayoutParams(dh*2, (int)(dh*3));
+        lp.addRule(RelativeLayout.ALIGN_PARENT_RIGHT);
+        //lp.addRule(RelativeLayout.LEFT_OF, R.id.id_to_be_left_of);
+        //btnMenu.setPadding(dh, 0, dh, 0);
+        btnMenu.setLayoutParams(lp);
+        //btnMenu.setTextSize(TypedValue.COMPLEX_UNIT_PX, dh);
+
+        int i = 2;
+        for (OneDayConditionsSmallView scv : smallViews) {
+            LinearLayout.LayoutParams params = (LinearLayout.LayoutParams)scv.getLayoutParams();
+            params.width = (int)(dh * MetricsAndPaints.TEXT_K);
+            if (i == 2) {
+                params.setMargins(dh / 2, 0, 0, daysBottom+dh/2);
+                params.width = dh * 2;
+            }
+            else if (i == 1) {
+                params.setMargins(0, 0, 0, daysBottom+dh/2);
+                params.width = dh * 2;
+            }
+            else params.setMargins(0, 0, 0, daysBottom+dh/2);
+
+            scv.setLayoutParams(params);
+            scv.setMetrics(appContext.metricsAndPaints);
+            i--;
+        }
+        baliMap.setDh(dh);
+
+        initListSpots();
+        listSpots.updatePadding(mainLayout.getHeight() - h);
+
+        forecast.post(() -> {
+            forecast.showDay(0);
+        });
+    }
+
+
 //    private boolean olclWorked = false;
     private int w, h;
     class OLCL implements ViewTreeObserver.OnGlobalLayoutListener {
@@ -360,8 +462,6 @@ public class MainActivity extends AppCompatActivity {
             h = mainLayout.getHeight();
             Log.i(TAG, "onGlobalLayout: " + w + "x" + h);
 
-            final RelativeLayout spotsRL = (RelativeLayout)findViewById(R.id.top);
-
             dh = Math.max(mainLayout.getWidth(), mainLayout.getHeight()) - Math.min(mainLayout.getWidth(), mainLayout.getHeight())*14/15;
             dh = (int)(dh / 10.1);
 
@@ -371,65 +471,7 @@ public class MainActivity extends AppCompatActivity {
 
             appContext.metricsAndPaints = new MetricsAndPaints(density, dh);
 
-            forecast.setDH(dh);
-
-            ViewGroup.LayoutParams mParams = spotsRL.getLayoutParams();
-
-            int h = (int)(dh * 10.1);
-            mParams.height = mainLayout.getHeight() - h;
-            spotsRL.setLayoutParams(mParams);
-
-            mParams = MainActivity.this.forecast.getLayoutParams();
-            mParams.height = h;
-            MainActivity.this.forecast.setLayoutParams(mParams);
-
-            spotsRL.invalidate();
-            MainActivity.this.forecast.invalidate();
-            mainLayout.invalidate();
-
-            int daysBottom = (int)(dh*0.75);
-
-            RelativeLayout.LayoutParams vllDaysLayoutParams = (RelativeLayout.LayoutParams) rlDays.getLayoutParams();
-            vllDaysLayoutParams.height = (int)(dh*3 + daysBottom);
-
-            View rlDaysScroller = findViewById(R.id.rlDaysScroller);
-            RelativeLayout.LayoutParams rlDaysScrollerLayoutParams = (RelativeLayout.LayoutParams)rlDaysScroller.getLayoutParams();
-            rlDaysScrollerLayoutParams.bottomMargin = (int)(daysBottom - density);
-            rlDaysScroller.setLayoutParams(rlDaysScrollerLayoutParams);
-
-            RelativeLayout.LayoutParams lp = new RelativeLayout.LayoutParams(dh*2, (int)(dh*3));
-            lp.addRule(RelativeLayout.ALIGN_PARENT_RIGHT);
-            //lp.addRule(RelativeLayout.LEFT_OF, R.id.id_to_be_left_of);
-            //btnMenu.setPadding(dh, 0, dh, 0);
-            btnMenu.setLayoutParams(lp);
-            //btnMenu.setTextSize(TypedValue.COMPLEX_UNIT_PX, dh);
-
-            int i = 2;
-            for (OneDayConditionsSmallView scv : smallViews) {
-                LinearLayout.LayoutParams params = (LinearLayout.LayoutParams)scv.getLayoutParams();
-                params.width = (int)(dh * 1.333);
-                if (i == 2) {
-                    params.setMargins(dh / 2, 0, 0, daysBottom+dh/2);
-                    params.width = dh * 2;
-                }
-                else if (i == 1) {
-                    params.setMargins(0, 0, 0, daysBottom+dh/2);
-                    params.width = dh * 2;
-                }
-                else params.setMargins(0, 0, 0, daysBottom+dh/2);
-
-                scv.setLayoutParams(params);
-                scv.setTextSize(dh / 2);
-                i--;
-            }
-            baliMap.setDh(dh);
-
-            initListSpots();
-            listSpots.updatePadding(mainLayout.getHeight() - h);
-
-            forecast.post(() -> {
-                forecast.showDay(0);
-            });
+            setMetrics(appContext.metricsAndPaints);
 
 //            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN) {
 //                mainLayout.getViewTreeObserver().removeOnGlobalLayoutListener(this);

@@ -8,6 +8,8 @@ import android.graphics.Rect;
  */
 
 public class MetricsAndPaints {
+    public static final float TEXT_K = 1.33333f;
+
     public static final int WHITE = 0xffffffff;
     public static final int BLACK = 0xff000000;
 
@@ -61,10 +63,10 @@ public class MetricsAndPaints {
         this.dh = dh;
 
         font = dh/2f;
-        fontSmall = font/1.33f;
-        fontBig = font*1.33f;
-        fontHeader = font*1.33f*1.33f;
-        fontHeaderBig = font*1.33f*1.33f*1.33f;
+        fontSmall = font/TEXT_K;
+        fontBig = font*TEXT_K;
+        fontHeader = font*TEXT_K*TEXT_K;
+        fontHeaderBig = font*TEXT_K*TEXT_K*TEXT_K;
 
         paintFontSmall.setTextSize(fontSmall);
         paintFont.setTextSize(font);

@@ -156,7 +156,7 @@ public class SurfSpots {
         addSpot("Medewi", "Medewi", new PointF(484, 460), new PointF(0, 0),
                 Direction.NNE, 1, 1+2+4, 2, 7, "http://magicseaweed.com/Medewi-Surf-Report/1135/", "", -8.421528, 114.805771);
         addSpot("Balian", "Balian", new PointF(677, 568), new PointF(0, 0),
-                Direction.NE, 0, 1+2+4, 2, 6, "http://magicseaweed.com/Balian-Surf-Report/4009/", "", -8.503239, 114.965390);
+                Direction.NE, 0, 1+2+4, 2, 7, "http://magicseaweed.com/Balian-Surf-Report/4009/", "", -8.503239, 114.965390);
 
         categories.put(list.size(), "Canggu");
         //addSpot("Pererenan", "Pererenan"), new PointF(833, 722), new PointF(0, 0), Direction.NE);
@@ -170,7 +170,7 @@ public class SurfSpots {
         categories.put(list.size(), "Seminyak - Kuta");
         //addSpot("Blue Ocean", "Blue-Ocean"), new PointF(856, 742), new PointF(0, 0), Direction.ENE);
         addSpot("Padma", "Padma", new PointF(867, 758), new PointF(0, 0),
-                Direction.NE, 0, -1, -1, -1, "http://magicseaweed.com/Padma-Surf-Report/4005/", "", -8.705259, 115.165101);
+                Direction.NE, 0, 1+2+4, 1, 6, "http://magicseaweed.com/Padma-Surf-Report/4005/", "", -8.705259, 115.165101);
         addSpot("Seminyak", "Halfway", new PointF(887, 784), new PointF(0, 0),
                 Direction.NE, 2, 1+2+4, 1, 6, "http://magicseaweed.com/Seminyak-Surf-Report/1294/", "", -8.692632, 115.158116);
         //addSpot("Halfway", "Halfway"), new PointF(887, 784), new PointF(0, 0), Direction.E, 1, 1+2+4, 1, 8);
@@ -217,7 +217,7 @@ public class SurfSpots {
         addSpot("Tandjung right's", "Tandjung-Rights", new PointF(1014, 769), new PointF(0, 0),
                 Direction.NW, -1, 1+2+4, 3, 8, "http://magicseaweed.com/Tanjung-Sari-Surf-Report/2313/", "", -8.691786, 115.270863);
         addSpot("Sanur Reef", new String[]{"Sanur"}, "Sanur-Reef", new PointF(1009, 749), new PointF(0, 0),
-                Direction.W, -1, 2+4, 5, 9, "http://magicseaweed.com/Sanur-Surf-Report/1272/", "", -8.672768, 115.266042);
+                Direction.W, -1, 2+4, 4, 9, "http://magicseaweed.com/Sanur-Surf-Report/1272/", "", -8.672768, 115.266042);
 
         categories.put(list.size(), "East");
 //        addSpot("Padang Galak", "Ketewel"), new PointF(1040, 712), new PointF(0, 0), Direction.W);

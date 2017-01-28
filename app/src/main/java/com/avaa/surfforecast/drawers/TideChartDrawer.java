@@ -31,8 +31,8 @@ import static com.avaa.surfforecast.drawers.MetricsAndPaints.*;
  */
 
 @TargetApi(Build.VERSION_CODES.JELLY_BEAN_MR2)
-public class TideDrawer {
-    private static final String TAG = "TideDrawer";
+public class TideChartDrawer {
+    private static final String TAG = "TideChartDrwr";
 
     private final SurfConditionsForecastView view;
 
@@ -75,7 +75,7 @@ public class TideDrawer {
     private float strMWidth;
 
 
-    public TideDrawer(SurfConditionsForecastView view) {
+    public TideChartDrawer(SurfConditionsForecastView view) {
         this.view = view;
         this.tideDataProvider = AppContext.instance.tideDataProvider;
         updateDrawer();

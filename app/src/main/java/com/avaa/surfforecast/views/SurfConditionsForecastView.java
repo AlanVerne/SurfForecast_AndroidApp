@@ -21,10 +21,9 @@ import com.avaa.surfforecast.AppContext;
 import com.avaa.surfforecast.MainActivity;
 import com.avaa.surfforecast.data.SurfConditionsProvider;
 import com.avaa.surfforecast.drawers.SurfConditionsOneDayBitmapsAsyncDrawer;
-import com.avaa.surfforecast.drawers.TideDrawer;
+import com.avaa.surfforecast.drawers.TideChartDrawer;
 import com.avaa.surfforecast.data.Common;
 import com.avaa.surfforecast.data.SurfSpot;
-import com.avaa.surfforecast.data.SurfSpots;
 import com.avaa.surfforecast.data.TideData;
 import com.avaa.surfforecast.data.TideDataProvider;
 
@@ -56,7 +55,7 @@ public class SurfConditionsForecastView extends HorizontalScrollView { //extends
 
     private LinearLayout iv = new LinearLayout(getContext());
 
-    private TideDrawer tideDrawer = null;
+    private TideChartDrawer tideChartDrawer = null;
 
     public final SurfConditionsOneDatBitmaps[] bitmaps = new SurfConditionsOneDatBitmaps[7];
     private int dh = 0;
@@ -223,8 +222,8 @@ public class SurfConditionsForecastView extends HorizontalScrollView { //extends
         iv.setMinimumHeight(getHeight());
         iv.setLayoutParams(new LayoutParams(dh * 16 * 7, getHeight()));
 
-        if (tideDrawer == null) tideDrawer = new TideDrawer(this);
-        else tideDrawer.updateDrawer();
+        if (tideChartDrawer == null) tideChartDrawer = new TideChartDrawer(this);
+        else tideChartDrawer.updateDrawer();
 
         redrawSurfConditions();
 
@@ -308,12 +307,12 @@ public class SurfConditionsForecastView extends HorizontalScrollView { //extends
         }
         canvas.restore();
 
-        if (tideDrawer != null) tideDrawer.draw(canvas, getWidth(), getHeight(), getScrollX(), orientation);
+        if (tideChartDrawer != null) tideChartDrawer.draw(canvas, getWidth(), getHeight(), getScrollX(), orientation);
 
         int ddd = (dh*16 - getWidth())/2;
         int k = Math.abs((sx-ddd+dh*8)%(dh*16)-dh*8);
         float visible = Math.max(0f, Math.min(1f, (dh - k)/(dh/2f)));
-        if (visible > 0) {  // TODO move to TideDrawer
+        if (visible > 0) {  // TODO move to TideChartDrawer
             canvas.save();
             canvas.translate(dh + getScrollX() - labelsY, getHeight());
             canvas.rotate(-90);
@@ -324,7 +323,7 @@ public class SurfConditionsForecastView extends HorizontalScrollView { //extends
             calendar.set(calendar.get(Calendar.YEAR), calendar.get(Calendar.MONTH), calendar.get(Calendar.DAY_OF_MONTH), 0, 0, 0);
             calendar.set(Calendar.MILLISECOND, 0);
             calendar.add(Calendar.MINUTE, (getScrollX() + dh / 2) * 60 * 24 / (dh * 16));
-            TideData tideData = tideDrawer.tideData; //AppContext.instance.tideDataProvider.getTideData(Common.BENOA_PORT_ID);
+            TideData tideData = tideChartDrawer.tideData; //AppContext.instance.tideDataProvider.getTideData(Common.BENOA_PORT_ID);
 
             if (tideData != null) {
                 Integer sh = tideData.getTide(calendar.getTime().getTime() / 1000);
@@ -449,7 +448,7 @@ public class SurfConditionsForecastView extends HorizontalScrollView { //extends
         surfConditionsOneDayBitmapsAsyncDrawer.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
     }
     public void redrawTide() {
-        if (tideDrawer != null && tideDrawer.updateBitmaps()) {
+        if (tideChartDrawer != null && tideChartDrawer.updateBitmaps()) {
             postInvalidate();
         }
     }

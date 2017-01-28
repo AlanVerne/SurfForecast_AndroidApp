@@ -7,6 +7,7 @@ import android.util.Log;
 
 import com.avaa.surfforecast.AppContext;
 import com.avaa.surfforecast.data.Common;
+import com.avaa.surfforecast.data.METAR;
 import com.avaa.surfforecast.data.SurfConditions;
 import com.avaa.surfforecast.data.SurfConditionsOneDay;
 import com.avaa.surfforecast.data.SurfSpot;
@@ -357,10 +358,13 @@ public class CommandsExecutor {
             if (c.day == null) lastAnswer.addClarification(intDayToNL(plusDays));
         }
         else if ((c.day != null && c.day == 0) && c.time == -1) {      //      time now
+            METAR currentMETAR = appContext.surfSpots.currentMETAR;
             TideData tideData = appContext.tideDataProvider.getTideData(Common.BENOA_PORT_ID);
+
             for (SurfSpot surfSpot : appContext.surfSpots.getFavoriteSurfSpotsList()) {
                 SurfConditions surfConditions = surfSpot.conditionsProvider.getNow();
                 if (surfConditions == null) continue;
+                surfConditions.addMETAR(currentMETAR);
                 float rate = surfConditions.rate(surfSpot, tideData, 0, nowTimeInt);
                 if (rate > best) {
                     best = rate;
