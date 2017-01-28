@@ -393,12 +393,12 @@ public class MainActivity extends AppCompatActivity {
         mParams.height = mainLayout.getHeight() - h;
         spotsRL.setLayoutParams(mParams);
 
-        mParams = MainActivity.this.forecast.getLayoutParams();
+        mParams = forecast.getLayoutParams();
         mParams.height = h;
-        MainActivity.this.forecast.setLayoutParams(mParams);
+        forecast.setLayoutParams(mParams);
 
         spotsRL.invalidate();
-        MainActivity.this.forecast.invalidate();
+        forecast.invalidate();
         mainLayout.invalidate();
 
         int daysBottom = (int)(dh*0.75);

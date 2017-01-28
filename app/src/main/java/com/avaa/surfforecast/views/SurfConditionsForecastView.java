@@ -31,6 +31,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Calendar;
 import java.util.GregorianCalendar;
+import java.util.Map;
 
 import static com.avaa.surfforecast.data.Common.*;
 
@@ -57,11 +58,11 @@ public class SurfConditionsForecastView extends HorizontalScrollView { //extends
 
     private TideChartDrawer tideChartDrawer = null;
 
-    public final SurfConditionsOneDatBitmaps[] bitmaps = new SurfConditionsOneDatBitmaps[7];
+    public final SurfConditionsOneDayBitmaps[] bitmaps = new SurfConditionsOneDayBitmaps[7];
     private int dh = 0;
 
-
-    public static class SurfConditionsOneDatBitmaps {
+    public static class SurfConditionsOneDayBitmaps {
+        //public SurfConditionsOneDay forSurfConditionsOneDay = null; TODO useless now, uncomment when will preorganize data by days in SurfConditionsProvider
         public Bitmap wave;
         public Bitmap wind;
     }
@@ -170,7 +171,7 @@ public class SurfConditionsForecastView extends HorizontalScrollView { //extends
         );
 
         for (int i = 0; i < bitmaps.length; i++) {
-            bitmaps[i] = new SurfConditionsOneDatBitmaps();
+            bitmaps[i] = new SurfConditionsOneDayBitmaps();
         }
 
         iv.setMinimumWidth(getWidth()*7);
@@ -284,7 +285,7 @@ public class SurfConditionsForecastView extends HorizontalScrollView { //extends
         int w = dh * 16;
         int i = 0;
         SurfConditionsProvider conditionsProvider = AppContext.instance.surfSpots.selectedSpot().conditionsProvider;
-        for (SurfConditionsOneDatBitmaps b : bitmaps) {
+        for (SurfConditionsOneDayBitmaps b : bitmaps) {
             if (x + w > getScrollX()) {
                 if (x > getScrollX() + getWidth()) break;
                 if (conditionsProvider.isDetailed(i)) {
@@ -418,12 +419,12 @@ public class SurfConditionsForecastView extends HorizontalScrollView { //extends
     }
 
 
-
+    // --
 
 
     public SurfConditionsOneDayBitmapsAsyncDrawer surfConditionsOneDayBitmapsAsyncDrawer = null;
     public void redrawSurfConditions() {
-        Log.i(TAG, "redrawSurfConditions() | 1");
+        Log.i(TAG, "redrawSurfConditions() | 1, dh = " + dh);
         if (dh == 0) return;
         Integer[] shownDays = getShownDays();
         SurfSpot surfSpot = AppContext.instance.surfSpots.selectedSpot();
@@ -436,17 +437,57 @@ public class SurfConditionsForecastView extends HorizontalScrollView { //extends
                     (surfSpot != null ? ", isNoData = " + surfSpot.conditionsProvider.isNoData() : "")
             );
 
-            for (SurfConditionsOneDatBitmaps bitmap : bitmaps) {
+            for (SurfConditionsOneDayBitmaps bitmap : bitmaps) {
+//                bitmap.forSurfConditionsOneDay = null;
                 bitmap.wind = null;
                 bitmap.wave = null;
             }
+
             return;
         }
-        Log.i(TAG, "redrawSurfConditions() | 2");
+
+//        boolean allTheSame = true;
+//        for (int i = 0; i < bitmaps.length; i++) {
+//            if (bitmaps[i].forSurfConditionsOneDay != surfSpot.conditionsProvider.get(i)) {
+//                allTheSame = false;
+//                break;
+//            }
+//        }
+//        if (allTheSame) {
+//            Log.i(TAG, "redrawSurfConditions() | 2, allTheSame");
+//            return;
+//        }
+
+        Log.i(TAG, "redrawSurfConditions() | 2, starting, has data = " + !surfSpot.conditionsProvider.isNoData());
 
         surfConditionsOneDayBitmapsAsyncDrawer = new SurfConditionsOneDayBitmapsAsyncDrawer(surfSpot, 0, new ArrayList<>(Arrays.asList(shownDays)), this);
         surfConditionsOneDayBitmapsAsyncDrawer.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
     }
+
+
+    public void newBitmaps(Map<Integer, SurfConditionsOneDayBitmaps> forecastBitmaps, int step) {
+        for (Map.Entry<Integer, SurfConditionsForecastView.SurfConditionsOneDayBitmaps> fb : forecastBitmaps.entrySet()) {
+//            view.bitmaps[fb.getKey()].forSurfConditionsOneDay = fb.getValue().forSurfConditionsOneDay;
+            bitmaps[fb.getKey()].wind = fb.getValue().wind;
+            bitmaps[fb.getKey()].wave = fb.getValue().wave;
+        }
+
+        if (step == 0) { // TODO тоже нахер отсюда эту логику
+            postInvalidate();
+
+            ArrayList<Integer> days = new ArrayList<>();
+            for (int i = 0; i < 7; i++) {
+                if (!forecastBitmaps.keySet().contains(i)) days.add(i);
+            }
+
+            SurfSpot surfSpot = AppContext.instance.surfSpots.selectedSpot();
+
+            surfConditionsOneDayBitmapsAsyncDrawer = new SurfConditionsOneDayBitmapsAsyncDrawer(surfSpot, 1, days, this);
+            surfConditionsOneDayBitmapsAsyncDrawer.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
+        }
+    }
+
+
     public void redrawTide() {
         if (tideChartDrawer != null && tideChartDrawer.updateBitmaps()) {
             postInvalidate();

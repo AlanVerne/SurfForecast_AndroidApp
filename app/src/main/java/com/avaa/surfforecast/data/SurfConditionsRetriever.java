@@ -10,7 +10,6 @@ import java.net.HttpURLConnection;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Calendar;
-import java.util.Date;
 import java.util.GregorianCalendar;
 import java.util.List;
 import java.util.TreeMap;
@@ -32,6 +31,7 @@ public class SurfConditionsRetriever extends AsyncTask<String, Void, TreeMap<Lon
     private static final String TD_END = "</td>";
 
     private final SurfConditionsProvider surfConditionsProvider;
+
     private final String url;
     private final boolean forWeek;
 
@@ -81,20 +81,7 @@ public class SurfConditionsRetriever extends AsyncTask<String, Void, TreeMap<Lon
 
 
     protected void onPostExecute(TreeMap<Long, SurfConditions> newConditions) {
-        if (newConditions != null) {
-            if (surfConditionsProvider.conditions == null) surfConditionsProvider.conditions = newConditions;
-            else surfConditionsProvider.conditions.putAll(newConditions);
-
-            Calendar singaporeCalendar = new GregorianCalendar(TIME_ZONE);
-            singaporeCalendar.add(Calendar.DATE, -3);
-            long startFrom = singaporeCalendar.getTime().getTime();
-
-            surfConditionsProvider.conditions = new TreeMap<>(surfConditionsProvider.conditions.subMap(startFrom, surfConditionsProvider.conditions.lastKey() + 1));
-            surfConditionsProvider.lastUpdate = new Date().getTime();
-
-            surfConditionsProvider.save();
-            surfConditionsProvider.fireUpdated();
-        }
+        surfConditionsProvider.setConditions(newConditions);
         surfConditionsProvider.bsl.busyStateChanged(false);
     }
 

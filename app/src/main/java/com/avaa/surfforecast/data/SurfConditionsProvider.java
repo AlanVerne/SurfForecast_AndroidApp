@@ -152,6 +152,24 @@ public class SurfConditionsProvider {
     }
 
 
+    public void setConditions(TreeMap<Long, SurfConditions> newConditions) {
+        if (newConditions != null) {
+            if (conditions == null) conditions = newConditions;
+            else conditions.putAll(newConditions);
+
+            Calendar singaporeCalendar = new GregorianCalendar(TIME_ZONE);
+            singaporeCalendar.add(Calendar.DATE, -3);
+            long startFrom = singaporeCalendar.getTime().getTime();
+
+            conditions = new TreeMap<>(conditions.subMap(startFrom, conditions.lastKey() + 1));
+            lastUpdate = new Date().getTime();
+
+            save();
+            fireUpdated();
+        }
+    }
+
+
     public void addUpdateListener(UpdateListener ul) {
         uls.add(ul);
     }

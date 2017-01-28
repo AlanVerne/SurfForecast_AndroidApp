@@ -6,28 +6,26 @@ import android.os.AsyncTask;
 import android.util.Log;
 
 import com.avaa.surfforecast.AppContext;
-import com.avaa.surfforecast.data.SurfConditions;
+import com.avaa.surfforecast.data.SurfConditionsOneDay;
 import com.avaa.surfforecast.data.SurfSpot;
 import com.avaa.surfforecast.views.SurfConditionsForecastView;
 
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.SortedMap;
 import java.util.TreeMap;
 
 /**
  * Created by Alan on 16 Jan 2017.
  */
 
-public class SurfConditionsOneDayBitmapsAsyncDrawer extends AsyncTask<Void, Void, Map<Integer, SurfConditionsForecastView.SurfConditionsOneDatBitmaps>> {
-    private static final String TAG = "ForecastImagesAD";
+public class SurfConditionsOneDayBitmapsAsyncDrawer extends AsyncTask<Void, Void, Map<Integer, SurfConditionsForecastView.SurfConditionsOneDayBitmaps>> {
+    private static final String TAG = "SurfCondAD";
 
     private final SurfSpot surfSpot;
     private final int step;
     private final List<Integer> daysToDraw;
-    private final Map<Integer, SortedMap<Integer, SurfConditions>> conditions = new HashMap<>();
+    private final Map<Integer, SurfConditionsOneDay> conditions = new HashMap<>();
     private final int orientationF;
     private final SurfConditionsForecastView view;
     private final SurfConditionsOneDayBitmapsDrawer drawer;
@@ -43,7 +41,7 @@ public class SurfConditionsOneDayBitmapsAsyncDrawer extends AsyncTask<Void, Void
         this.view = view;
 
         for (Integer day : daysToDraw) {
-            SortedMap<Integer, SurfConditions> sc = surfSpot.conditionsProvider.getFixed(day);
+            SurfConditionsOneDay sc = surfSpot.conditionsProvider.get(day);
             conditions.put(day, sc);
             //Log.i(TAG, "SurfConditionsOneDayBitmapsAsyncDrawer() | day = " + day + (sc == null ? ", sc null" : ", sc ok"));
         }
@@ -60,27 +58,31 @@ public class SurfConditionsOneDayBitmapsAsyncDrawer extends AsyncTask<Void, Void
 
 
     @Override
-    protected Map<Integer, SurfConditionsForecastView.SurfConditionsOneDatBitmaps> doInBackground(Void... params) {
+    protected Map<Integer, SurfConditionsForecastView.SurfConditionsOneDayBitmaps> doInBackground(Void... params) {
         //Trace.beginSection("doInBackground");
         Log.i(TAG, "doInBackground() | daysToDraw = " + daysToDraw.toString()); //surfSpot.name + " "
 
         Bitmap b = null;
         if (step == 0) b = drawer.getBitmapForWarming();
 
-        Map<Integer, SurfConditionsForecastView.SurfConditionsOneDatBitmaps> bitmaps = new TreeMap<>();
+        Map<Integer, SurfConditionsForecastView.SurfConditionsOneDayBitmaps> bitmaps = new TreeMap<>();
         for (Integer day : daysToDraw) {
             if (isCancelled()) return null;
 
-            SortedMap<Integer, SurfConditions> sc = conditions.get(day);
+            SurfConditionsOneDay sc = conditions.get(day);
 
-            SurfConditionsForecastView.SurfConditionsOneDatBitmaps surfConditionsOneDatBitmaps = new SurfConditionsForecastView.SurfConditionsOneDatBitmaps();
+            SurfConditionsForecastView.SurfConditionsOneDayBitmaps surfConditionsOneDayBitmaps = new SurfConditionsForecastView.SurfConditionsOneDayBitmaps();
 
             if (sc != null) {
-                surfConditionsOneDatBitmaps.wave = drawer.drawWave(sc, orientationF == 1);
+                SurfConditionsOneDay scFixed = sc.getFixed();
+
+                surfConditionsOneDayBitmaps.wave = drawer.drawWave(scFixed, orientationF == 1);
 
                 if (isCancelled()) return null;
 
-                surfConditionsOneDatBitmaps.wind = drawer.drawWind(sc, surfSpot.waveDirection, orientationF == 1);
+                surfConditionsOneDayBitmaps.wind = drawer.drawWind(scFixed, surfSpot.waveDirection, orientationF == 1);
+
+//                surfConditionsOneDayBitmaps.forSurfConditionsOneDay = sc;
 
                 if (isCancelled()) return null;
 
@@ -89,8 +91,8 @@ public class SurfConditionsOneDayBitmapsAsyncDrawer extends AsyncTask<Void, Void
                     Canvas c = new Canvas(b);
                     //for (int i = 0; i < 4; i++) {
 //                    Trace.beginSection("inBG warming i");
-                    c.drawBitmap(surfConditionsOneDatBitmaps.wave, 0, -1, null);
-                    c.drawBitmap(surfConditionsOneDatBitmaps.wind, -1, 0, null);
+                    c.drawBitmap(surfConditionsOneDayBitmaps.wave, 0, -1, null);
+                    c.drawBitmap(surfConditionsOneDayBitmaps.wind, -1, 0, null);
 //                    Trace.endSection();
                     //}
 //                    Trace.endSection();
@@ -99,7 +101,7 @@ public class SurfConditionsOneDayBitmapsAsyncDrawer extends AsyncTask<Void, Void
                 if (isCancelled()) return null;
             }
 
-            bitmaps.put(day, surfConditionsOneDatBitmaps);
+            bitmaps.put(day, surfConditionsOneDayBitmaps);
         }
 //        Trace.endSection();
         return bitmaps;
@@ -107,26 +109,11 @@ public class SurfConditionsOneDayBitmapsAsyncDrawer extends AsyncTask<Void, Void
 
 
     @Override
-    protected void onPostExecute(Map<Integer, SurfConditionsForecastView.SurfConditionsOneDatBitmaps> forecastBitmaps) {
+    protected void onPostExecute(Map<Integer, SurfConditionsForecastView.SurfConditionsOneDayBitmaps> forecastBitmaps) {
 //        Trace.beginSection("onPostExecute");
         Log.i(TAG, "onPostExecute() | daysToDraw = " + daysToDraw.toString());
-        //Log.i("MA FID", "on post exec " + surfSpot.name + " " + forecastBitmaps.size());
-
-        for (Map.Entry<Integer, SurfConditionsForecastView.SurfConditionsOneDatBitmaps> fb : forecastBitmaps.entrySet()) {
-            view.bitmaps[fb.getKey()].wind = fb.getValue().wind;
-            view.bitmaps[fb.getKey()].wave = fb.getValue().wave;
-        }
-
-        if (step == 0) { // TODO тоже нахер отсюда эту логику
-            view.postInvalidate();
-
-            ArrayList<Integer> days = new ArrayList<>();
-            for (int i = 0; i < 7; i++) {
-                if (!forecastBitmaps.keySet().contains(i)) days.add(i);
-            }
-            view.surfConditionsOneDayBitmapsAsyncDrawer = new SurfConditionsOneDayBitmapsAsyncDrawer(surfSpot, 1, days, view);
-            view.surfConditionsOneDayBitmapsAsyncDrawer.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
-        }
+        //Log.i(TAG, "onPostExecute() | " + surfSpot.name + " " + forecastBitmaps.size());
+        view.newBitmaps(forecastBitmaps, step);
 //        Trace.endSection();
     }
 }

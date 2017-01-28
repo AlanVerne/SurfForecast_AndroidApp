@@ -2,6 +2,7 @@ package com.avaa.surfforecast.data;
 
 import android.content.SharedPreferences;
 import android.graphics.PointF;
+import android.os.Handler;
 import android.util.Log;
 
 import com.avaa.surfforecast.AppContext;
@@ -242,30 +243,37 @@ public class SurfSpots {
             list.get(i).metarName = WADD;
         }
     }
+    public void updateFavorite() {
+        for (SurfSpot surfSpot : getFavoriteSurfSpotsList()) {
+            surfSpot.conditionsProvider.updateIfNeed();
+        }
+    }
     public void init() {
-        Set<String> favSpots = AppContext.instance.sharedPreferences.getStringSet(SPKEY_FAV_SPOTS, null);
+        AppContext appContext = AppContext.instance;
+
+        Set<String> favSpots = appContext.sharedPreferences.getStringSet(SPKEY_FAV_SPOTS, null);
         if (favSpots != null) {
             for (String favSpot : favSpots) {
                 Integer integer = Integer.decode(favSpot);
-                Log.i(TAG, favSpot + " " + integer);
-                if (integer != null) {
-                    list.get(integer).favorite = true;
-                    list.get(integer).conditionsProvider.updateIfNeed();
-                }
+//                Log.i(TAG, favSpot + " " + integer);
+                if (integer != null) list.get(integer).favorite = true;
             }
         }
         else {
             list.get(3).favorite = true;
             list.get(7).favorite = true;
             list.get(16).favorite = true;
-            AppContext.instance.sharedPreferences.edit().putStringSet(SPKEY_FAV_SPOTS, getFavorite()).apply();
+            appContext.sharedPreferences.edit().putStringSet(SPKEY_FAV_SPOTS, getFavorite()).apply();
         }
 
-        setSelectedSpotI(AppContext.instance.sharedPreferences.getInt(SPKEY_SELECTED_SPOT, 3));
+        final Handler handler = new Handler();
+        handler.postDelayed(this::updateFavorite, 5000);
+
+        setSelectedSpotI(appContext.sharedPreferences.getInt(SPKEY_SELECTED_SPOT, 3));
 
         selectedSpot().conditionsProvider.updateIfNeed();
 
-        AppContext.instance.metarProvider.addUpdateListener((name, metar) -> {
+        appContext.metarProvider.addUpdateListener((name, metar) -> {
             SurfSpot selectedSpot = selectedSpot();
             if (selectedSpot == null) return;
             if (name.equals(selectedSpot.metarName) && currentMETAR != metar) {
