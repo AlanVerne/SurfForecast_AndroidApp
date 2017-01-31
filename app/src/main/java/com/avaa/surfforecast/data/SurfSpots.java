@@ -195,7 +195,7 @@ public class SurfSpots {
                 Direction.SE, 1, 1+2+4, 4, 8, "http://magicseaweed.com/Impossibles-Surf-Report/2302/", "", -8.808615, 115.104613);
         addSpot("Padang-Padang", new String[]{"Padang Padang", "Padang"}, "Bingin", new PointF(809, 917), new PointF(0, 0),
                 Direction.SE, 1, 2+4, 6, 8, "http://magicseaweed.com/Padang-Padang-Surf-Report/1121/", "", -8.809937, 115.100767);
-        addSpot("Uluwatu", "Uluwatu", new PointF(795, 922), new PointF(0, 0),
+        addSpot("Uluwatu", new String[]{"Blue Point"}, "Uluwatu", new PointF(795, 922), new PointF(0, 0),
                 Direction.SE, 1, 1+2+4, 2, 9, "http://magicseaweed.com/Uluwatu-Surf-Report/565/", "http://balibelly.com/uluwatu", -8.815899, 115.086159);
         addSpot("Nyang-Nyang", new String[]{"Nyang Nyang", "Nyang"}, "Uluwatu", new PointF(802, 952), new PointF(0, 0),
                 Direction.NE, -1, 2+4, 2, 6, "http://magicseaweed.com/Nyang-Nyang-Surf-Report/2315/", "", -8.841612, 115.094292);

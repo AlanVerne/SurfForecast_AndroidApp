@@ -4,11 +4,11 @@ import android.graphics.Bitmap;
 import android.graphics.Canvas;
 import android.graphics.Paint;
 import android.graphics.Path;
-import android.graphics.Rect;
 import android.graphics.RectF;
 import android.graphics.Typeface;
 
 import com.avaa.surfforecast.AppContext;
+import com.avaa.surfforecast.data.Common;
 import com.avaa.surfforecast.data.Direction;
 import com.avaa.surfforecast.data.SurfConditions;
 
@@ -32,6 +32,7 @@ public class SurfConditionsOneDayBitmapsDrawer {
     private final int fontBigHDiv2;
 
     private final Paint paintDirection;
+    private final Paint paintWave;
     private final Paint paintFontWavePeriod;
     private final Paint paintFontBigBoldWaveHeight;
     private final Paint paintFontWind;
@@ -39,7 +40,8 @@ public class SurfConditionsOneDayBitmapsDrawer {
     private final int colorMinorWindText;
     private final Paint paintWaveHeightTextHalf;
 
-    private final Paint paintFontSmall;
+    private final Paint paintFontSmallBlack;
+    private final Paint paintFontSmallGray;
 
 
     public SurfConditionsOneDayBitmapsDrawer(MetricsAndPaints metricsAndPaints) {
@@ -50,6 +52,11 @@ public class SurfConditionsOneDayBitmapsDrawer {
 
         paintDirection = new Paint() {{
             setAntiAlias(true);
+        }};
+        paintWave = new Paint(paintDirection) {{
+            setStyle(Style.STROKE);
+            setStrokeWidth(density);
+            setStrokeCap(Cap.ROUND);
         }};
 
         paintFontWavePeriod = new Paint() {{
@@ -82,8 +89,10 @@ public class SurfConditionsOneDayBitmapsDrawer {
             setTypeface(Typeface.create(Typeface.DEFAULT, Typeface.NORMAL));
         }};
 
-        paintFontSmall = new Paint(metricsAndPaints.paintFontSmall);
-        paintFontSmall.setTextAlign(Paint.Align.LEFT);
+        paintFontSmallBlack = new Paint(metricsAndPaints.paintFontSmall);
+        paintFontSmallBlack.setTextAlign(Paint.Align.LEFT);
+        paintFontSmallGray = new Paint(paintFontSmallBlack);
+        paintFontSmallGray.setColor(colorMinorBlack);
 
         fontHDiv2 = metricsAndPaints.fontHDiv2;
         fontBigHDiv2 = metricsAndPaints.fontBigH / 2;
@@ -95,7 +104,7 @@ public class SurfConditionsOneDayBitmapsDrawer {
     }
 
 
-    public Bitmap drawWave(Map<Integer, SurfConditions> conditions, boolean vertical) {
+    public Bitmap drawWave(Map<Integer, SurfConditions> surfConditionsOneDay, boolean vertical) {
         int width  = dh * 16;
         int height = dh * 3;
 
@@ -105,34 +114,36 @@ public class SurfConditionsOneDayBitmapsDrawer {
         Bitmap b = Bitmap.createBitmap(width, height, Bitmap.Config.ARGB_8888);
         Canvas c = new Canvas(b);
 
-        paintDirection.setColor(colorMinorWindText);
-
         if (vertical) {
             c.save();
             c.translate(0, circlesY);
             c.rotate(-90);
         }
 
-        for (Map.Entry<Integer, SurfConditions> ic : conditions.entrySet()) {
-            int minute = ic.getKey();
+        for (Map.Entry<Integer, SurfConditions> entry : surfConditionsOneDay.entrySet()) {
+            int minute = entry.getKey();
             int x = width * (minute + 90) / MINUTES_IN_DAY;
+
+            boolean isDay = minute >= 360 && minute <= 1080;
 
             int tx = vertical ? 0-dh : x;
             int ty = vertical ? x : circlesY;
 
-            SurfConditions iconditions = ic.getValue();
+            SurfConditions surfConditions = entry.getValue();
 
-            double a = iconditions != null ? iconditions.waveAngle : -1;
+            double a = surfConditions != null ? surfConditions.waveAngle : -1;
+
+            paintDirection.setColor(colorMinorWindText);
 
             for (int i = 0; i < 8; i++) {
                 double ai = i * Math.PI * 2 / 8;
                 if (ai+0.1 < a || ai-0.1 > a) c.drawCircle(tx + (int)(Math.cos(ai) * r), ty - (int)(Math.sin(ai) * r), density, paintDirection);
             }
 
-            if (iconditions == null) continue;
+            if (surfConditions == null) continue;
 
-            //paintDirection.setColor(colorWaveText);
-            paintDirection.setColor((minute >= 360 && minute <= 1080) ? colorWaveText : colorMinorWindText);
+
+            if (isDay) paintDirection.setColor(colorWaveText);
 
             float cosA = (float) Math.cos(a);
             float sinA = (float) Math.sin(a);
@@ -142,12 +153,10 @@ public class SurfConditionsOneDayBitmapsDrawer {
             drawArrow(c, ax, ay, (float) (-a * 180 / Math.PI), cosA, sinA, paintDirection);
 
 
-            paintDirection.setColor(colorMinorWindText);
+            int h2 = Math.round(surfConditions.waveHeight * 3.28084f / 5.0f);
 
-            int h2 = Math.round(iconditions.waveHeight * 3.28084f / 5.0f);
-
-            paintFontWavePeriod.setColor(minute >= 360 && minute <= 1080 ? colorWaveText : colorMinorWindText);
-            paintFontBigBoldWaveHeight.setColor(minute >= 360 && minute <= 1080 ? colorWaveText : colorMinorWindText);
+            paintFontWavePeriod.setColor(isDay ? colorWaveText : colorMinorWindText);
+            paintFontBigBoldWaveHeight.setColor(isDay ? colorWaveText : colorMinorWindText);
             String sWaveHeight = String.valueOf(h2 / 2);
             if (h2 % 2 != 0 && !drawMeasures) {
                 //c.drawText(String.valueOf(h2 / 2) + "\u00BD", x, circlesY + whH / 2, paintFontBigBoldWaveHeight);
@@ -163,17 +172,20 @@ public class SurfConditionsOneDayBitmapsDrawer {
 
             if (drawMeasures) {
                 float w = paintFontBigBoldWaveHeight.measureText(sWaveHeight);
-                c.drawText("ft", tx + w*0.5f, ty + fontBigHDiv2, paintFontSmall);
+                c.drawText(Common.strFT, tx + w*0.5f, ty + fontBigHDiv2, isDay ? paintFontSmallBlack : paintFontSmallGray);
             }
 
-            String sWavePeriod = String.valueOf(iconditions.wavePeriod);
+            String sWavePeriod = String.valueOf(surfConditions.wavePeriod);
+
+            if (drawMeasures && vertical) tx -= dh*0.125;
 
             if (vertical) c.drawText(sWavePeriod, tx + (int)(dh*1.5), ty + fontHDiv2, paintFontWavePeriod);
             else c.drawText(sWavePeriod, tx, ty + (int)(dh*1.5) + fontHDiv2, paintFontWavePeriod);
 
             if (drawMeasures) {
                 float w = paintFontWavePeriod.measureText(sWavePeriod);
-                c.drawText("s", tx + w*0.5f, ty + dh*1.5f + fontHDiv2, paintFontSmall);
+                if (vertical) c.drawText(Common.strS, tx + w*0.5f + dh*1.5f, ty + fontHDiv2, isDay ? paintFontSmallBlack : paintFontSmallGray);
+                else c.drawText(Common.strS, tx + w*0.5f, ty + dh*1.5f + fontHDiv2, isDay ? paintFontSmallBlack : paintFontSmallGray);
             }
         }
 
@@ -181,7 +193,7 @@ public class SurfConditionsOneDayBitmapsDrawer {
     }
 
 
-    public Bitmap drawWind(Map<Integer, SurfConditions> conditions, Direction offshore, boolean vertical) {
+    public Bitmap drawWind(Map<Integer, SurfConditions> surfConditionsOneDay, Direction offshore, boolean vertical) {
         int width  = dh * 16;
         int height = dh * 2;
 
@@ -201,22 +213,21 @@ public class SurfConditionsOneDayBitmapsDrawer {
             c.rotate(-90);
         }
 
-        for (Map.Entry<Integer, SurfConditions> ic : conditions.entrySet()) {
-            int minute = ic.getKey();
-            SurfConditions iconditions = ic.getValue();
+        for (Map.Entry<Integer, SurfConditions> entry : surfConditionsOneDay.entrySet()) {
+            int minute = entry.getKey();
+            SurfConditions surfConditions = entry.getValue();
+
+            boolean isDay = minute >= 360 && minute <= 1080;
+
             int x = width * (minute+90) / MINUTES_IN_DAY;
 
             int tx = vertical ? 0 : x;
             int ty = vertical ? x : circlesY;
 
             paintDirection.setColor(colorMinorWindText);
-            Paint paintWave = new Paint(paintDirection) {{
-                setStyle(Style.STROKE);
-                setStrokeWidth(density);
-                setStrokeCap(Cap.ROUND);
-            }};
+            paintWave.setColor(colorMinorWindText);
 
-            double a  = iconditions != null ? iconditions.windAngle : -1;
+            double a  = surfConditions != null ? surfConditions.windAngle : -1;
             double a1 = offshore.ordinal() * Math.PI * 2 / 16 - Math.PI/2;
             double a2 = offshore.ordinal() * Math.PI * 2 / 16 + Math.PI/2;
 
@@ -230,7 +241,7 @@ public class SurfConditionsOneDayBitmapsDrawer {
 //                           x + (int)(Math.cos(ai) * (r-density*2)), circlesY - (int)(Math.sin(ai) * (r-density*2)), paintWave);
             }
 
-            if (iconditions == null) continue;
+            if (surfConditions == null) continue;
 
             float cosA = (float)Math.cos(a1);
             float sinA = (float)Math.sin(a1);
@@ -246,14 +257,15 @@ public class SurfConditionsOneDayBitmapsDrawer {
             
             cosA = (float)Math.cos(a);
             sinA = (float)Math.sin(a);
-            paintDirection.setColor(minute >= 360 && minute <= 1080 ? colorWindText : colorMinorWindText);
+
+            paintDirection.setColor(isDay ? colorWindText : colorMinorWindText);
             float ax = tx + cosA * r;
             float ay = ty - sinA * r;
 
             drawArrow(c, ax, ay, (float)(-a*180/Math.PI), cosA, sinA, paintDirection);
 
-            paintFontWind.setColor(minute >= 360 && minute <= 1080 ? colorWindText : colorMinorWindText);
-            c.drawText(String.valueOf(iconditions.windSpeed), tx, ty + fontHDiv2, paintFontWind);
+            paintFontWind.setColor(isDay ? colorWindText : colorMinorWindText);
+            c.drawText(String.valueOf(surfConditions.windSpeed), tx, ty + fontHDiv2, paintFontWind);
         }
 
         if (vertical) c.restore();

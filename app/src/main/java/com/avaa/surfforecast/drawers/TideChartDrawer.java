@@ -134,7 +134,7 @@ public class TideChartDrawer {
         if (now != null && bitmaps[0] != null) {
             String tide = String.valueOf(Math.round(now / 10f) / 10f);
 
-            if (AppContext.instance.usageStat.getSpotsShownCount() > 2) {
+            if (AppContext.instance.usageStat.getSpotsShownCount() > 2 || orientation == 1) {
                 c.drawCircle(nowx, nowy, dh * 0.6f, paintCircle);
                 if (orientation == 1) {
                     c.rotate(-90);

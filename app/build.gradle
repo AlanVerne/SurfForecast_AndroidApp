@@ -15,8 +15,8 @@ android {
         applicationId "com.avaa.surfforecast"
         minSdkVersion 15
         targetSdkVersion 24
-        versionCode 26
-        versionName '1.25'
+        versionCode 28
+        versionName '1.27'
         jackOptions {
             enabled true
         }

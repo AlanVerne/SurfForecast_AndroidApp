@@ -121,6 +121,14 @@ public class VoiceRecognitionHelper {
     }
 
 
+//    ULUWATU
+//    77 hello Auto
+//    77 hello Otto
+//    77 hello hello
+//    77 hello Adam
+//    30 Lotto
+
+
     public String toStringCommand(Collection<String> strings) {
         if (strings == null || strings.isEmpty()) return null;
 
@@ -135,6 +143,21 @@ public class VoiceRecognitionHelper {
 
         for (String s : strings) {
             String ss = " " + s.toLowerCase().replace(",", " ,").replace("?", " ?") + " ";
+
+            for (String sj : commandsExecutor.sToSpot.keySet()) {
+                if (ss.contains(sj)) {
+                    spothits.add(sj.trim());
+                    ss = ss.replace(sj, " ");
+                    break;
+                }
+            }
+            for (Map.Entry<String, String> e : soundLikeSpot.entrySet()) {
+                if (ss.contains(e.getKey())) {
+                    slSpothits.add(e);
+                    ss = ss.replace(e.getKey(), " ");
+                    break;
+                }
+            }
 
             for (String sj : commandsExecutor.sToDay.keySet()) {
                 if (ss.contains(sj)) {
@@ -154,16 +177,6 @@ public class VoiceRecognitionHelper {
             }
             for (Map.Entry<String, String> e : soundLikeTimeOfDay.entrySet()) {
                 if (ss.contains(e.getKey())) slTimeHits.add(e);
-            }
-
-            for (String sj : commandsExecutor.sToSpot.keySet()) {
-                if (ss.contains(sj)) {
-                    spothits.add(sj.trim());
-                    break;
-                }
-            }
-            for (Map.Entry<String, String> e : soundLikeSpot.entrySet()) {
-                if (ss.contains(e.getKey())) slSpothits.add(e);
             }
 
             for (Map.Entry<String, String> e : soundLikeKeyword.entrySet()) {
