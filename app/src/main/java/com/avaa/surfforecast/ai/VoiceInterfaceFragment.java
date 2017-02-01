@@ -1,7 +1,9 @@
 package com.avaa.surfforecast.ai;
 
+import android.Manifest;
 import android.content.Context;
 import android.content.Intent;
+import android.content.pm.PackageManager;
 import android.os.Build;
 import android.os.Bundle;
 import android.speech.RecognitionListener;
@@ -9,7 +11,10 @@ import android.speech.RecognizerIntent;
 import android.speech.SpeechRecognizer;
 import android.speech.tts.TextToSpeech;
 import android.speech.tts.UtteranceProgressListener;
+import android.support.annotation.NonNull;
+import android.support.v4.app.ActivityCompat;
 import android.support.v4.app.Fragment;
+import android.support.v4.content.ContextCompat;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -36,11 +41,11 @@ import static com.avaa.surfforecast.views.AnswerFrameLayout.STRING_TO_DRAWABLE_R
 public class VoiceInterfaceFragment extends Fragment {
     private static final String TAG = "VoiceIntFr";
 
-    View view;
+    private View view;
 
-    View btnMic;
-    View btnMicImage;
-    CircleVoiceIndicator circleVoiceIndicator;
+    private View btnMic;
+    private View btnMicImage;
+    private CircleVoiceIndicator circleVoiceIndicator;
 
     CircleAnimatedFrameLayout flHint;
     LinearLayout llHint;
@@ -53,7 +58,7 @@ public class VoiceInterfaceFragment extends Fragment {
     RelativeLayout rlHintOptRed;
     ImageView ivHintOptRed;
 
-    TextView tvHintOptPrerecognized;
+//    TextView tvPrerecognized;
 
     public CommandsExecutor commandsExecutor = null;
 
@@ -110,15 +115,26 @@ public class VoiceInterfaceFragment extends Fragment {
 
             if (s == null) uiHideHint();
             else {
-                tvHintOptPrerecognized.setText(s);
-                uiApprove(tvHintOptPrerecognized);
-
                 Answer answer = commandsExecutor.performCommand(s);
+
+                //uiApprove(tvPrerecognized);
+
                 if (answer != null) {
+//                    tvPrerecognized.setVisibility(View.INVISIBLE);
+//                    view.findViewById(R.id.flPrerecognizedCircle).setVisibility(View.INVISIBLE);
+
                     uiShowAnswer(answer);
                     flHint.postDelayed(() -> say(answer), 250);
                 }
                 else {
+//                    tvPrerecognized.setVisibility(View.VISIBLE);
+//                    view.findViewById(R.id.flPrerecognizedCircle).setVisibility(View.VISIBLE);
+//                    tvPrerecognized.setText(s);
+//                    tvPrerecognized.postDelayed(() -> {
+//                        tvPrerecognized.setVisibility(View.INVISIBLE);
+//                        view.findViewById(R.id.flPrerecognizedCircle).setVisibility(View.INVISIBLE);
+//                    }, 1500);
+
                     uiHideHint();
                 }
             }
@@ -132,7 +148,11 @@ public class VoiceInterfaceFragment extends Fragment {
         public void onPartialResults(Bundle partialResults) {
             ArrayList<String> list = partialResults.getStringArrayList(SpeechRecognizer.RESULTS_RECOGNITION);
             String result = AppContext.instance.voiceRecognitionHelper.toStringCommand(list);
-            if (result != null) tvHintOptPrerecognized.setText(result);
+//            if (result != null && !result.isEmpty()) {
+//                tvPrerecognized.setText(result);
+//                tvPrerecognized.setVisibility(View.VISIBLE);
+//                view.findViewById(R.id.flPrerecognizedCircle).setVisibility(View.VISIBLE);
+//            }
         }
 
         @Override
@@ -147,7 +167,7 @@ public class VoiceInterfaceFragment extends Fragment {
         speech.cancel();
         uiNotListening();
 
-        uiApprove(tvHintOpt);
+        //uiApprove(tvHintOpt);
 
         Answer answer = commandsExecutor.performCommand(tvHintOpt.getText().toString());
         if (answer != null) {
@@ -197,8 +217,8 @@ public class VoiceInterfaceFragment extends Fragment {
         btnMicImage.setAlpha(0.95f);
         flHint.setVisibility(View.VISIBLE);
 
-        tvHintOptPrerecognized.setText("...");
-        tvHintOptPrerecognized.setTextColor(0x66000000);
+        //tvPrerecognized.setText("...");
+        //tvPrerecognized.setTextColor(0x66000000);
 
         uiSetOpts(commandsExecutor.getDefaultOpts()); //"Where to surf tomorrow?"});
 
@@ -206,9 +226,9 @@ public class VoiceInterfaceFragment extends Fragment {
 
         commandsExecutor.lastAnswer = null;
     }
-    private void uiApprove(TextView tv) {
-
-    }
+//    private void uiApprove(TextView tv) {
+//
+//    }
     private void uiHideWelcomeHint() {
         if (!circleVoiceIndicator.isAwakened()) btnMicImage.setAlpha(0.2f);
         flHint.setVisibility(View.INVISIBLE);
@@ -336,6 +356,11 @@ public class VoiceInterfaceFragment extends Fragment {
     }
     public void startListening() {
         if (!circleVoiceIndicator.isAwakened() && recognitionAvailable) {
+            if (ContextCompat.checkSelfPermission(getActivity(), Manifest.permission.RECORD_AUDIO) != PackageManager.PERMISSION_GRANTED) {
+                ActivityCompat.requestPermissions(getActivity(), new String[]{Manifest.permission.RECORD_AUDIO}, 10101);
+                return;
+            }
+
             uiListening();
 
             Intent intent = new Intent(RecognizerIntent.ACTION_RECOGNIZE_SPEECH);
@@ -397,6 +422,15 @@ public class VoiceInterfaceFragment extends Fragment {
 
 
     @Override
+    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
+        if (requestCode == 10101 && ContextCompat.checkSelfPermission(getActivity(), Manifest.permission.RECORD_AUDIO) == PackageManager.PERMISSION_GRANTED) {
+            startListening();
+        }
+    }
+
+
+    @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         view = inflater.inflate(R.layout.fragment_voice_interface, container, false);
 
@@ -430,7 +464,7 @@ public class VoiceInterfaceFragment extends Fragment {
         ivHintOpts[4] = (ImageView) view.findViewById(R.id.ivHintOpt5);
         ivHintOptRed = (ImageView) view.findViewById(R.id.ivHintOptRed);
         
-        tvHintOptPrerecognized = (TextView) view.findViewById(R.id.tvPrerecognized);
+//        tvPrerecognized = (TextView) view.findViewById(R.id.tvPrerecognized);
 
         btnMic.setOnClickListener(this::btnMicClicked);
 

@@ -36,7 +36,7 @@ public class SurfSpots {
         selectedSpotI = i;
         updateCurrentConditions(false);
         //Log.i("SurfSpots", "setSelectedSpotI() 2");
-        AppContext.instance.usageStat.incrementSpotsShownCount();
+        AppContext.instance.userStat.incrementSpotsShownCount();
         fireChanged(new HashSet<Change>(){{add(Change.SELECTED_SPOT);add(Change.CONDITIONS);add(Change.CURRENT_CONDITIONS);}});
 
         SharedPreferences sp = AppContext.instance.sharedPreferences;
@@ -263,6 +263,8 @@ public class SurfSpots {
             list.get(3).favorite = true;
             list.get(7).favorite = true;
             list.get(16).favorite = true;
+            list.get(19).favorite = true;
+            list.get(21).favorite = true;
             appContext.sharedPreferences.edit().putStringSet(SPKEY_FAV_SPOTS, getFavorite()).apply();
         }
 

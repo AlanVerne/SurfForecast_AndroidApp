@@ -18,6 +18,7 @@ import java.util.Calendar;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
@@ -203,6 +204,7 @@ public class CommandsExecutor {
 
 
     List<String> commandsHistory = new ArrayList<>();
+    LinkedList<Command> stack = new LinkedList<>();
     Answer lastAnswer = null;
 
 
@@ -241,8 +243,7 @@ public class CommandsExecutor {
         if (c.keywords != null) {
             List<String> keywords = c.keywords;
 
-            if (keywords.contains("where to surf")
-                    || keywords.contains("best spot")) {
+            if (keywords.contains("where to surf") || keywords.contains("best spot")) {
                 lastAnswer = commandWhereToSurf(c);
             }
             else if (keywords.contains("camera")) {
@@ -252,8 +253,7 @@ public class CommandsExecutor {
                     || keywords.contains("waves")
                     || keywords.contains("swell")
                     || keywords.contains("wind")
-                    || keywords.contains("tide")
-                    && c.time != null) {
+                    || keywords.contains("tide")) { //&& c.time != null) {
                 lastAnswer = commandConditions(c);
             }
         }
@@ -277,6 +277,12 @@ public class CommandsExecutor {
 
 
     private Answer commandWhereToSurf(Command c) {
+//        if (AppContext.instance.userStat.surfingExperience == -1) {
+//            stack.add(c);
+//            stack.add();
+//            return askForUsersExperience();
+//        }
+
         int nowTimeInt = Common.getNowTimeInt(Common.TIME_ZONE);
 
         String prefix = "";
@@ -296,7 +302,7 @@ public class CommandsExecutor {
         }
         else plusDays = c.day;
 
-        if (c.time == null) {        //      unspecified time
+        if (c.time == null) {       //      unspecified time
             TideData tideData = appContext.tideDataProvider.getTideData(Common.BENOA_PORT_ID);
             for (SurfSpot surfSpot : appContext.surfSpots.getFavoriteSurfSpotsList()) {
                 SurfConditionsOneDay surfConditionsOneDay = surfSpot.conditionsProvider.get(plusDays);
@@ -486,6 +492,30 @@ public class CommandsExecutor {
     }
 
 
+    private Answer askForUsersExperience() {
+        lastAnswer = new Answer(
+                "How good are you?",
+                "How good are you?",
+                new String[]{
+                        "newbie",
+                        "beginner",
+                        "intermediate",
+                        "experienced"}
+        );
+        return lastAnswer;
+    }
+    private Answer askForModifyFavoriteSpots() {
+        lastAnswer = new Answer(
+                "May I mark with a star some spots, that fits for you?",
+                "May I mark with a star some spots, that fits for you?",
+                new String[]{
+                        "yep",
+                        "no, thanks"}
+        );
+        return lastAnswer;
+    }
+
+
     private Answer commandConditions(Command c) {
         lastAnswer = new Answer();
 
@@ -562,6 +592,8 @@ public class CommandsExecutor {
                         "kw:ok - Hide ai",
                         "day,time,spot - Conditions [day] [time] for [spot]",
                         "day,time - Conditions [day] [time]",
+                        "day - Conditions [day]",
+                        "time - Conditions [time] " + intDayToNL(plusDays),
                         "kw:tide - Tide for " + surfSpot.getShortName() + " " + intTimeToNL(time) + " " + intDayToNL(plusDays),
                         "kw:swell - Swell in " + surfSpot.getShortName() + " " + intTimeToNL(time) + " " + intDayToNL(plusDays),
                         "kw:wind - Wind in " + surfSpot.getShortName() + " " + intTimeToNL(time) + " " + intDayToNL(plusDays)

@@ -20,7 +20,7 @@ import java.util.Calendar;
 import java.util.List;
 
 import static com.avaa.surfforecast.data.Common.TIME_ZONE;
-import static com.avaa.surfforecast.data.Common.noTideData;
+import static com.avaa.surfforecast.data.Common.STR_NO_TIDE_DATA;
 import static com.avaa.surfforecast.data.Common.strM;
 import static com.avaa.surfforecast.data.Common.strNOW;
 import static com.avaa.surfforecast.data.Common.strTIDE;
@@ -126,7 +126,7 @@ public class TideChartDrawer {
             }
             else {
                 c.drawRect(x, h - this.h * 2/3, x + dayWidth, h, paintBGNoData);
-                c.drawText(noTideData, x + dayWidth/2, h - this.h/2 + metricsAndPaints.fontH, paintFontNoData);
+                c.drawText(STR_NO_TIDE_DATA, x + dayWidth/2, h - this.h/2 + metricsAndPaints.fontH, paintFontNoData);
             }
             x += dayWidth;
         }
@@ -134,7 +134,7 @@ public class TideChartDrawer {
         if (now != null && bitmaps[0] != null) {
             String tide = String.valueOf(Math.round(now / 10f) / 10f);
 
-            if (AppContext.instance.usageStat.getSpotsShownCount() > 2 || orientation == 1) {
+            if (AppContext.instance.userStat.getSpotsShownCount() > 2 || orientation == 1) {
                 c.drawCircle(nowx, nowy, dh * 0.6f, paintCircle);
                 if (orientation == 1) {
                     c.rotate(-90);
@@ -146,13 +146,13 @@ public class TideChartDrawer {
             }
             else {
                 c.drawCircle(nowx, nowy, dh * 1.0f, paintCircle);
-                if (orientation == 1) {
-                    c.rotate(-90);
-                    c.drawText(tide, -nowy, nowx + metricsAndPaints.fontHDiv2, paintFont);
-                    c.drawText(tide, -nowy, nowx + metricsAndPaints.fontHDiv2, paintFont);
-                    c.rotate(90);
-                }
-                else {
+//                if (orientation == 1) {
+//                    c.rotate(-90);
+//                    c.drawText(tide, -nowy, nowx + metricsAndPaints.fontHDiv2, paintFont);
+//                    c.drawText(tide, -nowy, nowx + metricsAndPaints.fontHDiv2, paintFont);
+//                    c.rotate(90);
+//                }
+//                else {
                     float strTideWidth = paintFont.measureText(tide);
 
                     paintFontSmall.setTextAlign(Paint.Align.CENTER);
@@ -164,7 +164,7 @@ public class TideChartDrawer {
                     paintFontSmall.setTextAlign(Paint.Align.LEFT);
                     c.drawText(tide, nowx - strMWidth/3, nowy + metricsAndPaints.fontHDiv2, paintFont);
                     c.drawText(strM, nowx - strMWidth/3 + strTideWidth/2, nowy + metricsAndPaints.fontHDiv2, paintFontSmall);
-                }
+//                }
             }
         }
     }

@@ -29,26 +29,36 @@ public class VoiceRecognitionHelper {
                     "in meters - in metres" + "\n" +
                     "cancel - forget it,exit,close" + "\n" +
                     "ok - good" + "\n" +
-                    "where to surf - where's the surf,where's the service,why the surf,where to go,where's the seraph,where to serve,where are to surf,what to serve" + "\n" +
-                    "best spot - best sport,best sports,baysport,passport at"  + "\n" +
+                    "where to surf - go to surf,where's the surf,where's the service,why the surf,where to go,where's the seraph,where to serve,where are to surf,what to serve" + "\n" +
+                    "best spot - mess for,best for,best book,best butt,best sport,best sports,baysport,passport at"  + "\n" +
 //            "best waves"  + "\n" +
                     "what's up here - what's up there,what's a panera,what's on there,what's out there" + "\n" +
                     "repeat" + "\n" +
 //            "don't want to surf - don't want to go to" + "\n" +
 //            "suggest something else" + "\n" +
-                    "never suggest" + "\n" +
+//                    "never suggest" + "\n" +
+
+//                    "no - noup" + "\n" +
+//                    "yes - yep,yeah" + "\n" +
+//
+//                    "newbie" + "\n" +
+//                    "beginner" + "\n" +
+//                    "intermediate" + "\n" + //skilled
+//                    "experienced" + "\n" + //advanced
+//                    "professional" + "\n" +
+
                     "hide ai";
 
     private static final String SOUND_LIKE_TIME_OF_DAY =
             "now - " + "\n" +
-                    "sunset - sun set" + "\n" +
-                    "sunrise - sonrise,sun rise" + "\n" +
-                    "midday - " + "\n" +
-                    "afternoon - " + "\n" +
-                    "morning - " + "\n" +
-                    "evening - " + "\n" +
-                    "[number] am - " + "\n" +
-                    "[number] pm - " + "\n";
+            "sunset - sun set" + "\n" +
+            "sunrise - sonrise,sun rise" + "\n" +
+            "midday - " + "\n" +
+            "afternoon - " + "\n" +
+            "morning - " + "\n" +
+            "evening - " + "\n" +
+            "[number] am - " + "\n" +
+            "[number] pm - " + "\n";
 
     private static final String SOUND_LIKE_SPOT = "" +
             "Medewi - mandiri,madeira,man baby,man daily,mondavi,big daddy,men daily,andretti,when daddy" + "\n" +
@@ -62,15 +72,15 @@ public class VoiceRecognitionHelper {
             "Kuta - puta,cota,guta" + "\n" +
             "Balangan - bellingham,malanga,mehlingen,milan gun" + "\n" +
             "Dreamland - greenland,dream land,keeneland,finland,timland" + "\n" +
-            "Bingin - mingin,minghin,mean king,new king,eugene,didn't get,bending,binging,ben king,ninjin,engine,bingen,benjen,bingeon,binging" + "\n" +
+            "Bingin - in-game,in gimp,mingin,minghin,mean king,new king,eugene,didn't get,bending,binging,ben king,ninjin,engine,bingen,benjen,bingeon,binging" + "\n" +
             "Impossibles - impossible,imposibles,kim possible,kim possible's" + "\n" +
             "Padang-Padang - padang padang,pandanan,adam adam,adam,badung,banana banana,badonkadonk,padam padam,button button" + "\n" +
-            "Uluwatu - palo alto,hello weather,all weather,all the weather,blue waffle,hello motto,aluminum,uidaho,all idaho,old idaho,idaho,lovato,all lotto,or lotto,whole lotta,holy water" + "\n" +
+            "Uluwatu - hello otto,hello auto,palo alto,hello weather,all weather,all the weather,blue waffle,hello motto,aluminum,uidaho,all idaho,old idaho,idaho,lovato,all lotto,or lotto,whole lotta,holy water" + "\n" +
             "Nyang-Nyang - nyang nyang,yum yum,yum-yum,young young,yin yang,yang yang,young,yung" + "\n" +
             "Green Ball - green bow,green bowl,rainbow,greenbo,greenbow,green bay,greenville" + "\n" +
             "Nusa Dua - methadone,north ottawa,north andover,los angela,rosangela,massage oil,what's a doula,missoula,north abdullah,i said dora,wilson duo,minnesota,methadone,mistletoe,miss angela" + "\n" +
             "Sri Lanka - srilanka,shri lanka,lanka,blanca,blanka" + "\n" +
-            "Serangan - so I'm done,saran gun,sorry i'm gone,surround gun,sauron gun,birmingham,shotgun,sharingan,should i come,set an alarm,7 gun,sean gunn,set alarm,should i run,savannah,sheeran,710,cnn" + "\n" +
+            "Serangan - sarin gas,sharon van,sarin gun,theron gun,saron gun,sarin gun,seren gun,so i'm done,saran gun,sorry i'm gone,surround gun,sauron gun,birmingham,shotgun,sharingan,should i come,set an alarm,7 gun,sean gunn,set alarm,should i run,savannah,sheeran,710,cnn" + "\n" +
             "Tandjung left's - tandjung,tanjung,dungeon,on june" + "\n" +
             "Sanur Reef - summer,son of" + "\n" +
             "Keramas - chatham mass,can i mass,can i mas,can i must" + "\n" +
@@ -119,14 +129,6 @@ public class VoiceRecognitionHelper {
             }
         }
     }
-
-
-//    ULUWATU
-//    77 hello Auto
-//    77 hello Otto
-//    77 hello hello
-//    77 hello Adam
-//    30 Lotto
 
 
     public String toStringCommand(Collection<String> strings) {

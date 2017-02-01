@@ -8,7 +8,7 @@ import com.avaa.surfforecast.data.BusyStateListener;
 import com.avaa.surfforecast.data.METARProvider;
 import com.avaa.surfforecast.data.SurfSpots;
 import com.avaa.surfforecast.data.TideDataProvider;
-import com.avaa.surfforecast.data.UsageStat;
+import com.avaa.surfforecast.data.UserStat;
 import com.avaa.surfforecast.drawers.MetricsAndPaints;
 
 /**
@@ -20,7 +20,7 @@ public class AppContext {
 
     public final MainActivity mainActivity;
 
-    public final UsageStat usageStat;
+    public final UserStat userStat;
 
     public final METARProvider metarProvider;
     public final SurfSpots surfSpots;
@@ -54,7 +54,7 @@ public class AppContext {
 
         this.sharedPreferences = sharedPreferences;
 
-        usageStat = new UsageStat(sharedPreferences);
+        userStat = new UserStat(sharedPreferences);
         metarProvider = new METARProvider(bsl);
         surfSpots = new SurfSpots(bsl);
         tideDataProvider = new TideDataProvider();

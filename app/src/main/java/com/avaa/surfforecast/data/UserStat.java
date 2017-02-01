@@ -13,17 +13,20 @@ import java.util.List;
  * Created by Alan on 7 Oct 2016.
  */
 
-public class UsageStat {
+public class UserStat {
     private static final String SPKEY_TIMES_OPENED = "timesOpened"; // since last measure
     private static final String SPKEY_SPOTS_SHOWN_COUNT = "spotsShownCount"; // since last measure
     private static final String SPKEY_LAST_TIME_OPENED = "lastTimeOpened";
     private static final String SPKEY_FIRST_TIME_OPENED = "firstTimeOpened";
-    private static final String TAG = "UsageStat";
+    private static final String SPKEY_SURFING_EXPERIENCE = "surfingExperience";
+    private static final String TAG = "UserStat";
     private int spotsShownCount;
     public int userLevel = 2;
 
+    public int surfingExperience = -1;
 
-    public UsageStat(SharedPreferences sharedPreferences) {
+
+    public UserStat(SharedPreferences sharedPreferences) {
         load(sharedPreferences);
     }
 
@@ -47,6 +50,7 @@ public class UsageStat {
         ull.UserLevelChanged(userLevel);
     }
 
+
     public void setSpotsShownCount(int c) {
         if (c > 10 && userLevel > 1) {
             spotsShownCount = c;
@@ -66,10 +70,12 @@ public class UsageStat {
     private void load(SharedPreferences sharedPreferences) {
         spotsShownCount = sharedPreferences.getInt(SPKEY_SPOTS_SHOWN_COUNT, 0);
         if (spotsShownCount > 10) userLevel = 1;
+        surfingExperience = sharedPreferences.getInt(SPKEY_SURFING_EXPERIENCE, -1);
     }
     public void save() {
         SharedPreferences.Editor spe = AppContext.instance.sharedPreferences.edit();
         spe.putInt(SPKEY_SPOTS_SHOWN_COUNT, spotsShownCount);
+        spe.putInt(SPKEY_SURFING_EXPERIENCE, surfingExperience);
         spe.apply();
     }
 }

@@ -228,13 +228,13 @@ public class SurfConditionsForecastView extends HorizontalScrollView { //extends
 
         redrawSurfConditions();
 
-        showDay(0);
+        //showDay(0);
         postDelayed(new Runnable() {
             @Override
             public void run() {
                 showDay(0);
             }
-        }, 20);
+        }, 200);
 
         invalidate();
     }
@@ -299,9 +299,9 @@ public class SurfConditionsForecastView extends HorizontalScrollView { //extends
 
                 paintLabels.setColor(0x33000000);
                 if (b.wind != null) canvas.drawBitmap(b.wind, x, getHeight() - windy, null);
-                else canvas.drawText(noWindData, x+dh*9, getHeight()-windy+dh+textH/2, paintLabels);
+                else canvas.drawText(STR_NO_WIND_DATA, x+dh*9, getHeight()-windy+dh+textH/2, paintLabels);
                 if (b.wave != null) canvas.drawBitmap(b.wave, x, getHeight() - dh * 7, null);
-                else canvas.drawText(noSwellData, x+dh*9, getHeight()- dh*7+dh*1.5f+textH/2, paintLabels);
+                else canvas.drawText(STR_NO_SWELL_DATA, x+dh*9, getHeight()- dh*7+dh*1.5f+textH/2, paintLabels);
             }
             x += w;
             i++;
@@ -367,7 +367,7 @@ public class SurfConditionsForecastView extends HorizontalScrollView { //extends
             for (int hour = 3; hour < 24 * 7; hour += 3) {
                 hx = hour * dh * 16 / 24;
                 String strH = String.valueOf(hour % 24);
-                if (AppContext.instance.usageStat.userLevel == 2) strH += ":00";
+                if (AppContext.instance.userStat.userLevel == 2) strH += ":00";
                 canvas.drawText(strH, hx, hy, paintHours);
             }
         }
@@ -378,8 +378,9 @@ public class SurfConditionsForecastView extends HorizontalScrollView { //extends
 
 
     public int dayToX(int i) {
-        return i* dh*16 + dh*8 - getWidth()/2; // i * dh * 16 + dh * 2;
+        return i * dh*16 + dh*8 - getWidth()/2; // i * dh * 16 + dh * 2;
     }
+
 
     public void showDaySmooth(int i) {
         int newScrollX = dayToX(i);

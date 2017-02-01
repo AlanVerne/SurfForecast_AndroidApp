@@ -5,6 +5,7 @@ import android.content.SharedPreferences;
 import android.graphics.PorterDuff;
 import android.hardware.SensorManager;
 import android.net.Uri;
+import android.support.annotation.NonNull;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Log;
@@ -63,7 +64,7 @@ public class MainActivity extends AppCompatActivity {
     AppContext appContext;
 //    TidesProvider tidesProvider;
 //    SurfSpots surfSpots;
-//    UsageStat usageStat;
+//    UserStat userStat;
 
     int dh = 0;
 
@@ -345,10 +346,17 @@ public class MainActivity extends AppCompatActivity {
     }
     @Override
     protected void onStop() {
-        appContext.usageStat.save();
+        appContext.userStat.save();
         appContext.metarProvider.save();
         super.onStop();
         baliMap.stop();
+    }
+
+
+    @Override
+    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
+        vif.onRequestPermissionsResult(requestCode, permissions, grantResults);
     }
 
 

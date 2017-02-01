@@ -107,31 +107,39 @@
                 android:layout_weight="1">
             </LinearLayout>
 
-            <TextView
-                android:id="@+id/tvPrerecognized"
-                android:layout_width="wrap_content"
-                android:layout_height="36dp"
-                android:textSize="18dp"
-                android:paddingTop="7dp"
-                android:paddingBottom="7dp"
-                android:paddingLeft="60dp"
-                android:paddingRight="60dp"
-                android:text="..."/>
-
         </LinearLayout>
         </ScrollView>
     </com.avaa.surfforecast.views.CircleAnimatedFrameLayout>
+
 
     <RelativeLayout
         android:id="@+id/rlAnswers"
         android:layout_width="match_parent"
         android:layout_height="match_parent">
 
+        <!--views are added here through code-->
+
     </RelativeLayout>
+
 
     <RelativeLayout
         android:layout_width="match_parent"
         android:layout_height="match_parent">
+
+        <!--<TextView-->
+            <!--android:id="@+id/tvPrerecognized"-->
+            <!--android:elevation="5dp"-->
+            <!--android:layout_width="match_parent"-->
+            <!--android:layout_height="30dp"-->
+            <!--android:layout_alignParentBottom="true"-->
+            <!--android:background="@color/colorAccent"-->
+            <!--android:textColor="#ffffffff"-->
+            <!--android:textSize="18dp"-->
+            <!--android:gravity="left|center_vertical"-->
+            <!--android:paddingLeft="60dp"-->
+            <!--android:paddingRight="0dp"-->
+            <!--android:visibility="invisible"-->
+            <!--android:text="..."/>-->
 
         <com.avaa.surfforecast.views.CircleVoiceIndicator
             android:id="@+id/cvi"
@@ -158,6 +166,24 @@
                 android:alpha="0.2"
                 android:src="@drawable/ic_keyboard_voice_white_24dp"/>
         </FrameLayout>
+
+        <!--<FrameLayout-->
+            <!--android:id="@+id/flPrerecognizedCircle"-->
+            <!--android:elevation="7dp"-->
+            <!--android:layout_width="60dp"-->
+            <!--android:layout_height="60dp"-->
+            <!--android:background="@drawable/recognized_left_side"-->
+            <!--android:layout_marginLeft="-15dp"-->
+            <!--android:layout_marginBottom="-15dp"-->
+            <!--android:visibility="invisible"-->
+            <!--android:layout_alignParentBottom="true"-->
+            <!--android:layout_alignParentLeft="true">-->
+            <!--<ImageView-->
+                <!--android:layout_width="wrap_content"-->
+                <!--android:layout_height="wrap_content"-->
+                <!--android:layout_gravity="center"-->
+                <!--android:src="@drawable/ic_keyboard_voice_white_24dp"/>-->
+        <!--</FrameLayout>-->
 
     </RelativeLayout>
 

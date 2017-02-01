@@ -51,6 +51,8 @@ import static com.avaa.surfforecast.data.Common.*;
 public class BaliMap extends View {
     private static final String TAG = "BaliMap";
 
+    private static final android.view.animation.Interpolator FAST_OUT_SLOW_IN_INTERPOLATOR = new android.support.v4.view.animation.FastOutSlowInInterpolator();
+
     private int hintsVisiblePolicy = 2;
     private float hintsVisible = 1;
     private float hintsVisiblePrev = 1;
@@ -96,6 +98,7 @@ public class BaliMap extends View {
 
     private float tideCircleVisible = 0;
 
+    private ParallaxHelper parallaxHelper;
 
     private final Paint paintFont = new Paint() {{
         setFlags(Paint.ANTI_ALIAS_FLAG);
@@ -152,17 +155,16 @@ public class BaliMap extends View {
         this.dh = dh;
         metricsAndPaints = AppContext.instance.metricsAndPaints;
 
+        updateNowTide();
 //        smallTextSize = ;
 //        bigTextSize = smallTextSize*1.25f;
 
         bmpMapZoomedInForSpotI = -1;
 
         Canvas c = new Canvas(bmpMapZoomedOut);
-
         float scale = 2*dh/200f;
         matrix.setScale(scale, scale);
         pathTerrain.transform(matrix, pathTemp);
-
         c.drawPath(pathTemp, paintTerrain);
 
         Log.i(TAG, "setDh() | this.getHeight() = " + getHeight());
@@ -231,7 +233,7 @@ public class BaliMap extends View {
 
         density = getResources().getDisplayMetrics().density;
 
-        AppContext.instance.usageStat.addUserLevelListener(this::setHintsVisiblePolicy);
+        AppContext.instance.userStat.addUserLevelListener(this::setHintsVisiblePolicy);
 
         setAwakenedState(1);
 
@@ -253,18 +255,11 @@ public class BaliMap extends View {
 
         bmpMapZoomedOut = Bitmap.createBitmap(pathTerrainSize.x, pathTerrainSize.y, Bitmap.Config.ARGB_8888);
 
-        mSensorManager = (SensorManager) context.getSystemService(Context.SENSOR_SERVICE);
-        mSensor = mSensorManager.getDefaultSensor(Sensor.TYPE_GYROSCOPE);
-
-        angleX = 0;
-        angleY = 0;
-
-        userX = getWidth()/2;
-        userY = getHeight()/2;
+        parallaxHelper = new ParallaxHelper(this);
     }
 
 
-    Path pathCropMap = null;
+    private Path pathCropMap = null;
     @Override
     protected void onSizeChanged(int w, int h, int oldw, int oldh) {
         super.onSizeChanged(w, h, oldw, oldh);
@@ -278,104 +273,24 @@ public class BaliMap extends View {
 
 
     public void stop() {
-        mSensorManager.unregisterListener(sensorEventListener);
+        parallaxHelper.stop();
     }
     public void resume() {
-        timestamp = 0;
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT) {
-            mSensorManager.registerListener(sensorEventListener, mSensor, 0*1000, 0*1000);
-        }
-        else {
-            mSensorManager.registerListener(sensorEventListener, mSensor, 10*1000);
-        }
+        parallaxHelper.resume();
     }
 
 
-    public void resetUser() {
-        angleX = 0;
-        angleY = 0;
+//    public void resetUser() {
+//        angleX = 0;
+//        angleY = 0;
+//
+//        userX = getWidth()/2;
+//        userY = getHeight()/2;
+//        userZ = phoneDistance;
+//    }
 
-        userX = getWidth()/2;
-        userY = getHeight()/2;
-        userZ = phoneDistance;
-    }
-
-
-    SensorManager mSensorManager;
-    Sensor mSensor;
-    private static final float NS2S = 1.0f / 1000000000.0f;
-    private final float[] deltaRotationVector = new float[4];
-    private float timestamp = 0;
-    private float phoneDistance = 6000;
-    private float angleX = 0, angleY = 0, userX = 0, userY = 0, userZ = 0;
-    SensorEventListener sensorEventListener = new SensorEventListener() {
-        @Override
-        public void onSensorChanged(SensorEvent event) {
-            // This time step's delta rotation to be multiplied by the current rotation
-            // after computing it from the gyro sample data.
-            if (timestamp != 0) {
-                final float dT = (event.timestamp - timestamp) * NS2S;
-                // Axis of the rotation sample, not normalized yet.
-                float axisX = event.values[0];
-                float axisY = event.values[1];
-                float axisZ = event.values[2];
-
-                // Calculate the angular speed of the sample
-                float omegaMagnitude = (float)Math.sqrt(axisX*axisX + axisY*axisY + axisZ*axisZ);
-
-                // Normalize the rotation vector if it's big enough to get the axis
-                if (omegaMagnitude > 80) {
-                    axisX /= omegaMagnitude;
-                    axisY /= omegaMagnitude;
-                    axisZ /= omegaMagnitude;
-                }
-
-                // Integrate around this axis with the angular speed by the time step
-                // in order to get a delta rotation from this sample over the time step
-                // We will convert this axis-angle representation of the delta rotation
-                // into a quaternion before turning it into the rotation matrix.
-                float thetaOverTwo = omegaMagnitude * dT / 2.0f;
-                float sinThetaOverTwo = (float)Math.sin(thetaOverTwo);
-                float cosThetaOverTwo = (float)Math.cos(thetaOverTwo);
-                deltaRotationVector[0] = sinThetaOverTwo * axisX;
-                deltaRotationVector[1] = sinThetaOverTwo * axisY;
-                deltaRotationVector[2] = sinThetaOverTwo * axisZ;
-                deltaRotationVector[3] = cosThetaOverTwo;
-
-                //Log.i(TAG, "Deltas: " + axisX + " " + axisY + ", " + deltaRotationVector[0] + " " + deltaRotationVector[1]);
-
-                float maxDA = (float)Math.PI / 30f;
-
-                angleX += Math.max(-maxDA, Math.min(maxDA, axisX * dT));
-                angleY += Math.max(-maxDA, Math.min(maxDA, axisY * dT));
-
-                float angleRange = (float)Math.PI *2;// / 3f;
-                angleX = Math.max(-angleRange, Math.min(angleRange, angleX));
-                angleY = Math.max(-angleRange, Math.min(angleRange, angleY));
-
-                if (axisX*dT < 0.001 && axisY*dT < 0.001) {
-                    //Log.i(TAG, "SH");
-                    angleX *= 0.997;
-                    angleY *= 0.997;
-                }
-
-                //Log.i(TAG, "Angles: " + angleX*180/Math.PI + " " + angleY*180/Math.PI);
-                userX = (float)Math.sin(-angleY) * phoneDistance + getWidth()/2;
-                userY = (float)Math.sin(-angleX) * phoneDistance + getHeight()/2;
-                userZ = (float)Math.cos(-(Math.sqrt(angleX*angleX + angleY*angleY))) * phoneDistance;
-
-                repaint();
-            }
-            timestamp = event.timestamp;
-            float[] deltaRotationMatrix = new float[9];
-            SensorManager.getRotationMatrixFromVector(deltaRotationMatrix, deltaRotationVector);
-            // User code should concatenate the delta rotation we computed with the current rotation
-            // in order to get the updated rotation.
-            // rotationCurrent = rotationCurrent * deltaRotationMatrix;
-        }
-        @Override
-        public void onAccuracyChanged(Sensor sensor, int i) { }
-    };
+//    private float phoneDistance = 6000;
+//    private float angleX = 0, angleY = 0, userX = 0, userY = 0, userZ = 0;
 
 
     @Override
@@ -412,6 +327,7 @@ public class BaliMap extends View {
         }
     }
 
+
     private void cancelScheduledHintsHide() {
         if (timerHintsHide != null) {
             timerHintsHide.cancel();
@@ -431,7 +347,6 @@ public class BaliMap extends View {
             }
         }, 10000);
     }
-    public static final android.view.animation.Interpolator FAST_OUT_SLOW_IN_INTERPOLATOR = new android.support.v4.view.animation.FastOutSlowInInterpolator();
     public void setAwakenedState(float awakenedState) {
         awakenedState = FAST_OUT_SLOW_IN_INTERPOLATOR.getInterpolation(awakenedState);
 
@@ -550,7 +465,7 @@ public class BaliMap extends View {
     private final Path pathSpotCircleClip = new Path();
 
     private void paintSpotCircle(Canvas c, float ox, float oy, float r, float j) {
-        PointF pp = Common.applyParallax(userX, userY, userZ, ox, oy, dh*subcirclesH);
+        PointF pp = parallaxHelper.applyParallax(ox, oy, dh*subcirclesH);
         float x = pp.x, y = pp.y;
 
         float a = (float)(surfSpots.selectedSpot().waveDirection.ordinal() * Math.PI * 2 / 16 + Math.PI);
@@ -624,7 +539,7 @@ public class BaliMap extends View {
         float ax = ox + (float)(cosA * windR);
         float ay = oy - (float)(sinA * windR);
 
-        pp = Common.applyParallax(userX, userY, userZ, ax, ay, dh * circlesH);
+        pp = parallaxHelper.applyParallax(ax, ay, dh * circlesH);
         ax = pp.x;
         ay = pp.y;
 
@@ -684,7 +599,7 @@ public class BaliMap extends View {
     private void paintSwellCircle(Canvas c, float ox, float oy, float r, float j) {
         if (currentConditions == null) return;
 
-        PointF pp = Common.applyParallax(userX, userY, userZ, ox, oy, dh*(circlesH+subcirclesH)/2);
+        PointF pp = parallaxHelper.applyParallax(ox, oy, dh*(circlesH+subcirclesH)/2);
         float x = pp.x, y = pp.y;
 
         r += awakenedState*hintsVisible*dh/3;
@@ -800,7 +715,7 @@ public class BaliMap extends View {
         float finalVisibility = awakenedState * tideCircleVisible;
         float r = (dh-density) * finalVisibility + density;
 
-        PointF pp = Common.applyParallax(userX, userY, userZ, ox, oy, dh*subcirclesH);
+        PointF pp = parallaxHelper.applyParallax(ox, oy, dh*subcirclesH);
         float x = pp.x, y = pp.y;
 
         float py   = (float)(r / Math.sqrt(2));
@@ -817,7 +732,7 @@ public class BaliMap extends View {
 
         // value
 
-        pp = Common.applyParallax(userX, userY, userZ, ox + nowx, oy + nowy, dh*circlesH);
+        pp = parallaxHelper.applyParallax(ox + nowx, oy + nowy, dh*circlesH);
         x = pp.x; y = pp.y;
 
         float dotR = finalVisibility * (dh * 0.7f + hintsVisible * dh / 4);
@@ -945,7 +860,7 @@ public class BaliMap extends View {
         dx += (1-awakenedState) * (getWidth() - (3*dh));
         dy += (1-awakenedState) * (getHeight() - 2*dh) / 2;
 
-        PointF pp = Common.applyParallax(userX, userY, userZ, getWidth()/2, getHeight()/2, -dh*1.0f);
+        PointF pp = parallaxHelper.applyParallax(getWidth()/2, getHeight()/2, -dh*1.0f);
         pp.offset(-getWidth()/2, -getHeight()/2);
 
         if (awakenedState == 0) {
@@ -974,7 +889,7 @@ public class BaliMap extends View {
         }
         else {
             float s = scale/(dh*2f/rOut);
-            rectfTemp.set(dx, dy, dx + bmpMapZoomedOut.getWidth()*s, dy+ bmpMapZoomedOut.getHeight()*s);
+            rectfTemp.set(dx+pp.x, dy+pp.y, dx+pp.x + bmpMapZoomedOut.getWidth()*s, dy+pp.y + bmpMapZoomedOut.getHeight()*s);
             canvas.drawBitmap(bmpMapZoomedOut, null, rectfTemp, null);
         }
 
@@ -986,6 +901,10 @@ public class BaliMap extends View {
         }
 
         int selectedSpotI = surfSpots.selectedSpotI;
+
+        pp = parallaxHelper.applyParallax(getWidth()/2, getHeight()/2, -dh*0.9f*(1-awakenedState));
+        pp.offset(-getWidth()/2, -getHeight()/2);
+        dx += pp.x; dy += pp.y;
 
         int i = 0;
         for (SurfSpot spot : surfSpotsList) {

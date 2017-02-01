@@ -14,23 +14,20 @@ public class Common {
     public static final TimeZone TIME_ZONE = TimeZone.getTimeZone("GMT+8");
     public static final String BENOA_PORT_ID = "5382";
 
-    public static final String strFT = "ft";
-    public static final String strS  = "s";
-    public static final String strM  = "m";
+    public static final String strNOW   = "now";
+    public static final String strFT    = "ft";
+    public static final String strS     = "s";
+    public static final String strM     = "m";
     public static final String strKMH   = "km/h";
-    public static final String strWIND  = "wind";
-    public static final String strSWELL = "swell";
-    public static final String strTIDE  = "tide";
-
-    public static final String strWIND_U  = "WIND";
-    public static final String strSWELL_U = "SWELL";
-    public static final String strTIDE_U  = "TIDE";
-
-    public static final String strNOW  = "now";
-
-    public static final String noWindData  = "No wind data";
-    public static final String noSwellData = "No swell data";
-    public static final String noTideData  = "No tide data";
+    public static final String strWIND      = "wind";
+    public static final String strSWELL     = "swell";
+    public static final String strTIDE      = "tide";
+    public static final String strWIND_U    = "WIND";
+    public static final String strSWELL_U   = "SWELL";
+    public static final String strTIDE_U    = "TIDE";
+    public static final String STR_NO_WIND_DATA     = "No wind data";
+    public static final String STR_NO_SWELL_DATA    = "No swell data";
+    public static final String STR_NO_TIDE_DATA     = "No tide data";
 
 
     public static int strToInt(String s, int def) {
@@ -42,11 +39,6 @@ public class Common {
         }
     }
 
-    public static PointF applyParallax(float userX, float userY, float userZ, float x, float y, float z) {
-        if (userZ == 0) return new PointF(x, y);
-        float k = userZ / (userZ - z);
-        return new PointF(userX + (x-userX) * k, userY + (y-userY) * k);
-    }
 
     public static long getToday(TimeZone timeZone) {
         return getDay(0, timeZone);
