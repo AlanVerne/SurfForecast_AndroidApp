@@ -45,6 +45,24 @@ public class ParallaxHelper {
     };
 
 
+//    private static final double NS2S = 1.0f / 1000000000.0f;
+//    private final SensorEventListener sensorEventListener = new SensorEventListener() {
+//        @Override
+//        public void onSensorChanged(SensorEvent event) {
+//            if (timestamp != 0) {
+//                final double dT = (event.timestamp - timestamp) * NS2S;
+//                double dAX = event.values[0];
+//                double dAY = event.values[1];
+//                angleX += dAX * dT;
+//                angleY += dAY * dT;
+//            }
+//            timestamp = event.timestamp;
+//        }
+//        @Override
+//        public void onAccuracyChanged(Sensor sensor, int i) { }
+//    };
+
+
     public ParallaxHelper(View v) {
         this.v = v;
         this.w = v.getWidth();
@@ -118,17 +136,22 @@ public class ParallaxHelper {
             angleX = Math.max(-angleRange, Math.min(angleRange, angleX));
             angleY = Math.max(-angleRange, Math.min(angleRange, angleY));
 
-            if (axisX*dT < 0.001 && axisY*dT < 0.001) {
-                if (goBackV >= 0.05) goBackV -= 0.05;
+            if (axisX*dT < 0.0015 && axisY*dT < 0.0015) {
+                double d = dT;
+                if (goBackV >= d) goBackV -= d;
+                else goBackV = 0;
 
-                angleX *= 0.996 + goBackV*0.004;
-                angleY *= 0.996 + goBackV*0.004;
+                double k = Math.min(1, goBackV);
+                k*=k;
+                angleX *= 0.995 + k*0.005;
+                angleY *= 0.995 + k*0.005;
             }
             else {
-                goBackV = 1;
+                goBackV = 1.5;
             }
 
-            //Log.i(TAG, "Angles: " + angleX*180/Math.PI + " " + angleY*180/Math.PI);
+//            Log.i(TAG, "Angles: " + angleX*180/Math.PI + ", " + angleY*180/Math.PI + " dT:" + dT);
+
             userX = Math.sin(-angleY) * phoneDistance + w/2.0;
             userY = Math.sin(-angleX) * phoneDistance + h/2.0;
             userZ = Math.cos(-(Math.sqrt(angleX*angleX + angleY*angleY))) * phoneDistance;

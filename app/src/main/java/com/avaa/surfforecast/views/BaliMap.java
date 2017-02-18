@@ -78,8 +78,8 @@ public class BaliMap extends View {
 
     private float awakenedState = 0;
     private float awakenedStatePrev = 0;
-
-    private float density = 3;
+    
+    private float densityDHDep = 3;
 
     private int colorWaterColor = 0xffacb5b8; //0xffa3b1b6; //0xff819faa; //0xff2e393d;
 //    private int colorTideWater = colorWaveBG;
@@ -129,7 +129,7 @@ public class BaliMap extends View {
     private final Paint paintAdditionalArrow = new Paint(paintAdditionalText) {{
         setStyle(Style.STROKE);
         setStrokeJoin(Join.MITER);
-        setStrokeWidth(density);
+        setStrokeWidth(densityDHDep);
     }};
     private final Paint paintPathTide = new Paint() {{
         setAntiAlias(true);
@@ -146,6 +146,7 @@ public class BaliMap extends View {
 
     private float fontBigH;
     private float fontH;
+
     
     public void setDh(int dh) {
         if (dh == 0) return;
@@ -154,6 +155,8 @@ public class BaliMap extends View {
 
         this.dh = dh;
         metricsAndPaints = AppContext.instance.metricsAndPaints;
+
+        this.densityDHDep = metricsAndPaints.densityDHDependent;
 
         updateNowTide();
 //        smallTextSize = ;
@@ -231,7 +234,7 @@ public class BaliMap extends View {
 
         mScrollerHints = new Scroller(getContext());
 
-        density = getResources().getDisplayMetrics().density;
+        densityDHDep = getResources().getDisplayMetrics().density;
 
         AppContext.instance.userStat.addUserLevelListener(this::setHintsVisiblePolicy);
 
@@ -494,7 +497,7 @@ public class BaliMap extends View {
         c.translate(x, y);
         c.rotate(aDegrees + 90);
 
-        paintWaveLines.setStrokeWidth(awakenedState*density*2);
+        paintWaveLines.setStrokeWidth(awakenedState*densityDHDep*2);
 
         int leftright = surfSpots.selectedSpot().leftright;
         if (leftright == 0) {
@@ -713,7 +716,7 @@ public class BaliMap extends View {
         checkNowTide();
 
         float finalVisibility = awakenedState * tideCircleVisible;
-        float r = (dh-density) * finalVisibility + density;
+        float r = (dh-densityDHDep) * finalVisibility + densityDHDep;
 
         PointF pp = parallaxHelper.applyParallax(ox, oy, dh*subcirclesH);
         float x = pp.x, y = pp.y;
@@ -913,7 +916,7 @@ public class BaliMap extends View {
                 float t = highlighted * (1f - awakenedState);
                 float x = spot.pointOnSVG.x * scale + dx;
                 float y = spot.pointOnSVG.y * scale + dy;
-                float r = density * highlighted * 1.5f;
+                float r = densityDHDep * highlighted * 1.5f;
 
                 paintBG.setColor((int)(t * 0xff) * 0x1000000 + colorSpotDot);
                 canvas.drawCircle(x, y, r, paintBG);
@@ -929,10 +932,10 @@ public class BaliMap extends View {
 
             if (awakenedState == 0) {
                 paintBG.setColor(0xff2696bb); //0xff000000 | colorSpotDot);
-                canvas.drawCircle(x, y, density * (2 + isHighlighted(selectedSpotI)), paintBG);
+                canvas.drawCircle(x, y, densityDHDep * (2 + isHighlighted(selectedSpotI)), paintBG);
             }
             else {
-                float r = (dh * 1.5f - density * 3) * awakenedState + density * 3;
+                float r = (dh * 1.5f - densityDHDep * 3) * awakenedState + densityDHDep * 3;
                 if (awakenedState > 0) {
                     paintSelectedSpot(canvas, x, y, r);
                 }
@@ -978,7 +981,7 @@ public class BaliMap extends View {
         y += awakenedState * dh/2;
 
         hintsVisbleToAwakened = Math.max(0, Math.min((swellArrowVisible * awakenedState - 0.66f) * 3f, 1f));
-        float smallr = (dh-density) * swellArrowVisible * awakenedState + density;
+        float smallr = (dh-densityDHDep) * swellArrowVisible * awakenedState + densityDHDep;
         paintSwellCircle(canvas, x, y, smallr, hintsVisbleToAwakened);
 
         x -= awakenedState * (1+1+0.5+0.5*hintsVisible) * dh;

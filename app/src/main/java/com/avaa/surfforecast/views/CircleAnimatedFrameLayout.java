@@ -48,6 +48,7 @@ public class CircleAnimatedFrameLayout extends FrameLayout {
         if (i <= 0) {
             super.setVisibility(INVISIBLE);
             i = 0;
+            return;
         }
         else if (i >= 1) i = 1;
         else repaint();

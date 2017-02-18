@@ -45,7 +45,7 @@ public class SurfConditionsOneDayBitmapsDrawer {
 
 
     public SurfConditionsOneDayBitmapsDrawer(MetricsAndPaints metricsAndPaints) {
-        this.density = metricsAndPaints.density;
+        this.density = metricsAndPaints.densityDHDependent;
         this.dh = metricsAndPaints.dh;
 
         drawMeasures = AppContext.instance.userStat.userLevel == 2;

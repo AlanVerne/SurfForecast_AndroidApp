@@ -151,7 +151,7 @@ public class MainActivity extends AppCompatActivity {
         forecast = (SurfConditionsForecastView) findViewById(R.id.rlBottom);
         progressBar = (MaterialProgressBar)findViewById(R.id.progressBar);
         rlDays = (RelativeLayout)findViewById(R.id.vllDays);
-        btnMenu = (FrameLayout)findViewById(R.id.menu);
+        btnMenu = (FrameLayout)findViewById(R.id.flBtnMenu);
 
         llRating = (LinearLayout)findViewById(R.id.llRating);
 
@@ -391,6 +391,12 @@ public class MainActivity extends AppCompatActivity {
         llRatingLP.leftMargin = (int)(dh);
         llRating.setLayoutParams(llRatingLP);
 
+        View ivBtnMenu = findViewById(R.id.ivBtnMenu);
+        ViewGroup.LayoutParams layoutParams = ivBtnMenu.getLayoutParams();
+        layoutParams.width = (int)metrics.fontHeader;
+        layoutParams.height = (int)metrics.fontHeader;
+        ivBtnMenu.setLayoutParams(layoutParams);
+
         ((TextView)findViewById(R.id.tvRating)).setTextSize(TypedValue.COMPLEX_UNIT_PX, fontRating);
 
         final RelativeLayout spotsRL = (RelativeLayout)findViewById(R.id.top);
@@ -417,6 +423,7 @@ public class MainActivity extends AppCompatActivity {
         View rlDaysScroller = findViewById(R.id.rlDaysScroller);
         RelativeLayout.LayoutParams rlDaysScrollerLayoutParams = (RelativeLayout.LayoutParams)rlDaysScroller.getLayoutParams();
         rlDaysScrollerLayoutParams.bottomMargin = (int)(daysBottom - density);
+        rlDaysScrollerLayoutParams.height = (int)(metrics.densityDHDependent*3.5f);
         rlDaysScroller.setLayoutParams(rlDaysScrollerLayoutParams);
 
         RelativeLayout.LayoutParams lp = new RelativeLayout.LayoutParams(dh*2, (int)(dh*3));

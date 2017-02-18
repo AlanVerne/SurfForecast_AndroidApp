@@ -8,6 +8,7 @@ import android.graphics.Paint;
 import android.graphics.Typeface;
 import android.os.Build;
 import android.util.AttributeSet;
+import android.util.Log;
 import android.util.TypedValue;
 import android.view.Gravity;
 import android.view.MotionEvent;
@@ -31,6 +32,7 @@ import java.util.TimerTask;
  */
 
 public class OneDayConditionsSmallView extends LinearLayout {
+    private static final String TAG = "OneDayCSV";
     private static final SimpleDateFormat DAY_FORMAT = new SimpleDateFormat("EEE");
 
     private static final int LONG_DELAY  = 500;
@@ -50,8 +52,6 @@ public class OneDayConditionsSmallView extends LinearLayout {
     private int bh;
     private Bitmap b;
     private Canvas c;
-
-//    private SortedMap<Integer, SurfConditions> conditions;
 
     private int[] h = new int[3];
     private int[] dh = new int[3];
@@ -77,6 +77,17 @@ public class OneDayConditionsSmallView extends LinearLayout {
     public void setMetrics(MetricsAndPaints metrics) {
         tvDate.setTextSize(TypedValue.COMPLEX_UNIT_PX, metrics.font);
         tvDayOfWeek.setTextSize(TypedValue.COMPLEX_UNIT_PX, metrics.fontSmall);
+
+        Log.i(TAG, "setMetrics " + metrics.density + " " + metrics.dh);
+
+        d  = (int)(3.5 * metrics.densityDHDependent);
+        s  = (int)(1.5 * metrics.densityDHDependent);
+        bh = ((d+s)*6+d);
+
+        b = Bitmap.createBitmap(d*3+s*2, bh, Bitmap.Config.ARGB_8888);
+        c = new Canvas(b);
+
+        repaintBitmap();
     }
 
 

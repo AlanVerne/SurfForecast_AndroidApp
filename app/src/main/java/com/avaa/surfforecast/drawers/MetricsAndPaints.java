@@ -37,6 +37,8 @@ public class MetricsAndPaints {
     public float density;
     public int dh;
 
+    public float densityDHDependent;
+
     public float fontSmall;
     public float font;
     public float fontBig;
@@ -61,6 +63,8 @@ public class MetricsAndPaints {
     public MetricsAndPaints(float density, int dh) {
         this.density = density;
         this.dh = dh;
+
+        this.densityDHDependent = dh / 27.67f;
 
         font = dh/2f;
         fontSmall = font/TEXT_K;
