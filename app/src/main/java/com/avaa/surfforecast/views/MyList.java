@@ -6,6 +6,7 @@ import android.animation.ObjectAnimator;
 import android.content.Context;
 import android.os.Build;
 import android.os.Handler;
+import android.os.PowerManager;
 import android.os.SystemClock;
 import android.util.AttributeSet;
 import android.util.Log;
@@ -38,6 +39,8 @@ public class MyList extends FeaturedScrollView {
     private int paddingTop  = 0; //paddingLeft - spacing/2;
 
     private final LinearLayout layout;
+
+    private PowerManager powerManager;
 
     private List<View> views = new ArrayList<>();
     private View selectedView = null;
@@ -97,10 +100,10 @@ public class MyList extends FeaturedScrollView {
 
 
     private void init() {
-        //float density = getResources().getDisplayMetrics().density;
+        powerManager = (PowerManager) getContext().getSystemService(Context.POWER_SERVICE);
 
         layout.setOrientation(LinearLayout.VERTICAL);
-        layout.setLayoutTransition(null); //new LayoutTransition());
+        layout.setLayoutTransition(null);
         layout.setLayoutParams(new LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.WRAP_CONTENT));
 
         addView(layout);
@@ -113,6 +116,11 @@ public class MyList extends FeaturedScrollView {
         spacing = dh/2;
         paddingLeft = dh;
         paddingTop  = dh/2; //paddingLeft - spacing/2;
+    }
+
+
+    private boolean isPowerSavingMode() {
+        return Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP && powerManager.isPowerSaveMode();
     }
 
 
@@ -129,8 +137,11 @@ public class MyList extends FeaturedScrollView {
                 }
             }
 
-            awakeState += (float)(now - prevTime) * (awake ? 1f / FALLING_ASLEEP_TIME : -1f / AWAKENING_TIME);
-            awakeState = Math.max(0, Math.min(1, awakeState));
+            if (isPowerSavingMode()) awakeState = awake ? 1f : 0f;
+            else {
+                awakeState += (float) (now - prevTime) * (awake ? 1f / FALLING_ASLEEP_TIME : -1f / AWAKENING_TIME);
+                awakeState = Math.max(0, Math.min(1, awakeState));
+            }
 
             if (awakeState == 1 && afterAwakened != null) {
                 afterAwakened.run();

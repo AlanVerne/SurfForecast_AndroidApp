@@ -11,11 +11,8 @@ import android.graphics.PointF;
 import android.graphics.RectF;
 import android.graphics.Region;
 import android.graphics.Typeface;
-import android.hardware.Sensor;
-import android.hardware.SensorEvent;
-import android.hardware.SensorEventListener;
-import android.hardware.SensorManager;
 import android.os.Build;
+import android.os.PowerManager;
 import android.util.AttributeSet;
 import android.util.Log;
 import android.view.MotionEvent;
@@ -56,6 +53,8 @@ public class BaliMap extends View {
     private int hintsVisiblePolicy = 2;
     private float hintsVisible = 1;
     private float hintsVisiblePrev = 1;
+
+    private PowerManager powerManager;
 
     private SurfSpots surfSpots = null;
     private List<SurfSpot> surfSpotsList = new ArrayList<>();
@@ -138,7 +137,7 @@ public class BaliMap extends View {
     }};
 
     private Timer timerHintsHide = null;
-    private Scroller mScrollerHints;
+    private Scroller scrollerHints;
 
     private int dh = 0;
 
@@ -193,6 +192,8 @@ public class BaliMap extends View {
 
 
     private void init(Context context) {
+        powerManager = (PowerManager) getContext().getSystemService(Context.POWER_SERVICE);
+
         surfSpots = AppContext.instance.surfSpots;
         surfSpots.addChangeListener(c -> {
             Log.i(TAG, "surfSpots ChangeListener | metar: " + surfSpots.currentMETAR);
@@ -232,7 +233,7 @@ public class BaliMap extends View {
         currentConditions = surfSpots.currentConditions;
         currentMETAR = surfSpots.currentMETAR;
 
-        mScrollerHints = new Scroller(getContext());
+        scrollerHints = new Scroller(getContext());
 
         densityDHDep = getResources().getDisplayMetrics().density;
 
@@ -275,25 +276,17 @@ public class BaliMap extends View {
     }
 
 
+    public void resume() {
+        if (!isPowerSavingMode()) parallaxHelper.resume();
+    }
     public void stop() {
         parallaxHelper.stop();
     }
-    public void resume() {
-        parallaxHelper.resume();
+
+
+    private boolean isPowerSavingMode() {
+        return Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP && powerManager.isPowerSaveMode();
     }
-
-
-//    public void resetUser() {
-//        angleX = 0;
-//        angleY = 0;
-//
-//        userX = getWidth()/2;
-//        userY = getHeight()/2;
-//        userZ = phoneDistance;
-//    }
-
-//    private float phoneDistance = 6000;
-//    private float angleX = 0, angleY = 0, userX = 0, userY = 0, userZ = 0;
 
 
     @Override
@@ -302,12 +295,19 @@ public class BaliMap extends View {
 
         if (hintsVisiblePolicy == 1) {
             if (hintsVisible != 1) {
-                if (!mScrollerHints.isFinished()) {
-                    mScrollerHints.abortAnimation();
-                    int dx = 1000 - mScrollerHints.getCurrX();
-                    mScrollerHints.startScroll(mScrollerHints.getCurrX(), 0, dx, 0, 333 * dx / 1000);
-                } else {
-                    mScrollerHints.startScroll(0, 0, 1000, 0, 333);
+                if (isPowerSavingMode()) {
+                    if (!scrollerHints.isFinished()) scrollerHints.abortAnimation();
+                    hintsVisible = 1;
+                    repaint();
+                }
+                else {
+                    if (!scrollerHints.isFinished()) {
+                        scrollerHints.abortAnimation();
+                        int dx = 1000 - scrollerHints.getCurrX();
+                        scrollerHints.startScroll(scrollerHints.getCurrX(), 0, dx, 0, isPowerSavingMode() ? 0 : 333 * dx / 1000);
+                    } else {
+                        scrollerHints.startScroll(0, 0, 1000, 0, isPowerSavingMode() ? 0 : 333);
+                    }
                 }
             }
             rescheduleHintsHide();
@@ -321,9 +321,8 @@ public class BaliMap extends View {
     public void computeScroll() {
         //Log.i("BM", "computeScroll()");
         super.computeScroll();
-        if (mScrollerHints.computeScrollOffset()) {
-            float newHV = mScrollerHints.getCurrX() / 1000f;
-            //Log.i("BM", hintsVisible+" ");
+        if (scrollerHints.computeScrollOffset()) {
+            float newHV = scrollerHints.getCurrX() / 1000f;
             //if (hintsVisible == newHV)
             hintsVisible = newHV;
             repaint();
@@ -345,8 +344,15 @@ public class BaliMap extends View {
         timerHintsHide.schedule(new TimerTask() {
             synchronized public void run() {
                 //Log.i("BM", "start hiding");
-                mScrollerHints.startScroll(1000, 0, -1000, 0, 666);
-                repaint();
+                if (isPowerSavingMode()) {
+                    if (hintsVisible != 0) {
+                        hintsVisible = 0;
+                        repaint();
+                    }
+                } else {
+                    scrollerHints.startScroll(1000, 0, -1000, 0, 666);
+                    repaint();
+                }
             }
         }, 10000);
     }
@@ -357,7 +363,7 @@ public class BaliMap extends View {
         this.awakenedState = awakenedState;
         if (awakenedState == 0 && hintsVisiblePolicy > 0) {
             cancelScheduledHintsHide();
-            mScrollerHints.abortAnimation();
+            scrollerHints.abortAnimation();
             hintsVisible = 1;
         }
         if (awakenedState == 1 && hintsVisiblePolicy == 1) {
@@ -785,53 +791,76 @@ public class BaliMap extends View {
     private boolean computeArrowsAnimation() {
         boolean needRepaint = false;
 
+        float windArrowVisibleDest = (currentConditions != null || currentMETAR != null) ? 1 : 0;
+        if (isPowerSavingMode()) {
+            if (windArrowVisible != windArrowVisibleDest) {
+                windArrowVisible = windArrowVisibleDest;
+                needRepaint = true;
+            }
+        }
+        else {
+            windArrowVisible += (windArrowVisibleDest - windArrowVisible) * 0.22;
+            if (!needRepaint) if (windArrowVisible >= 0.01 || windArrowVisible <= 0.99) needRepaint = true;
+        }
+
         if (currentConditions != null || currentMETAR != null) {
             float a = currentMETAR != null ? currentMETAR.windAngle : currentConditions.windAngle;
             boolean vbr = a < 0 || (currentMETAR != null ? currentMETAR.windSpeed : currentConditions.windSpeed) <= 0;
 
-            if (a < 0) a = (float)(Math.PI*2 - Math.PI * 1 / 4);
+            if (a < 0) a = (float) (Math.PI * 2 - Math.PI * 1 / 4);
 
             if (windArrowVisible == 0) {
                 windArrowAngle = a;
                 windArrowVbr = vbr ? 1 : 0;
+            } else {
+                if (isPowerSavingMode() && windArrowAngle != a) {
+                    windArrowAngle = a;
+                    needRepaint = true;
+                } else {
+                    double dA = (a - windArrowAngle);
+                    if (dA > Math.PI) {
+                        windArrowAngle += Math.PI * 2;
+                        dA -= Math.PI * 2;
+                    } else if (dA < -Math.PI) {
+                        windArrowAngle -= Math.PI * 2;
+                        dA += Math.PI * 2;
+                    }
+                    windArrowAngle += dA * 0.05;
+                    if (dA > 0.01) needRepaint = true;
+                }
+
+                if (isPowerSavingMode() && windArrowVbr != (vbr ? 1 : 0)) {
+                    windArrowVbr = vbr ? 1 : 0;
+                    needRepaint = true;
+                } else {
+                    double dVbr = ((vbr ? 1 : 0) - windArrowVbr) * 0.05;
+                    windArrowVbr += dVbr;
+                    if (dVbr > 0.01) needRepaint = true;
+                }
             }
-            else {
-                double dA = (a - windArrowAngle);
-                if (dA > Math.PI) { windArrowAngle += Math.PI*2; dA -= Math.PI*2; }
-                else if (dA < -Math.PI) { windArrowAngle -= Math.PI*2; dA += Math.PI*2; }
-                windArrowAngle += dA * 0.05;
-                if (dA > 0.01) needRepaint = true;
+        }
 
-                double dVbr = ((vbr ? 1 : 0) - windArrowVbr) * 0.05;
-                windArrowVbr += dVbr;
-                if (dVbr > 0.01) needRepaint = true;
+        float swellArrowVisibleDest = (currentConditions != null ? 1 : 0);
+        if (isPowerSavingMode()) {
+            if (swellArrowVisible != swellArrowVisibleDest) {
+                swellArrowVisible = swellArrowVisibleDest; needRepaint = true;
             }
-            windArrowVisible += (1 - windArrowVisible) * 0.22;
         }
         else {
-            windArrowVisible += (0 - windArrowVisible) * 0.22;
+            swellArrowVisible += (swellArrowVisibleDest - swellArrowVisible) * 0.185;
+            if (!needRepaint) if (swellArrowVisible >= 0.01 || swellArrowVisible <= 0.99) needRepaint = true;
         }
 
-        if (!needRepaint) if (windArrowVisible >= 0.01 || windArrowVisible <= 0.99) needRepaint = true;
-
-
-        if (currentConditions != null) {
-            swellArrowVisible += (1 - swellArrowVisible) * 0.185;
-        }
-        else {
-            swellArrowVisible += (0 - swellArrowVisible) * 0.185;
-        }
-        if (!needRepaint) if (swellArrowVisible >= 0.01 || swellArrowVisible <= 0.99) needRepaint = true;
-
-
-        if (tideData != null) {
-            tideCircleVisible += (1 - tideCircleVisible) * 0.13;
+        float tideCircleVisibleDest = (tideData != null ? 1 : 0);
+        if (isPowerSavingMode()) {
+            if (tideCircleVisible != tideCircleVisibleDest) {
+                tideCircleVisible = tideCircleVisibleDest; needRepaint = true;
+            }
         }
         else {
-            tideCircleVisible += (0 - tideCircleVisible) * 0.13;
+            tideCircleVisible += (tideCircleVisibleDest - tideCircleVisible) * 0.13;
+            if (!needRepaint) if (tideCircleVisible >= 0.01 || tideCircleVisible <= 0.99) needRepaint = true;
         }
-        if (!needRepaint) if (tideCircleVisible >= 0.01 || tideCircleVisible <= 0.99) needRepaint = true;
-
 
         return needRepaint;
     }

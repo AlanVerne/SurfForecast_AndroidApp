@@ -480,8 +480,8 @@ public class MainActivity extends AppCompatActivity {
             dh = Math.max(mainLayout.getWidth(), mainLayout.getHeight()) - Math.min(mainLayout.getWidth(), mainLayout.getHeight())*14/15;
             dh = (int)(dh / 10.1);
 
-            int minDH = (int)(Math.min(mainLayout.getWidth(), mainLayout.getHeight()) / 7 / 2);
-            int maxDH = (int)(Math.min(mainLayout.getWidth(), mainLayout.getHeight()) / 6.5 / 2);
+            int minDH = (int)(Math.min(mainLayout.getWidth(), mainLayout.getHeight()) / 14f);
+            int maxDH = (int)(Math.min(mainLayout.getWidth(), mainLayout.getHeight()) / 13f);
             dh = Math.min(maxDH, Math.max(minDH, dh));
 
             appContext.metricsAndPaints = new MetricsAndPaints(density, dh);
