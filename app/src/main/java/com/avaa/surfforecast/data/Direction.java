@@ -23,7 +23,7 @@ public enum Direction {
     }
 
     public static Direction angleToDirection(float a) {
-        return Direction.values()[(int)Math.round(a / Math.PI * 8)];
+        return Direction.values()[(int)Math.round(a / Math.PI * 8) % 16];
     }
 
     public static final Map<Integer, String> ANGLE_TO_LONG_STRING_DIRECTION = new HashMap<Integer, String>() {{
@@ -32,7 +32,7 @@ public enum Direction {
         put(180, "West");
         put(270, "South");
         put(360, "East");
-        put(0+45, "North-east");
+        put(45, "North-east");
         put(90+45, "North-west");
         put(180+45, "South-west");
         put(270+45, "South-east");
