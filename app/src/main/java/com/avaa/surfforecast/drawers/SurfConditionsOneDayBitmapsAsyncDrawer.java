@@ -10,6 +10,7 @@ import com.avaa.surfforecast.data.SurfConditionsOneDay;
 import com.avaa.surfforecast.data.SurfSpot;
 import com.avaa.surfforecast.views.SurfConditionsForecastView;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -114,6 +115,14 @@ public class SurfConditionsOneDayBitmapsAsyncDrawer extends AsyncTask<Void, Void
         Log.i(TAG, "onPostExecute() | daysToDraw = " + daysToDraw.toString());
         //Log.i(TAG, "onPostExecute() | " + surfSpot.name + " " + forecastBitmaps.size());
         view.newBitmaps(forecastBitmaps, step);
+
+        if (step == 0) {
+            ArrayList<Integer> days = new ArrayList<>();
+            for (int i = 0; i < 7; i++) {
+                if (!forecastBitmaps.keySet().contains(i)) days.add(i);
+            }
+            view.redrawOtherBitmaps(days);
+        }
 //        Trace.endSection();
     }
 }

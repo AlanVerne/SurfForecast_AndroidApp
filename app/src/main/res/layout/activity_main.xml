@@ -1,7 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
 
-<!--<android.support.design.widget.CoordinatorLayout-->
-    <!--&gt;-->
 <RelativeLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
@@ -16,8 +14,7 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:orientation="vertical"
-    android:id="@+id/mainlayout"
-    >
+    android:id="@+id/mainlayout">
 
     <RelativeLayout
         android:id="@+id/top"
@@ -35,8 +32,7 @@
             android:visibility="invisible"
             app:mpb_progressStyle="horizontal"
             app:mpb_useIntrinsicPadding="false"
-            style="@style/Widget.MaterialProgressBar.ProgressBar.Horizontal"
-            />
+            style="@style/Widget.MaterialProgressBar.ProgressBar.Horizontal" />
 
         <com.avaa.surfforecast.views.BaliMap
             android:id="@+id/balimap"
@@ -53,7 +49,6 @@
             android:layout_width="match_parent"
             android:layout_height="match_parent"
             android:orientation="horizontal">
-
             <TextView
                 android:id="@+id/tvRating"
                 android:layout_width="wrap_content"
@@ -61,13 +56,11 @@
                 android:textColor="#ddffffff"
                 android:gravity="left|center_vertical"
                 android:text="RATING NOW "/>
-
             <com.avaa.surfforecast.views.RatingView
                 android:id="@+id/ratingView"
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
                 android:layout_gravity="center_vertical"/>
-
         </LinearLayout>
 
         <FrameLayout
@@ -76,7 +69,6 @@
             android:layout_height="100dp"
             android:paddingTop="4dp"
             android:text="&#8926;"
-            android:onClick="onUpdateClick"
             android:layout_alignParentRight="true"
             android:background="?android:attr/selectableItemBackground"
             android:textColor="#ffffff"
@@ -132,9 +124,9 @@
                 android:layout_width="wrap_content"
                 android:layout_height="match_parent"/>
             <com.avaa.surfforecast.views.OneDayConditionsSmallView
-                    android:id="@+id/odcs6"
-                    android:layout_width="wrap_content"
-                    android:layout_height="match_parent"/>
+                android:id="@+id/odcs6"
+                android:layout_width="wrap_content"
+                android:layout_height="match_parent"/>
             </LinearLayout>
             <RelativeLayout
                 android:id="@+id/rlDaysScroller"
@@ -164,15 +156,12 @@
 <FrameLayout
     android:id="@+id/flVoiceInterface"
     android:layout_width="match_parent"
-    android:layout_height="match_parent"
-    >
+    android:layout_height="match_parent">
     <fragment
         android:name="com.avaa.surfforecast.ai.VoiceInterfaceFragment"
         android:id="@+id/vif"
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        />
+        android:layout_height="match_parent" />
 </FrameLayout>
 
 </RelativeLayout>
-<!--</android.support.design.widget.CoordinatorLayout>-->

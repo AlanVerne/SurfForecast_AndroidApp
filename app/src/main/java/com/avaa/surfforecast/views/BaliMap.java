@@ -65,9 +65,11 @@ public class BaliMap extends View {
     private SurfConditions currentConditions = null;
     private METAR currentMETAR = null;
 
-    private String strWindSpeed = null;
-    private String strWaveHeight = null;
-    private String strWavePeriod = null;
+    private static final String STR_DASH = "-";
+
+    private String strWindSpeed = STR_DASH;
+    private String strWaveHeight = STR_DASH;
+    private String strWavePeriod = STR_DASH;
 
     private float shownI = 0;
     private float firstI = 0;
@@ -202,15 +204,15 @@ public class BaliMap extends View {
 
             if (currentMETAR != null) strWindSpeed = String.valueOf(currentMETAR.windSpeed);
             else if (currentConditions != null) strWindSpeed = String.valueOf(currentConditions.windSpeed);
-            else strWindSpeed = null;
+            else strWindSpeed = STR_DASH;
 
             if (currentConditions != null) {
                 strWaveHeight = String.valueOf(currentConditions.getWaveHeightInFt());
                 strWavePeriod = String.valueOf(currentConditions.wavePeriod);
             }
             else {
-                strWaveHeight = null;
-                strWavePeriod = null;
+                strWaveHeight = STR_DASH;
+                strWavePeriod = STR_DASH;
             }
 
             updateTideData();
@@ -908,7 +910,7 @@ public class BaliMap extends View {
                     matrix.preScale(scale, scale);
                     pathTerrain.transform(matrix, pathTemp);
 
-                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT) {
+                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT) { //TODO FIX
                         pathTemp.op(pathTemp, pathCropMap, Path.Op.INTERSECT);
                     }
 

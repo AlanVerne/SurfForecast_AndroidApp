@@ -196,16 +196,16 @@ public class VoiceInterfaceFragment extends Fragment {
 
     private void uiListening() {
         btnMicImage.setAlpha(0.95f);
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN) {
+        //if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN) {
             btnMic.setBackground(getContext().getResources().getDrawable(R.drawable.round_button));
-        }
+        //}
         circleVoiceIndicator.setAwakened(true);
     }
     private void uiNotListening() {
         if (flHint.getState() != 1) btnMicImage.setAlpha(0.95f);
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN) {
+//        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN) {
             btnMic.setBackground(getContext().getResources().getDrawable(R.drawable.round_button_transparent));
-        }
+//        }
         circleVoiceIndicator.setAwakened(false);
         if (flHint.getState() != 1) btnMicImage.setAlpha(0.2f); // TODO fix
     }
@@ -229,6 +229,23 @@ public class VoiceInterfaceFragment extends Fragment {
 //    private void uiApprove(TextView tv) {
 //
 //    }
+    public boolean onBackPressed() {
+        boolean r = false;
+        if (circleVoiceIndicator.isAwakened()) {
+            stopListening();
+            uiHideHint();
+            r = true;
+        }
+        if (ans != null && ans.getVisibility() == View.VISIBLE) {
+            uiHideHint();
+            r = true;
+        }
+        if (flHint.getVisibility() == View.VISIBLE) {
+            uiHideWelcomeHint();
+            r = true;
+        }
+        return r;
+    }
     private void uiHideWelcomeHint() {
         if (!circleVoiceIndicator.isAwakened()) btnMicImage.setAlpha(0.2f);
         flHint.setVisibility(View.INVISIBLE);

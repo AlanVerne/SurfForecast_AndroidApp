@@ -10,13 +10,13 @@ android {
         }
     }
     compileSdkVersion 25
-    buildToolsVersion "24.0.2"
+    buildToolsVersion "25.0.2"
     defaultConfig {
         applicationId "com.avaa.surfforecast"
-        minSdkVersion 15
+        minSdkVersion 16
         targetSdkVersion 25
-        versionCode 30
-        versionName '1.29'
+        versionCode 31
+        versionName '1.30'
         jackOptions {
             enabled true
         }
@@ -24,8 +24,19 @@ android {
     }
     buildTypes {
         release {
+            debuggable false
             minifyEnabled false
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
+        }
+        debug {
+            debuggable true
+            applicationIdSuffix ".debug"
+        }
+        jnidebug {
+            debuggable true
+            initWith debug
+            applicationIdSuffix ".jnidebug"
+            jniDebuggable true
         }
     }
     compileOptions {
@@ -39,11 +50,11 @@ android {
 dependencies {
     compile fileTree(include: ['*.jar'], dir: 'libs')
     //compile files('libs/androidsvg-1.2.1.jar')
-    compile 'com.android.support:appcompat-v7:25.0.0'
+    compile 'com.android.support:appcompat-v7:25.2.0'
     compile 'me.zhanghai.android.materialprogressbar:library:1.1.7'
     compile 'org.apache.commons:commons-vfs2-project:2.1'
     compile 'commons-net:commons-net:3.3'
     compile 'commons-io:commons-io:2.4'
-    compile 'com.android.support:support-v4:25.0.0'
+    compile 'com.android.support:support-v4:25.2.0'
     testCompile 'junit:junit:4.12'
 }

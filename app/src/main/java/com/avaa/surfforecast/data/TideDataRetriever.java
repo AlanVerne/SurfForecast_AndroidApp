@@ -17,7 +17,7 @@ import java.net.URL;
 public class TideDataRetriever extends AsyncTask<String, Void, TideData> {
     private static final String TAG = "TideDataRetr";
 
-    private final Runnable runnable;
+    private final Runnable runnableRunAfter;
     private final TideDataProvider tideDataProvider;
     private final String portID;
 
@@ -25,7 +25,7 @@ public class TideDataRetriever extends AsyncTask<String, Void, TideData> {
     public TideDataRetriever(TideDataProvider tideDataProvider, String portID, Runnable runAfter) {
         this.tideDataProvider = tideDataProvider;
         this.portID = portID;
-        this.runnable = runAfter;
+        this.runnableRunAfter = runAfter;
     }
 
 
@@ -79,6 +79,6 @@ public class TideDataRetriever extends AsyncTask<String, Void, TideData> {
 
         tideDataProvider.newDataFetched(portID, tideData);
 
-        if (runnable != null) runnable.run();
+        if (runnableRunAfter != null) runnableRunAfter.run();
     }
 }

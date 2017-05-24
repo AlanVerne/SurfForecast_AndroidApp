@@ -360,6 +360,12 @@ public class MainActivity extends AppCompatActivity {
     }
 
 
+    @Override
+    public void onBackPressed() {
+        if (vif.onBackPressed()) return;
+        super.onBackPressed();
+    }
+
     Calendar c = null;
     private void resetDates() {
         Calendar c = new GregorianCalendar();

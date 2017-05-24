@@ -427,7 +427,7 @@ public class SurfConditionsForecastView extends HorizontalScrollView { //extends
     public void redrawSurfConditions() {
         Log.i(TAG, "redrawSurfConditions() | 1, dh = " + dh);
         if (dh == 0) return;
-        Integer[] shownDays = getShownDays();
+
         SurfSpot surfSpot = AppContext.instance.surfSpots.selectedSpot();
 
         if (surfConditionsOneDayBitmapsAsyncDrawer != null && surfConditionsOneDayBitmapsAsyncDrawer.getStatus() != AsyncTask.Status.FINISHED) surfConditionsOneDayBitmapsAsyncDrawer.cancel(true);
@@ -461,7 +461,19 @@ public class SurfConditionsForecastView extends HorizontalScrollView { //extends
 
         Log.i(TAG, "redrawSurfConditions() | 2, starting, has data = " + !surfSpot.conditionsProvider.isNoData());
 
+        redrawCurrentBitmaps();
+    }
+
+
+    public void redrawCurrentBitmaps() {
+        SurfSpot surfSpot = AppContext.instance.surfSpots.selectedSpot();
+        Integer[] shownDays = getShownDays();
         surfConditionsOneDayBitmapsAsyncDrawer = new SurfConditionsOneDayBitmapsAsyncDrawer(surfSpot, 0, new ArrayList<>(Arrays.asList(shownDays)), this);
+        surfConditionsOneDayBitmapsAsyncDrawer.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
+    }
+    public void redrawOtherBitmaps(ArrayList<Integer> days) {
+        SurfSpot surfSpot = AppContext.instance.surfSpots.selectedSpot();
+        surfConditionsOneDayBitmapsAsyncDrawer = new SurfConditionsOneDayBitmapsAsyncDrawer(surfSpot, 1, days, this);
         surfConditionsOneDayBitmapsAsyncDrawer.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
     }
 
@@ -473,19 +485,7 @@ public class SurfConditionsForecastView extends HorizontalScrollView { //extends
             bitmaps[fb.getKey()].wave = fb.getValue().wave;
         }
 
-        if (step == 0) { // TODO тоже нахер отсюда эту логику
-            postInvalidate();
-
-            ArrayList<Integer> days = new ArrayList<>();
-            for (int i = 0; i < 7; i++) {
-                if (!forecastBitmaps.keySet().contains(i)) days.add(i);
-            }
-
-            SurfSpot surfSpot = AppContext.instance.surfSpots.selectedSpot();
-
-            surfConditionsOneDayBitmapsAsyncDrawer = new SurfConditionsOneDayBitmapsAsyncDrawer(surfSpot, 1, days, this);
-            surfConditionsOneDayBitmapsAsyncDrawer.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
-        }
+        if (step == 0) postInvalidate();
     }
 
 

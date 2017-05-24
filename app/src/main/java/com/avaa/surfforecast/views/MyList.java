@@ -167,8 +167,7 @@ public class MyList extends FeaturedScrollView {
 
             if (sl != null) sl.scrolled(awakeState);
 
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN) postInvalidateOnAnimation();
-            else postInvalidate();
+            repaint();
         }
         else {
             prevTime = -1;
@@ -205,8 +204,7 @@ public class MyList extends FeaturedScrollView {
         awake = true;
         if (prevTime == -1) {
             prevTime = SystemClock.uptimeMillis();
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN) postInvalidateOnAnimation();
-            else postInvalidate();
+            repaint();
         }
     }
     public void scrollTo(View v, Runnable after) {
@@ -244,9 +242,14 @@ public class MyList extends FeaturedScrollView {
         awake = false;
         if (prevTime == -1) {
             prevTime = SystemClock.uptimeMillis();
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN) postInvalidateOnAnimation();
-            else postInvalidate();
+            repaint();
         }
+    }
+
+
+    private void repaint() {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN) postInvalidateOnAnimation();
+        else postInvalidate();
     }
 
 
@@ -260,7 +263,7 @@ public class MyList extends FeaturedScrollView {
         this.views = views;
         for (View view : views) {
             view.setPadding(paddingLeft, 0, spacing, 0);
-            if (isViewSelectable(view)) view.setOnClickListener(this::select);
+            if (isViewSelectable(view)) view.setOnClickListener(this::select); //(v -> select(v));
             layout.addView(view);
         }
 //        views.get(views.size()-1).addOnLayoutChangeListener((v, left, top, right, bottom, oldLeft, oldTop, oldRight, oldBottom) -> updatePadding());

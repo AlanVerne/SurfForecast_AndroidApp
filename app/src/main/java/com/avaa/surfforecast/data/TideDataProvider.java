@@ -63,7 +63,7 @@ public class TideDataProvider {
     public void fetch(@NonNull String portID) {
         fetch(portID, null);
     }
-    public void fetch(@NonNull String portID, @Nullable final Runnable widgetsRunnable) {
+    public void fetch(@NonNull String portID, @Nullable final Runnable runnableRunAfter) {
         Log.i(TAG, "fetch() | " + portID);
 
         TideData tideData = portIDToTideData.get(portID);
@@ -76,7 +76,7 @@ public class TideDataProvider {
         TideDataRetriever asyncTask = asyncTasks.get(portID);
         if (asyncTask == null || asyncTask.getStatus().equals(AsyncTask.Status.FINISHED)) {
             fireLoadingStateChanged(portID, true);
-            asyncTask = new TideDataRetriever(this, portID, widgetsRunnable);
+            asyncTask = new TideDataRetriever(this, portID, runnableRunAfter);
             asyncTasks.put(portID, asyncTask);
             asyncTask.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
         }

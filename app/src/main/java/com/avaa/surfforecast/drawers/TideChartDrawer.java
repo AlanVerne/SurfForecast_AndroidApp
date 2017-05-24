@@ -30,7 +30,6 @@ import static com.avaa.surfforecast.drawers.MetricsAndPaints.*;
  * Created by Alan on 6 Aug 2016.
  */
 
-@TargetApi(Build.VERSION_CODES.JELLY_BEAN_MR2)
 public class TideChartDrawer {
     private static final String TAG = "TideChartDrwr";
 

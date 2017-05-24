@@ -82,12 +82,8 @@ public class CircleAnimatedFrameLayout extends FrameLayout {
 
 
     private void repaint() {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN) {
-            postInvalidateOnAnimation();
-        }
-        else {
-            postInvalidate();
-        }
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN) postInvalidateOnAnimation();
+        else postInvalidate();
     }
 
 
