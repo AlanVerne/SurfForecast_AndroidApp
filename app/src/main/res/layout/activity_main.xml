@@ -11,20 +11,18 @@
     android:layout_height="match_parent">
 
 <LinearLayout
+    android:id="@+id/mainlayout"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:orientation="vertical"
-    android:id="@+id/mainlayout">
+    android:orientation="vertical">
 
     <RelativeLayout
         android:id="@+id/top"
         android:layout_width="match_parent"
         android:layout_height="0px"
-        android:fitsSystemWindows="true"
         android:layout_weight="1">
 
         <me.zhanghai.android.materialprogressbar.MaterialProgressBar
-            android:fitsSystemWindows="true"
             android:id="@+id/progressBar"
             android:layout_width="match_parent"
             android:layout_height="2dp"

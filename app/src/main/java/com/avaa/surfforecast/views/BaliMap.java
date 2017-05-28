@@ -50,6 +50,13 @@ public class BaliMap extends View {
 
     private static final android.view.animation.Interpolator FAST_OUT_SLOW_IN_INTERPOLATOR = new android.support.v4.view.animation.FastOutSlowInInterpolator();
 
+    private static final String STR_DASH = "-";
+
+    private static final int colorSwellBG = 0xffffffff;
+    private static final int colorWindBG  = 0xffffffff;
+
+    private static final int colorSpotDot = 0xffffff;
+
     private int hintsVisiblePolicy = 2;
     private float hintsVisible = 1;
     private float hintsVisiblePrev = 1;
@@ -65,8 +72,6 @@ public class BaliMap extends View {
     private SurfConditions currentConditions = null;
     private METAR currentMETAR = null;
 
-    private static final String STR_DASH = "-";
-
     private String strWindSpeed = STR_DASH;
     private String strWaveHeight = STR_DASH;
     private String strWavePeriod = STR_DASH;
@@ -75,21 +80,12 @@ public class BaliMap extends View {
     private float firstI = 0;
     private float lastI  = 0;
 
-//    private int colorAccent;
-
     private float awakenedState = 0;
     private float awakenedStatePrev = 0;
     
     private float densityDHDep = 3;
 
     private int colorWaterColor = 0xffacb5b8; //0xffa3b1b6; //0xff819faa; //0xff2e393d;
-//    private int colorTideWater = colorWaveBG;
-//    private int colorTideAir   = MetricsAndPaints.colorWindBG;
-
-    private int colorSwellBG = 0xffffffff;
-    private int colorWindBG  = 0xffffffff;
-
-    private int colorSpotDot = 0xffffff;
 
     private float windArrowVisible = 0;
     private float windArrowAngle = 0;
@@ -160,8 +156,6 @@ public class BaliMap extends View {
         this.densityDHDep = metricsAndPaints.densityDHDependent;
 
         updateNowTide();
-//        smallTextSize = ;
-//        bigTextSize = smallTextSize*1.25f;
 
         bmpMapZoomedInForSpotI = -1;
 
@@ -694,9 +688,9 @@ public class BaliMap extends View {
             float py = (float) (r / Math.sqrt(2));
             float nowy = py - py * 2 * nowTide / 250;
             float nowx = (float)(-Math.cos(Math.asin(nowy / r)) * r);
-            int nowH = (nowTimeInt - 1) / 60;
-            final float pathDX = width * (nowTimeInt - (nowH - 1) * 60) / 24 / 60 - nowx;
-            pathTide = tideData.getPath2(Common.getToday(TIME_ZONE), width * 8 / 24, py * 2, 0, 250, nowH - 1, nowH + 7);
+            int nowH = nowTimeInt / 60;
+            final float pathDX = width * (nowTimeInt - (nowH - 2) * 60) / 24 / 60 - nowx;
+            pathTide = tideData.getPath2(Common.getToday(TIME_ZONE), width * 9 / 24, py * 2, 0, 250, nowH - 2, nowH + 7);
             if (pathTide != null) {
                 Matrix translateMatrix = new Matrix();
                 translateMatrix.setTranslate(-pathDX, -py);
