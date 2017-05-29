@@ -172,7 +172,7 @@ public class SurfConditionsOneDayBitmapsDrawer {
 
             if (drawMeasures) {
                 float w = paintFontBigBoldWaveHeight.measureText(sWaveHeight);
-                c.drawText(Common.strFT, tx + w*0.5f, ty + fontBigHDiv2, isDay ? paintFontSmallBlack : paintFontSmallGray);
+                c.drawText(Common.STR_FT, tx + w*0.5f, ty + fontBigHDiv2, isDay ? paintFontSmallBlack : paintFontSmallGray);
             }
 
             String sWavePeriod = String.valueOf(surfConditions.wavePeriod);
@@ -184,8 +184,8 @@ public class SurfConditionsOneDayBitmapsDrawer {
 
             if (drawMeasures) {
                 float w = paintFontWavePeriod.measureText(sWavePeriod);
-                if (vertical) c.drawText(Common.strS, tx + w*0.5f + dh*1.5f, ty + fontHDiv2, isDay ? paintFontSmallBlack : paintFontSmallGray);
-                else c.drawText(Common.strS, tx + w*0.5f, ty + dh*1.5f + fontHDiv2, isDay ? paintFontSmallBlack : paintFontSmallGray);
+                if (vertical) c.drawText(Common.STR_S, tx + w*0.5f + dh*1.5f, ty + fontHDiv2, isDay ? paintFontSmallBlack : paintFontSmallGray);
+                else c.drawText(Common.STR_S, tx + w*0.5f, ty + dh*1.5f + fontHDiv2, isDay ? paintFontSmallBlack : paintFontSmallGray);
             }
         }
 

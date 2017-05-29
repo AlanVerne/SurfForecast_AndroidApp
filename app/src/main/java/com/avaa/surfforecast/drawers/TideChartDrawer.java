@@ -1,11 +1,9 @@
 package com.avaa.surfforecast.drawers;
 
-import android.annotation.TargetApi;
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
 import android.graphics.Paint;
 import android.os.AsyncTask;
-import android.os.Build;
 import android.util.Log;
 
 import com.avaa.surfforecast.AppContext;
@@ -21,9 +19,9 @@ import java.util.List;
 
 import static com.avaa.surfforecast.data.Common.TIME_ZONE;
 import static com.avaa.surfforecast.data.Common.STR_NO_TIDE_DATA;
-import static com.avaa.surfforecast.data.Common.strM;
-import static com.avaa.surfforecast.data.Common.strNOW;
-import static com.avaa.surfforecast.data.Common.strTIDE;
+import static com.avaa.surfforecast.data.Common.STR_M;
+import static com.avaa.surfforecast.data.Common.STR_NOW;
+import static com.avaa.surfforecast.data.Common.STR_TIDE;
 import static com.avaa.surfforecast.drawers.MetricsAndPaints.*;
 
 /**
@@ -98,7 +96,7 @@ public class TideChartDrawer {
             setTextSize(metricsAndPaints.font);
         }};
 
-        strMWidth = paintFontSmall.measureText(strM);
+        strMWidth = paintFontSmall.measureText(STR_M);
 
         updateBitmaps();
     }
@@ -155,14 +153,14 @@ public class TideChartDrawer {
                     float strTideWidth = paintFont.measureText(tide);
 
                     paintFontSmall.setTextAlign(Paint.Align.CENTER);
-                    c.drawText(strTIDE, nowx, nowy - metricsAndPaints.fontHDiv2 - metricsAndPaints.fontSmallSpacing, paintFontSmall);
-                    c.drawText(strNOW, nowx , nowy + metricsAndPaints.fontHDiv2 + metricsAndPaints.fontSmallH + metricsAndPaints.fontSmallSpacing, paintFontSmall);
+                    c.drawText(STR_TIDE, nowx, nowy - metricsAndPaints.fontHDiv2 - metricsAndPaints.fontSmallSpacing, paintFontSmall);
+                    c.drawText(STR_NOW, nowx , nowy + metricsAndPaints.fontHDiv2 + metricsAndPaints.fontSmallH + metricsAndPaints.fontSmallSpacing, paintFontSmall);
 
                     nowy += metricsAndPaints.fontSmallH/12;
 
                     paintFontSmall.setTextAlign(Paint.Align.LEFT);
                     c.drawText(tide, nowx - strMWidth/3, nowy + metricsAndPaints.fontHDiv2, paintFont);
-                    c.drawText(strM, nowx - strMWidth/3 + strTideWidth/2, nowy + metricsAndPaints.fontHDiv2, paintFontSmall);
+                    c.drawText(STR_M, nowx - strMWidth/3 + strTideWidth/2, nowy + metricsAndPaints.fontHDiv2, paintFontSmall);
 //                }
             }
         }

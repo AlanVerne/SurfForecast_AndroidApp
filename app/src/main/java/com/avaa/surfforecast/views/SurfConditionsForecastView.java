@@ -262,19 +262,19 @@ public class SurfConditionsForecastView extends HorizontalScrollView { //extends
         //canvas.drawText("TIDE", dh * 1, 0, p);
 
         paintLabels.setColor(0xff006283);
-        canvas.drawText(strSWELL_U, dh * 5.5f, 0, paintLabels);
+        canvas.drawText(STR_SWELL_U, dh * 5.5f, 0, paintLabels);
 
         if (orientation == 1) {
-            canvas.drawText(strFT, dh * 5f, rightPaneX, paintLabels);
-            canvas.drawText(strS, dh * 6.5f, rightPaneX, paintLabels);
+            canvas.drawText(STR_FT, dh * 5f, rightPaneX, paintLabels);
+            canvas.drawText(STR_S, dh * 6.5f, rightPaneX, paintLabels);
         }
         else {
-            canvas.drawText(strFT, dh * 6f, rightPaneX, paintLabels);
-            canvas.drawText(strS, dh * 4.5f, rightPaneX, paintLabels);
+            canvas.drawText(STR_FT, dh * 6f, rightPaneX, paintLabels);
+            canvas.drawText(STR_S, dh * 4.5f, rightPaneX, paintLabels);
         }
         paintLabels.setColor(0x66000000);
-        canvas.drawText(strWIND_U, windy - windh/2, 0, paintLabels);
-        canvas.drawText(strKMH, windy - windh/2, rightPaneX, paintLabels);
+        canvas.drawText(STR_WIND_U, windy - windh/2, 0, paintLabels);
+        canvas.drawText(STR_KMH, windy - windh/2, rightPaneX, paintLabels);
 
         canvas.restore();
 
@@ -331,14 +331,14 @@ public class SurfConditionsForecastView extends HorizontalScrollView { //extends
                 if (sh == null) sh = 0;
 
                 paintLabels.setTextAlign(Paint.Align.RIGHT);
-                canvas.drawText(strTIDE_U, dh * 1.8f + sh * dh * 3 / 2 / 300, 0, paintLabels);
+                canvas.drawText(STR_TIDE_U, dh * 1.8f + sh * dh * 3 / 2 / 300, 0, paintLabels);
 
                 calendar.add(Calendar.MINUTE, (getWidth() - dh) * 60 * 24 / (dh * 16));
 
                 sh = tideData.getTide(calendar.getTime().getTime() / 1000);
                 if (sh == null) sh = 0;
 
-                canvas.drawText(strM, dh * 1.7f + sh * dh * 3 / 2 / 300, rightPaneX, paintLabels);
+                canvas.drawText(STR_M, dh * 1.7f + sh * dh * 3 / 2 / 300, rightPaneX, paintLabels);
 
                 paintLabels.setTextAlign(Paint.Align.CENTER);
             }

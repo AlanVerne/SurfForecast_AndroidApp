@@ -14,17 +14,23 @@ public class Common {
     public static final TimeZone TIME_ZONE = TimeZone.getTimeZone("GMT+8");
     public static final String BENOA_PORT_ID = "5382";
 
-    public static final String strNOW   = "now";
-    public static final String strFT    = "ft";
-    public static final String strS     = "s";
-    public static final String strM     = "m";
-    public static final String strKMH   = "km/h";
-    public static final String strWIND      = "wind";
-    public static final String strSWELL     = "swell";
-    public static final String strTIDE      = "tide";
-    public static final String strWIND_U    = "WIND";
-    public static final String strSWELL_U   = "SWELL";
-    public static final String strTIDE_U    = "TIDE";
+    public static final double LATITUDE = -8.7716057;
+    public static final double LONGITUDE = 115.1718322;
+
+    public static final String STR_NOW  = "now";
+    public static final String STR_FT   = "ft";
+    public static final String STR_S    = "s";
+    public static final String STR_M    = "m";
+    public static final String STR_KMH  = "km/h";
+
+    public static final String STR_WIND     = "wind";
+    public static final String STR_SWELL    = "swell";
+    public static final String STR_TIDE     = "tide";
+
+    public static final String STR_WIND_U   = "WIND";
+    public static final String STR_SWELL_U  = "SWELL";
+    public static final String STR_TIDE_U   = "TIDE";
+
     public static final String STR_NO_WIND_DATA     = "No wind data";
     public static final String STR_NO_SWELL_DATA    = "No swell data";
     public static final String STR_NO_TIDE_DATA     = "No tide data";

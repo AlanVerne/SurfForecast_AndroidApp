@@ -7,8 +7,9 @@ import android.graphics.Path;
 import android.graphics.Point;
 import android.graphics.Region;
 
-import com.avaa.surfforecast.data.AstronomyProvider;
 import com.avaa.surfforecast.data.Common;
+import com.avaa.surfforecast.data.SunTimes;
+import com.avaa.surfforecast.data.SunTimesProvider;
 import com.avaa.surfforecast.data.TideData;
 
 import java.util.Map;
@@ -62,9 +63,11 @@ public class TideChartBitmapsDrawer {
         Bitmap b = Bitmap.createBitmap(width, height, Bitmap.Config.ARGB_8888);
         Canvas c = new Canvas(b);
 
-        AstronomyProvider.Times sunTimes = AstronomyProvider.getTimes();
+        //AstronomyProvider.Times sunTimes = AstronomyProvider.getTimes();
 
         long day = Common.getDay(plusDays, Common.TIME_ZONE);
+
+        SunTimes sunTimes = SunTimesProvider.get(Common.LATITUDE, Common.LONGITUDE, day, Common.TIME_ZONE);
 
         final Path area = tideData.getPath(day, width, chartH*2, -300, 300);
 
@@ -78,10 +81,10 @@ public class TideChartBitmapsDrawer {
         c.save();
         c.drawPath(area, paintR);
 
-        int firstlight = sunTimes.TwiS * width / MINUTES_IN_DAY;
-        int lastlight = sunTimes.TwiE * width / MINUTES_IN_DAY;
-        int sunrise = sunTimes.Sunrise * width / MINUTES_IN_DAY;
-        int sunset = sunTimes.Sunset * width / MINUTES_IN_DAY;
+        int firstlight = sunTimes.cSunrise * width / MINUTES_IN_DAY;
+        int lastlight  = sunTimes.cSunset  * width / MINUTES_IN_DAY;
+        int sunrise    = sunTimes.sunrise  * width / MINUTES_IN_DAY;
+        int sunset     = sunTimes.sunset   * width / MINUTES_IN_DAY;
 
         //Region sunReg = new Region(sunrise, 0, sunset, height);
         Region firstLightReg = new Region(firstlight, 0, sunrise, height);

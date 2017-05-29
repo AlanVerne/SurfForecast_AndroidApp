@@ -589,8 +589,8 @@ public class BaliMap extends View {
             }
 
             ay -= metricsAndPaints.fontSmallH/16 * hintsVisible * windArrowVisibleFinal;
-            c.drawText(strWIND, ax, ay - fontH/2 - windArrowVisibleFinal*metricsAndPaints.fontSmallSpacing * hintsVisible, paintAdditionalText);
-            c.drawText(strKMH, ax, ay + fontH/2 + metricsAndPaints.fontSmallH + windArrowVisibleFinal*metricsAndPaints.fontSmallSpacing * hintsVisible, paintAdditionalText);
+            c.drawText(STR_WIND, ax, ay - fontH/2 - windArrowVisibleFinal*metricsAndPaints.fontSmallSpacing * hintsVisible, paintAdditionalText);
+            c.drawText(STR_KMH, ax, ay + fontH/2 + metricsAndPaints.fontSmallH + windArrowVisibleFinal*metricsAndPaints.fontSmallSpacing * hintsVisible, paintAdditionalText);
             ay += metricsAndPaints.fontSmallH/12 * hintsVisible * windArrowVisibleFinal;
         }
 
@@ -643,18 +643,18 @@ public class BaliMap extends View {
             float strWaveHeightWidth = paintFontBig.measureText(strWaveHeight);
             float strWavePeriodWidth = paintFont.measureText(strWavePeriod);
 
-            strFtWidth = this.strFtWidth * hintsVisible; //paintAdditionalText.measureText(strFT) * hintsVisible;
-            strSWidth = this.strSWidth * hintsVisible; //paintAdditionalText.measureText(strS) * hintsVisible;
+            strFtWidth = this.strFtWidth * hintsVisible; //paintAdditionalText.measureText(STR_FT) * hintsVisible;
+            strSWidth = this.strSWidth * hintsVisible; //paintAdditionalText.measureText(STR_S) * hintsVisible;
 
             float finalVisibility = awakenedState * swellArrowVisible;
             y += dh / 24 * hintsVisible * finalVisibility;
 
             paintAdditionalText.setTextAlign(Paint.Align.LEFT);
-            c.drawText(strFT, x - strFtWidth/3 + strWaveHeightWidth/2, y - (fontBigH + dh/6 + fontH)/2 + fontBigH, paintAdditionalText);
-            c.drawText(strS,  x - strSWidth/3 + strWavePeriodWidth/2, y + (fontBigH + dh/6 + fontH)/2, paintAdditionalText);
+            c.drawText(STR_FT, x - strFtWidth/3 + strWaveHeightWidth/2, y - (fontBigH + dh/6 + fontH)/2 + fontBigH, paintAdditionalText);
+            c.drawText(STR_S,  x - strSWidth/3 + strWavePeriodWidth/2, y + (fontBigH + dh/6 + fontH)/2, paintAdditionalText);
 
             paintAdditionalText.setTextAlign(Paint.Align.CENTER);
-            c.drawText(strSWELL, x, y - (fontBigH + finalVisibility*dh/6 + fontH)/2 - finalVisibility*dh / 6 * hintsVisible, paintAdditionalText);
+            c.drawText(STR_SWELL, x, y - (fontBigH + finalVisibility*dh/6 + fontH)/2 - finalVisibility*dh / 6 * hintsVisible, paintAdditionalText);
             c.drawText(currentConditions.waveAngleAbbr(), x, y + (fontBigH + finalVisibility*dh/6 + fontH)/2 + finalVisibility*(dh / 6 + dh / 12 + dh / 6 * hintsVisible), paintAdditionalText);
             //c.drawText(currentConditions.waveEnergy+"kJ", x, y + (fontBigH + finalVisibility*dh/6 + fontH)/2 + finalVisibility*(dh / 6 + dh / 12 + dh / 6 * hintsVisible), paintAdditionalText);
         }
@@ -750,19 +750,19 @@ public class BaliMap extends View {
 
 //        float strTideWidth = paintFont.measureText(strTide);
 //        if (hintsVisible > 0) {
-//            float strMWidth = paintAdditionalText.measureText(strM);
+//            float strMWidth = paintAdditionalText.measureText(STR_M);
 //            x -= strMWidth / 3f * hintsVisible;
 //            paintAdditionalText.setColor((int)(hintsVisible*0xff)<<24 | 0xffffff);
 //            paintAdditionalText.setTextAlign(Paint.Align.LEFT);
-//            c.drawText(strM, x + strTideWidth / 2f, y, paintAdditionalText);
+//            c.drawText(STR_M, x + strTideWidth / 2f, y, paintAdditionalText);
 //        }
 
         if (hintsVisible > 0) {
             y += metricsAndPaints.fontSmallH/12 * hintsVisible * finalVisibility;
             paintAdditionalText.setColor((int)(j*hintsVisible*0xff)<<24 | 0xffffff);
             paintAdditionalText.setTextAlign(Paint.Align.CENTER);
-            c.drawText(strTIDE, x, y - fontH/2 - finalVisibility*metricsAndPaints.fontSmallSpacing*hintsVisible, paintAdditionalText);
-            c.drawText(strM, x, y + fontH/2 + metricsAndPaints.fontSmallH + finalVisibility*metricsAndPaints.fontSmallSpacing*hintsVisible, paintAdditionalText);
+            c.drawText(STR_TIDE, x, y - fontH/2 - finalVisibility*metricsAndPaints.fontSmallSpacing*hintsVisible, paintAdditionalText);
+            c.drawText(STR_M, x, y + fontH/2 + metricsAndPaints.fontSmallH + finalVisibility*metricsAndPaints.fontSmallSpacing*hintsVisible, paintAdditionalText);
             y += metricsAndPaints.fontSmallH/8 * hintsVisible * finalVisibility;
         }
 
@@ -991,8 +991,8 @@ public class BaliMap extends View {
         if (awakenedState != awakenedStatePrev) {
             paintAdditionalText.setTextSize(awakenedState * metricsAndPaints.fontSmall);
 
-            strFtWidth = paintAdditionalText.measureText(strFT);
-            strSWidth = paintAdditionalText.measureText(strS);
+            strFtWidth = paintAdditionalText.measureText(STR_FT);
+            strSWidth = paintAdditionalText.measureText(STR_S);
         }
 
         hintsVisbleToAwakened = Math.max(0, Math.min((windArrowVisible * awakenedState - 0.66f) * 3f, 1f));
