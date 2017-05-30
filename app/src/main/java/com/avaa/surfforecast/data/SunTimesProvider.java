@@ -42,7 +42,7 @@ public class SunTimesProvider {
                 Jnau = getSunsetJulianDate(w2, M, Lsun, lw, n),
                 Jciv2 = getSunriseJulianDate(Jtransit, Jnau);
 
-        SunTimes sunTimes = new SunTimes(
+        final SunTimes sunTimes = new SunTimes(
                 Math.round((julianToUnix(Jciv2) - date) / 60f),
                 Math.round((julianToUnix(Jrise) - date) / 60f),
                 Math.round((julianToUnix(Jsetstart) - date) / 60f),

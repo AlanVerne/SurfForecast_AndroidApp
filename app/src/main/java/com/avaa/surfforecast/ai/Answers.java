@@ -1,13 +1,10 @@
 package com.avaa.surfforecast.ai;
 
-import android.util.Log;
-
 import com.avaa.surfforecast.AppContext;
 import com.avaa.surfforecast.data.Common;
 import com.avaa.surfforecast.data.Direction;
 import com.avaa.surfforecast.data.METAR;
 import com.avaa.surfforecast.data.SurfConditions;
-import com.avaa.surfforecast.data.SurfConditionsOneDay;
 import com.avaa.surfforecast.data.SurfSpot;
 import com.avaa.surfforecast.data.SurfSpots;
 import com.avaa.surfforecast.data.TideData;
@@ -35,10 +32,10 @@ public class Answers {
         SurfSpots surfSpots = appContext.surfSpots;
 
         METAR currentMETAR = surfSpots.currentMETAR;
-        if (currentMETAR != null) return windAns(currentMETAR.windSpeed, currentMETAR.windAngle, surfSpots.selectedSpot());
+        if (currentMETAR != null) return windAns(currentMETAR.windSpeed, currentMETAR.windAngle, surfSpots.getSelectedSpot());
 
         SurfConditions currentConditions = surfSpots.currentConditions;
-        if (currentConditions != null) return windAns(currentConditions.windSpeed, currentConditions.windAngle, surfSpots.selectedSpot());
+        if (currentConditions != null) return windAns(currentConditions.windSpeed, currentConditions.windAngle, surfSpots.getSelectedSpot());
 
         return null;
     }
@@ -54,16 +51,17 @@ public class Answers {
 
 
     public Answer swell(int pd, int time) {
-        SurfConditions conditions = appContext.surfSpots.selectedSpot().conditionsProvider.get(pd).get(time);
+        SurfConditions conditions = appContext.surfSpots.getSelectedSpot().conditionsProvider.get(pd).get(time);
         if (conditions != null) return swellAns(conditions);
 
         return null;
     }
     public Answer tide(int plusDays, int time) {
-        return tideAns(appContext.tideDataProvider.getTideData(Common.BENOA_PORT_ID), plusDays, time); // appContext.surfSpots.currentTideData // TODO
+        SurfSpot surfSpot = appContext.surfSpots.getSelectedSpot();
+        return tideAns(appContext.tideDataProvider.getTideData(surfSpot.tidePortID), plusDays, time); // appContext.surfSpots.currentTideData // TODO
     }
     public Answer wind(int pd, int time) {
-        SurfSpot surfSpot = appContext.surfSpots.selectedSpot();
+        SurfSpot surfSpot = appContext.surfSpots.getSelectedSpot();
         SurfConditions conditions = surfSpot.conditionsProvider.get(pd).get(time);
         if (conditions != null) return windAns(conditions.windSpeed, conditions.windAngle, surfSpot);
 

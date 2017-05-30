@@ -217,7 +217,7 @@ public class BaliMap extends View {
         AppContext.instance.tideDataProvider.addListener(new TideDataProvider.TideDataProviderListener() {
             @Override
             public void updated(String portID) {
-                if (portID == Common.BENOA_PORT_ID) {
+                if (portID == surfSpots.getSelectedSpot().tidePortID) {
                     updateTideData();
                     repaint();
                 }
@@ -441,11 +441,9 @@ public class BaliMap extends View {
 
         float radf = 0;
 
-        SurfSpot spot = surfSpots.selectedSpot();
-        if (spot != null) {
-            avex = awakenedState * spot.pointOnSVG.x + (1f - awakenedState) * avex;
-            avey = awakenedState * spot.pointOnSVG.y + (1f - awakenedState) * avey;
-        }
+        SurfSpot spot = surfSpots.getSelectedSpot();
+        avex = awakenedState * spot.pointOnSVG.x + (1f - awakenedState) * avex;
+        avey = awakenedState * spot.pointOnSVG.y + (1f - awakenedState) * avey;
 
         shownSpotsAverage = new PointF(avex, avey);
         shownSpotsBoundRect = new RectF(avex-radf, avey-radf, avex+radf, avey+radf);
@@ -473,7 +471,7 @@ public class BaliMap extends View {
         PointF pp = parallaxHelper.applyParallax(ox, oy, dh*subcirclesH);
         float x = pp.x, y = pp.y;
 
-        float a = (float)(surfSpots.selectedSpot().waveDirection.ordinal() * Math.PI * 2 / 16 + Math.PI);
+        float a = (float)(surfSpots.getSelectedSpot().waveDirection.ordinal() * Math.PI * 2 / 16 + Math.PI);
         float aDegrees = (float)(-a*180/Math.PI);
 
         pathSpotCircleClip.reset();
@@ -501,7 +499,7 @@ public class BaliMap extends View {
 
         paintWaveLines.setStrokeWidth(awakenedState*densityDHDep*2);
 
-        int leftright = surfSpots.selectedSpot().leftright;
+        int leftright = surfSpots.getSelectedSpot().leftright;
         if (leftright == 0) {
             PointF p1 = new PointF(0.20f, -0.70f);
             PointF p2 = new PointF(0.45f, -0.35f);
@@ -704,10 +702,12 @@ public class BaliMap extends View {
             }
         }
 
-        if (nowTide == null) AppContext.instance.tideDataProvider.fetch(Common.BENOA_PORT_ID);
+        if (nowTide == null) {
+            AppContext.instance.tideDataProvider.fetch(surfSpots.getSelectedSpot().tidePortID);
+        }
     }
     private void updateTideData() {
-        tideData = AppContext.instance.tideDataProvider.getTideData(Common.BENOA_PORT_ID);
+        tideData = AppContext.instance.tideDataProvider.getTideData(surfSpots.getSelectedSpot().tidePortID);
         updateNowTide();
     }
 
@@ -950,7 +950,7 @@ public class BaliMap extends View {
         }
 
         if (selectedSpotI != -1) {
-            SurfSpot spot = surfSpots.selectedSpot();
+            SurfSpot spot = surfSpots.getSelectedSpot();
 
             float x = spot.pointOnSVG.x * scale + dx;
             float y = spot.pointOnSVG.y * scale + dy;

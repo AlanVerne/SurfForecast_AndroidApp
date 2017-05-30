@@ -181,7 +181,7 @@ public class CommandsExecutor {
 
 
     public String[] getDefaultOpts() {
-        SurfSpot selectedSpot = appContext.surfSpots.selectedSpot();
+        SurfSpot selectedSpot = appContext.surfSpots.getSelectedSpot();
         String name = selectedSpot.getShortName();
 
         int nowTimeInt = Common.getNowTimeInt(Common.TIME_ZONE);
@@ -303,7 +303,6 @@ public class CommandsExecutor {
         else plusDays = c.day;
 
         if (c.time == null) {       //      unspecified time
-            TideData tideData = appContext.tideDataProvider.getTideData(Common.BENOA_PORT_ID);
             for (SurfSpot surfSpot : appContext.surfSpots.getFavoriteSurfSpotsList()) {
                 SurfConditionsOneDay surfConditionsOneDay = surfSpot.conditionsProvider.get(plusDays);
                 if (surfConditionsOneDay == null) continue;
@@ -311,7 +310,7 @@ public class CommandsExecutor {
                     Integer time = entry.getKey();
                     if ((plusDays == 0 && time < nowTimeInt - 120) || time < 5 * 60 || time > 19 * 60)
                         continue;
-                    float rate = entry.getValue().rate(surfSpot, tideData, plusDays, time);
+                    float rate = entry.getValue().rate(surfSpot, appContext.tideDataProvider.getTideData(surfSpot.tidePortID), plusDays, time);
                     if (rate > best) {
                         best = rate;
                         bestTime = time;
@@ -365,13 +364,12 @@ public class CommandsExecutor {
         }
         else if ((c.day != null && c.day == 0) && c.time == -1) {      //      time now
             METAR currentMETAR = appContext.surfSpots.currentMETAR;
-            TideData tideData = appContext.tideDataProvider.getTideData(Common.BENOA_PORT_ID);
 
             for (SurfSpot surfSpot : appContext.surfSpots.getFavoriteSurfSpotsList()) {
                 SurfConditions surfConditions = surfSpot.conditionsProvider.getNow();
                 if (surfConditions == null) continue;
                 surfConditions.addMETAR(currentMETAR);
-                float rate = surfConditions.rate(surfSpot, tideData, 0, nowTimeInt);
+                float rate = surfConditions.rate(surfSpot, appContext.tideDataProvider.getTideData(surfSpot.tidePortID), 0, nowTimeInt);
                 if (rate > best) {
                     best = rate;
                     bestSpot = surfSpot;
@@ -406,11 +404,10 @@ public class CommandsExecutor {
             }
         }
         else {  // day and time - specified. time - not now
-            TideData tideData = appContext.tideDataProvider.getTideData(Common.BENOA_PORT_ID);
             for (SurfSpot surfSpot : appContext.surfSpots.getFavoriteSurfSpotsList()) {
                 SurfConditions surfConditions = surfSpot.conditionsProvider.get(plusDays).get((int)(c.time));
                 if (surfConditions == null) continue;
-                float rate = surfConditions.rate(surfSpot, tideData, plusDays, c.time);
+                float rate = surfConditions.rate(surfSpot, appContext.tideDataProvider.getTideData(surfSpot.tidePortID), plusDays, c.time);
                 if (rate > best) {
                     best = rate;
                     bestSpot = surfSpot;
@@ -548,7 +545,7 @@ public class CommandsExecutor {
         SurfSpot surfSpot = c.spot;
 
         if (surfSpot == null) {
-            surfSpot = appContext.surfSpots.selectedSpot();
+            surfSpot = appContext.surfSpots.getSelectedSpot();
 
             String shortName = surfSpot.getShortName();
             lastAnswer.addClarification("in " + shortName);

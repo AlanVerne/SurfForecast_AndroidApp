@@ -55,19 +55,19 @@ public class TideChartBitmapsDrawer {
     }
 
 
-    public Bitmap drawTide(TideData tideData, int plusDays, boolean vertical) {
+    public Bitmap drawTide(TideData tideData, double la, double lo, int plusDays, boolean vertical) {
         int width = dh * 16;
         int height = dh * 4;
         int chartH = (int) (dh * 1.5);
 
-        Bitmap b = Bitmap.createBitmap(width, height, Bitmap.Config.ARGB_8888);
-        Canvas c = new Canvas(b);
+        final Bitmap b = Bitmap.createBitmap(width, height, Bitmap.Config.ARGB_8888);
+        final Canvas c = new Canvas(b);
 
         //AstronomyProvider.Times sunTimes = AstronomyProvider.getTimes();
 
-        long day = Common.getDay(plusDays, Common.TIME_ZONE);
+        final long day = Common.getDay(plusDays, Common.TIME_ZONE);
 
-        SunTimes sunTimes = SunTimesProvider.get(Common.LATITUDE, Common.LONGITUDE, day, Common.TIME_ZONE);
+        final SunTimes sunTimes = SunTimesProvider.get(la, lo, day, Common.TIME_ZONE);
 
         final Path area = tideData.getPath(day, width, chartH*2, -300, 300);
 

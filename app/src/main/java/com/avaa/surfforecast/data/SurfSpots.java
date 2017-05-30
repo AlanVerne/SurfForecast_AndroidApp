@@ -28,8 +28,10 @@ public class SurfSpots {
 
     public static final String WADD = "WADD";
 
-
+    public final int willBeSelectedSpotI;
     public int selectedSpotI = -1;
+
+
     public void setSelectedSpotI(int i) {
         if (selectedSpotI == i) return;
         //Log.i("SurfSpots", "setSelectedSpotI() 1");
@@ -42,8 +44,9 @@ public class SurfSpots {
         SharedPreferences sp = AppContext.instance.sharedPreferences;
         sp.edit().putInt(SPKEY_SELECTED_SPOT, selectedSpotI).apply();
     }
-    public SurfSpot selectedSpot() {
-        if (selectedSpotI == -1 || selectedSpotI >= list.size()) return null;
+    public SurfSpot getSelectedSpot() {
+        if (selectedSpotI == -1) return list.get(willBeSelectedSpotI);
+        if (selectedSpotI >= list.size()) selectedSpotI = list.size() - 1;
         return list.get(selectedSpotI);
     }
 
@@ -80,11 +83,12 @@ public class SurfSpots {
     public SurfConditions currentConditions = null;
     public METAR currentMETAR = null;
 //    public TideData currentTideData = null; // unsupported
+
     public void updateCurrentConditions() {
         updateCurrentConditions(true);
     }
     public void updateCurrentConditions(boolean fire) {
-        SurfSpot spot = selectedSpot();
+        SurfSpot spot = getSelectedSpot();
 
         if (spot == null) return;
 
@@ -147,8 +151,9 @@ public class SurfSpots {
     
     private BusyStateListener bsl;
 
-    public SurfSpots(BusyStateListener bsl) {
+    public SurfSpots(BusyStateListener bsl, SharedPreferences sp) {
         this.bsl = bsl;
+        this.willBeSelectedSpotI = getLastSelectedSpotI(sp);
         initSpots();
     }
 
@@ -242,6 +247,9 @@ public class SurfSpots {
         for (int i = 2; i < list.size()-6; i++) {
             list.get(i).metarName = WADD;
         }
+        for (int i = 25; i < list.size(); i++) {
+            list.get(i).tidePortID = Common.SANUR_PORT_ID;
+        }
     }
     public void updateFavorite() {
         for (SurfSpot surfSpot : getFavoriteSurfSpotsList()) {
@@ -249,9 +257,10 @@ public class SurfSpots {
         }
     }
     public void init() {
-        AppContext appContext = AppContext.instance;
+        final AppContext appContext = AppContext.instance;
+        final SharedPreferences sp = appContext.sharedPreferences;
 
-        Set<String> favSpots = appContext.sharedPreferences.getStringSet(SPKEY_FAV_SPOTS, null);
+        Set<String> favSpots = sp.getStringSet(SPKEY_FAV_SPOTS, null);
         if (favSpots != null) {
             for (String favSpot : favSpots) {
                 Integer integer = Integer.decode(favSpot);
@@ -265,24 +274,28 @@ public class SurfSpots {
             list.get(16).favorite = true;
             list.get(19).favorite = true;
             list.get(21).favorite = true;
-            appContext.sharedPreferences.edit().putStringSet(SPKEY_FAV_SPOTS, getFavorite()).apply();
+            sp.edit().putStringSet(SPKEY_FAV_SPOTS, getFavorite()).apply();
         }
 
         final Handler handler = new Handler();
-        handler.postDelayed(this::updateFavorite, 5000);
+        handler.postDelayed(this::updateFavorite, 10000);
 
-        setSelectedSpotI(appContext.sharedPreferences.getInt(SPKEY_SELECTED_SPOT, 3));
+        setSelectedSpotI(willBeSelectedSpotI);
 
-        selectedSpot().conditionsProvider.updateIfNeed();
+        getSelectedSpot().conditionsProvider.updateIfNeed();
 
         appContext.metarProvider.addUpdateListener((name, metar) -> {
-            SurfSpot selectedSpot = selectedSpot();
+            SurfSpot selectedSpot = getSelectedSpot();
             if (selectedSpot == null) return;
             if (name.equals(selectedSpot.metarName) && currentMETAR != metar) {
                 currentMETAR = metar;
                 fireChanged(new HashSet<Change>() {{ add(Change.CURRENT_CONDITIONS); }});
             }
         });
+    }
+
+    private static int getLastSelectedSpotI(SharedPreferences sp) {
+        return sp.getInt(SPKEY_SELECTED_SPOT, 3);
     }
 
 

@@ -35,7 +35,7 @@ public class SurfSpot {
 
     public String metarName = null;
 
-    public String tidePortName = Common.BENOA_PORT_ID;
+    public String tidePortID = Common.BENOA_PORT_ID;
 
 
     public String getSFURL() {

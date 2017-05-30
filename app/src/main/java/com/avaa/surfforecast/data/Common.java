@@ -13,6 +13,7 @@ import java.util.TimeZone;
 public class Common {
     public static final TimeZone TIME_ZONE = TimeZone.getTimeZone("GMT+8");
     public static final String BENOA_PORT_ID = "5382";
+    public static final String SANUR_PORT_ID = "5381";
 
     public static final double LATITUDE = -8.7716057;
     public static final double LONGITUDE = 115.1718322;

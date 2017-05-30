@@ -118,13 +118,13 @@ public class MainActivity extends AppCompatActivity {
 
             //rating
 
-            SurfSpot surfSpot = appContext.surfSpots.selectedSpot();
+            SurfSpot surfSpot = appContext.surfSpots.getSelectedSpot();
             SurfConditions now = surfSpot.conditionsProvider.getNow();
 
             if (now != null) {
                 now.addMETAR(appContext.surfSpots.currentMETAR);
 
-                TideData tideData = appContext.tideDataProvider.getTideData(Common.BENOA_PORT_ID);
+                TideData tideData = appContext.tideDataProvider.getTideData(surfSpot.tidePortID);
                 if (tideData != null) {
                     float rate = now.rate(surfSpot, tideData, 0, Common.getNowTimeInt(Common.TIME_ZONE));
                     //((TextView)findViewById(R.id.tvRating)).setText("Rating: " + rate + "\nWave: " + now.waveRating + "\nWind: " + now.windRating + "\nTide: " + now.tideRating);
@@ -161,7 +161,7 @@ public class MainActivity extends AppCompatActivity {
         progressBar.setVisibility(busyCount > 0 ? View.VISIBLE : View.INVISIBLE);
 
         btnMenu.setOnClickListener(v2 -> {
-            SurfSpot spot = appContext.surfSpots.selectedSpot();
+            SurfSpot spot = appContext.surfSpots.getSelectedSpot();
 
             PopupMenu menu = new PopupMenu(this, btnMenu);
 
@@ -170,7 +170,7 @@ public class MainActivity extends AppCompatActivity {
                 case 0:
                     spot.conditionsProvider.update();
                     appContext.metarProvider.update(spot.metarName);
-                    appContext.tideDataProvider.fetchIfNeed(Common.BENOA_PORT_ID);
+                    appContext.tideDataProvider.fetchIfNeed(spot.tidePortID);
                     return true;
                 case 1:
                     appContext.surfSpots.swapFavorite(spot);
@@ -574,7 +574,7 @@ public class MainActivity extends AppCompatActivity {
 
 
     private void updateConditionsSmallViews() {
-        SurfConditionsProvider conditionsProvider = appContext.surfSpots.selectedSpot().conditionsProvider;
+        SurfConditionsProvider conditionsProvider = appContext.surfSpots.getSelectedSpot().conditionsProvider;
         for (int i = 0; i < smallViews.size(); i++) {
             smallViews.get(i).setConditions(conditionsProvider.get(i));
         }

@@ -10,11 +10,14 @@ import com.avaa.surfforecast.AppContext;
 import com.avaa.surfforecast.MainActivity;
 import com.avaa.surfforecast.data.Common;
 import com.avaa.surfforecast.data.DateTimeHelper;
+import com.avaa.surfforecast.data.SurfSpot;
+import com.avaa.surfforecast.data.SurfSpots;
 import com.avaa.surfforecast.data.TideData;
 import com.avaa.surfforecast.data.TideDataProvider;
 import com.avaa.surfforecast.views.SurfConditionsForecastView;
 
 import java.util.Calendar;
+import java.util.HashSet;
 import java.util.List;
 
 import static com.avaa.surfforecast.data.Common.TIME_ZONE;
@@ -36,12 +39,15 @@ public class TideChartDrawer {
     private final Bitmap[] bitmaps = new Bitmap[MainActivity.NDAYS];
     private final TideDataProvider tideDataProvider;
 
+//    private SurfSpot forSurfSpot = null;
+    private String forTidePortID = null;
+
     private MetricsAndPaints metricsAndPaints;
     private int dh;
     private int dayWidth;
     private int h;
 
-    private long drawnForDay = 0;
+//    private long drawnForDay = 0;
     public TideData tideData = null;
 
 
@@ -75,7 +81,12 @@ public class TideChartDrawer {
     public TideChartDrawer(SurfConditionsForecastView view) {
         this.view = view;
         this.tideDataProvider = AppContext.instance.tideDataProvider;
+
         updateDrawer();
+
+        AppContext.instance.surfSpots.addChangeListener(changes -> {
+            if (forTidePortID != AppContext.instance.surfSpots.getSelectedSpot().tidePortID) updateBitmaps();
+        }, new HashSet<SurfSpots.Change>(){{add(SurfSpots.Change.SELECTED_SPOT);}});
     }
 
 
@@ -106,7 +117,9 @@ public class TideChartDrawer {
     public void draw(Canvas c, int w, int h, int dx, int orientation) {
         Integer nowTime = Common.getNowTimeInt(TIME_ZONE);
 
-        tideData = tideDataProvider.getTideData(Common.BENOA_PORT_ID); // TODO вынести это нахер отсюда, добавить листенер на TideProvider
+        if (forTidePortID == null) return;
+
+        tideData = tideDataProvider.getTideData(forTidePortID); // TODO вынести это нахер отсюда, добавить листенер на TideProvider
         Integer now = tideData == null ? null : tideData.getNow();
 
         if (now != null) {
@@ -168,8 +181,14 @@ public class TideChartDrawer {
 
 
     private TideChartBitmapsAsyncDrawer tideChartBitmapsAsyncDrawer = null;
+
+
     public boolean updateBitmaps() {
-        if (tideDataProvider.getTideData(Common.BENOA_PORT_ID) == null) {
+        SurfSpot surfSpot = AppContext.instance.surfSpots.getSelectedSpot();
+
+        forTidePortID = surfSpot.tidePortID;
+
+        if (tideDataProvider.getTideData(surfSpot.tidePortID) == null) {
             Log.i(TAG, "updateBitmaps() | " + "cancelled. tideDataProvider.get() == null");
             return false;
         }
@@ -182,10 +201,10 @@ public class TideChartDrawer {
         Calendar todaysStartTime = DateTimeHelper.getTodaysStartTime();
         long time = todaysStartTime.getTime().getTime();
 
-        if (drawnForDay == 0) {
-            tideChartBitmapsAsyncDrawer = new TideChartBitmapsAsyncDrawer(0, this);
-        }
-        else {
+//        if (drawnForDay == 0) {
+        tideChartBitmapsAsyncDrawer = new TideChartBitmapsAsyncDrawer(0, surfSpot, this);
+//        }
+//        else {
 //            int offset = (int) ((time - drawnForDay) / 1000 / 60 / 60 / 24);
 //            Log.i(TAG, "Offseting " + offset);
 //            int si = 0;
@@ -194,11 +213,11 @@ public class TideChartDrawer {
 //                if (bitmaps[i-offset] != null) si = i-offset+1;
 //            }
 //            tideChartBitmapsAsyncDrawer = new TideChartBitmapsAsyncDrawer(si, this); //MainActivity.NDAYS - offset);
-            tideChartBitmapsAsyncDrawer = new TideChartBitmapsAsyncDrawer(0, this);
-        }
+//            tideChartBitmapsAsyncDrawer = new TideChartBitmapsAsyncDrawer(0, AppContext.instance.surfSpots.getSelectedSpot(), this);
+//        }
         tideChartBitmapsAsyncDrawer.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
 
-        drawnForDay = time;
+//        drawnForDay = time;
 
         return false;
     }
@@ -207,8 +226,8 @@ public class TideChartDrawer {
         view.postInvalidate();
 
         if (fromDay < MainActivity.NDAYS) {
-            tideChartBitmapsAsyncDrawer = new TideChartBitmapsAsyncDrawer(fromDay, this);
-            tideChartBitmapsAsyncDrawer.execute();
+            tideChartBitmapsAsyncDrawer = new TideChartBitmapsAsyncDrawer(fromDay, AppContext.instance.surfSpots.getSelectedSpot(), this);
+            tideChartBitmapsAsyncDrawer.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR); //tideChartBitmapsAsyncDrawer.execute();
         }
     }
 }
