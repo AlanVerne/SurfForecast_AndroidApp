@@ -212,6 +212,6 @@ public class VoiceRecognitionHelper {
         }
         Log.i(TAG, "  toStringCommand() | command = '" + s + "'");
 
-        return CommandsExecutor.upperCaseFirstLetter(s);
+        return CommandsExecutor.capitalize(s);
     }
 }

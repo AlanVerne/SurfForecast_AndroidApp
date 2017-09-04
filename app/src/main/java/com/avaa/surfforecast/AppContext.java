@@ -15,6 +15,7 @@ import com.avaa.surfforecast.drawers.MetricsAndPaints;
  * Created by Alan on 7 Oct 2016.
  */
 
+@Deprecated
 public class AppContext {
     public final SharedPreferences sharedPreferences;
 

@@ -10,6 +10,7 @@ import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.GregorianCalendar;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -41,6 +42,7 @@ public class SurfConditionsProvider {
     public String urlfullweek = "";
 
     public  TreeMap<Long, SurfConditions> conditions = null;
+    public  HashMap<Integer, TreeMap<Long, SurfConditions>> allconditions = null;
     public  long lastUpdate = 0;
     private List<UpdateListener> uls = new ArrayList<>();
     public  BusyStateListener bsl = null;

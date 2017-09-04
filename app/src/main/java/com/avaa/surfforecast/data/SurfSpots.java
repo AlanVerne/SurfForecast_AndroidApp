@@ -185,9 +185,9 @@ public class SurfSpots {
         addSpot("Kuta Reef", "Kuta-Reef", new PointF(864, 825), new PointF(0, 0), Direction.ENE, 1, 2+4, 3, 6, "http://magicseaweed.com/Airport-Reef-Surf-Report/2309/", "", -8.731291, 115.157751);
         //addSpot("Legian Beach", "Legian-Beach"), new PointF(872, 826), new PointF(0, 0), Direction.ENE);
         addSpot("Airport left's", new String[]{"Airport", "Airport left"}, "Airport-Lefts", new PointF(874, 836), new PointF(0, 0),
-                Direction.E, 1, 2+4, 4, 6, "http://magicseaweed.com/Airport-Reef-Surf-Report/2309/", "", -8.740112, 115.150799);
+                Direction.E, 1, 2+4, 4, 8, "http://magicseaweed.com/Airport-Reef-Surf-Report/2309/", "", -8.740112, 115.150799);
         addSpot("Airport right", new String[]{"Airport right's"}, "Airport-Rights_2", new PointF(878, 849), new PointF(0, 0),
-                Direction.E, -1, 2+4, 3, 6, "http://magicseaweed.com/Airport-Reef-Surf-Report/2309/", "", -8.757235, 115.154246);
+                Direction.E, -1, 2+4, 3, 7, "http://magicseaweed.com/Airport-Reef-Surf-Report/2309/", "", -8.757235, 115.154246);
 
         categories.put(list.size(), "Bukit west");
         addSpot("Balangan", "Balangan", new PointF(840, 894), new PointF(0, 0),
@@ -195,11 +195,11 @@ public class SurfSpots {
         addSpot("Dreamland", new String[]{"Dream Land"}, "Dreamland", new PointF(830, 901), new PointF(0, 0),
                 Direction.SE, 0, 1+2, 2, 8, "http://magicseaweed.com/Dreamland-Surf-Report/2301/", "", -8.799007, 115.116690);
         addSpot("Bingin", "Bingin", new PointF(822, 908), new PointF(0, 0),
-                Direction.SE, 1, 2, 3, 7, "http://magicseaweed.com/Bingin-Surf-Report/878/", "http://balibelly.com/bingin", -8.805410, 115.111312);
+                Direction.SE, 1, 2, 3, 9, "http://magicseaweed.com/Bingin-Surf-Report/878/", "http://balibelly.com/bingin", -8.805410, 115.111312);
         addSpot("Impossibles", "Bingin", new PointF(818, 913), new PointF(0, 0),
                 Direction.SE, 1, 1+2+4, 4, 8, "http://magicseaweed.com/Impossibles-Surf-Report/2302/", "", -8.808615, 115.104613);
         addSpot("Padang-Padang", new String[]{"Padang Padang", "Padang"}, "Bingin", new PointF(809, 917), new PointF(0, 0),
-                Direction.SE, 1, 2+4, 6, 8, "http://magicseaweed.com/Padang-Padang-Surf-Report/1121/", "", -8.809937, 115.100767);
+                Direction.SE, 1, 2+4, 6, 9, "http://magicseaweed.com/Padang-Padang-Surf-Report/1121/", "", -8.809937, 115.100767);
         addSpot("Uluwatu", new String[]{"Blue Point"}, "Uluwatu", new PointF(795, 922), new PointF(0, 0),
                 Direction.SE, 1, 1+2+4, 2, 9, "http://magicseaweed.com/Uluwatu-Surf-Report/565/", "http://balibelly.com/uluwatu", -8.815899, 115.086159);
         addSpot("Nyang-Nyang", new String[]{"Nyang Nyang", "Nyang"}, "Uluwatu", new PointF(802, 952), new PointF(0, 0),

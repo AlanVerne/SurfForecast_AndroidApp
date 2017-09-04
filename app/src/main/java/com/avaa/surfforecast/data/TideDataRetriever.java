@@ -10,26 +10,26 @@ import java.io.InputStream;
 import java.net.HttpURLConnection;
 import java.net.URL;
 
+
 /**
  * Created by Alan on 9 Jan 2017.
  */
 
-public class TideDataRetriever extends AsyncTask<String, Void, TideData> {
+
+public class TideDataRetriever extends AsyncTask<Object, Void, TideData> {
     private static final String TAG = "TideDataRetr";
 
-    private final Runnable runnableRunAfter;
     private final TideDataProvider tideDataProvider;
     private final String portID;
 
 
-    public TideDataRetriever(TideDataProvider tideDataProvider, String portID, Runnable runAfter) {
+    public TideDataRetriever(TideDataProvider tideDataProvider, String portID) {
         this.tideDataProvider = tideDataProvider;
         this.portID = portID;
-        this.runnableRunAfter = runAfter;
     }
 
 
-    protected TideData doInBackground(String... addr) {
+    protected TideData doInBackground(Object... addr) {
         URL url;
         BufferedReader reader = null;
 
@@ -78,7 +78,5 @@ public class TideDataRetriever extends AsyncTask<String, Void, TideData> {
         if (tideData == null) return;
 
         tideDataProvider.newDataFetched(portID, tideData);
-
-        if (runnableRunAfter != null) runnableRunAfter.run();
     }
 }

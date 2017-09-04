@@ -14,24 +14,28 @@ public class METAR {
     public float windAngle; // -1 means VRB
     public int windSpeed;
 
-    public boolean isVeryOld() {
-        return time + 90*60*1000 < System.currentTimeMillis();
-    }
-    public boolean isMinutePassedFromLastFetch() { // not fetched recently
-        return timeFetched + 1*60*1000 < System.currentTimeMillis();
-    }
+
     public boolean isOld() {
         return time + 40*60*1000 < System.currentTimeMillis();
-    }
-    public boolean isVeryOld(long currentTimeMillis) {
-        return time + 90*60*1000 < currentTimeMillis;
-    }
-    public boolean isMinutePassedFromLastFetch(long currentTimeMillis) {
-        return timeFetched + 1*60*1000 < currentTimeMillis;
     }
     public boolean isOld(long currentTimeMillis) {
         return time + 40*60*1000 < currentTimeMillis;
     }
+
+    public boolean isVeryOld() {
+        return time + 90*60*1000 < System.currentTimeMillis();
+    }
+    public boolean isVeryOld(long currentTimeMillis) {
+        return time + 90*60*1000 < currentTimeMillis;
+    }
+
+    public boolean isMinutePassedFromLastFetch() { // not fetched recently
+        return timeFetched + 1*60*1000 < System.currentTimeMillis();
+    }
+    public boolean isMinutePassedFromLastFetch(long currentTimeMillis) {
+        return timeFetched + 1*60*1000 < currentTimeMillis;
+    }
+
 
     @Override
     public String toString() {

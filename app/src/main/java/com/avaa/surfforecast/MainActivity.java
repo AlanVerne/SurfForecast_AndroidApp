@@ -49,6 +49,8 @@ import java.util.TreeMap;
 
 import me.zhanghai.android.materialprogressbar.MaterialProgressBar;
 
+import static com.avaa.surfforecast.ai.CommandsExecutor.capitalize;
+
 
 public class MainActivity extends AppCompatActivity {
     private final static String TAG = "MainActivity";
@@ -62,6 +64,8 @@ public class MainActivity extends AppCompatActivity {
     int colorConditionsPreviews = 0xffffff;
 
     AppContext appContext;
+
+    MainModel mainModel;
 //    TidesProvider tidesProvider;
 //    SurfSpots surfSpots;
 //    UserStat userStat;
@@ -85,6 +89,8 @@ public class MainActivity extends AppCompatActivity {
     ProgressBar progressBar;
 
     LinearLayout llRating;
+    TextView tvRating;
+    RatingView rv;
 
     SharedPreferences sharedPreferences;
 
@@ -108,6 +114,21 @@ public class MainActivity extends AppCompatActivity {
 
         appContext = AppContext.getInstance(this, sharedPreferences, bsl);
 
+        mainModel = new MainModel(this);
+
+        mainModel.addChangeListener(changes -> {
+            if (mainModel.selectedConditions==null) {
+                int day = Math.round(mainModel.getDay());
+                tvRating.setText(capitalize(CommandsExecutor.intDayToNL(day)));
+                rv.setRating(0, 0);
+            }
+            else {
+                int day = Math.round(mainModel.getDay());
+                tvRating.setText(capitalize(CommandsExecutor.intDayToNL(day)) + " " + CommandsExecutor.intTimeToNL(mainModel.selectedTime));
+                rv.setRating(mainModel.selectedRating, mainModel.selectedConditions.waveRating);
+            }
+        });
+
         appContext.surfSpots.addChangeListener(changes -> {
             if (changes.contains(SurfSpots.Change.SELECTED_SPOT)) {
                 listSpots.select(spotsTV.get(appContext.surfSpots.selectedSpotI));
@@ -128,7 +149,7 @@ public class MainActivity extends AppCompatActivity {
                 if (tideData != null) {
                     float rate = now.rate(surfSpot, tideData, 0, Common.getNowTimeInt(Common.TIME_ZONE));
                     //((TextView)findViewById(R.id.tvRating)).setText("Rating: " + rate + "\nWave: " + now.waveRating + "\nWind: " + now.windRating + "\nTide: " + now.tideRating);
-                    ((RatingView)findViewById(R.id.ratingView)).setRating(rate, now.waveRating);
+                    rv.setRating(rate, now.waveRating*now.tideRating);
                 }
             }
         });
@@ -148,12 +169,14 @@ public class MainActivity extends AppCompatActivity {
         baliMap = (BaliMap) findViewById(R.id.balimap);
         daysScroller = (ImageView) findViewById(R.id.ivDaysScroller);
         listSpots = (MyList) findViewById(R.id.svSpots);
-        forecast = (SurfConditionsForecastView) findViewById(R.id.rlBottom);
+        forecast = (SurfConditionsForecastView) findViewById(R.id.scfv);
         progressBar = (MaterialProgressBar)findViewById(R.id.progressBar);
         rlDays = (RelativeLayout)findViewById(R.id.vllDays);
         btnMenu = (FrameLayout)findViewById(R.id.flBtnMenu);
 
         llRating = (LinearLayout)findViewById(R.id.llRating);
+        tvRating = ((TextView) findViewById(R.id.tvRating));
+        rv = ((RatingView) findViewById(R.id.ratingView));
 
         vif.commandsExecutor = new CommandsExecutor(appContext);
 
@@ -216,6 +239,8 @@ public class MainActivity extends AppCompatActivity {
         mainLayout.setBackgroundColor(colorBG);
         baliMap.setAccentColor(colorAccent);
 
+        baliMap.setMainModel(mainModel);
+
         //baliMap.surfSpotsList = surfSpots.getAll();
 
         daysScroller.setLayoutParams(new RelativeLayout.LayoutParams(0, (int) (density * 2)));
@@ -228,6 +253,8 @@ public class MainActivity extends AppCompatActivity {
             OneDayConditionsSmallView smallView = smallViews.get(j);
             int w = (int) (smallView.getWidth() * scale);
             float x = smallView.getX() + smallView.getWidth() / 2;
+
+            mainModel.setDay(j);
 
             if (offset > 0) {
                 j++;
@@ -368,10 +395,10 @@ public class MainActivity extends AppCompatActivity {
 
     Calendar c = null;
     private void resetDates() {
-        Calendar c = new GregorianCalendar();
+        Calendar c = Common.getCalendarToday(Common.TIME_ZONE);
         if (this.c != null && this.c.get(Calendar.DATE) == c.get(Calendar.DATE)) return;
 
-        this.c = new GregorianCalendar();
+        this.c = Common.getCalendarToday(Common.TIME_ZONE);
         for (OneDayConditionsSmallView v : smallViews) {
             v.setDate(c);
             c.add(Calendar.DATE, 1);
@@ -389,10 +416,11 @@ public class MainActivity extends AppCompatActivity {
         int starH = (int)(fontRating*1.2);
         LinearLayout.LayoutParams rvlp = new LinearLayout.LayoutParams(starH * 10, starH);
         rvlp.gravity = Gravity.CENTER_VERTICAL;
+        rvlp.topMargin = dh/8;
         //rvlp.leftMargin = (int)fontRating/2;
-        findViewById(R.id.ratingView).setLayoutParams(rvlp);
+        rv.setLayoutParams(rvlp);
 
-        RelativeLayout.LayoutParams llRatingLP = new RelativeLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, dh);
+        RelativeLayout.LayoutParams llRatingLP = new RelativeLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, (int)(dh*1.5f));
         llRatingLP.topMargin = (int)(dh*2.5);
         llRatingLP.leftMargin = (int)(dh);
         llRating.setLayoutParams(llRatingLP);
@@ -413,9 +441,17 @@ public class MainActivity extends AppCompatActivity {
         mParams.height = mainLayout.getHeight() - h;
         spotsRL.setLayoutParams(mParams);
 
-        mParams = forecast.getLayoutParams();
-        mParams.height = h;
-        forecast.setLayoutParams(mParams);
+//        mParams = forecast.getLayoutParams();
+//        mParams.height = h;
+//        forecast.setLayoutParams(mParams);
+
+        forecast.onScrollY = new Runnable() {
+            @Override
+            public void run() {
+                baliMap.insetY = (int)(forecast.getHeight() - forecast.getContentTop());
+                rlDays.setY(forecast.getContentTop() - rlDays.getHeight());
+            }
+        };
 
         spotsRL.invalidate();
         forecast.invalidate();
@@ -478,16 +514,17 @@ public class MainActivity extends AppCompatActivity {
 //                return;
 //            }
 //            else olclWorked = true;
+
             if (w == mainLayout.getWidth() && h == mainLayout.getHeight()) return;
             w = mainLayout.getWidth();
             h = mainLayout.getHeight();
             Log.i(TAG, "onGlobalLayout: " + w + "x" + h);
 
-            dh = Math.max(mainLayout.getWidth(), mainLayout.getHeight()) - Math.min(mainLayout.getWidth(), mainLayout.getHeight())*14/15;
-            dh = (int)(dh / 10.1);
+            dh = Math.max(w, h) - Math.min(w, h)*14/15;
+            dh = (int)(dh / 10.7);
 
-            int minDH = (int)(Math.min(mainLayout.getWidth(), mainLayout.getHeight()) / 14f);
-            int maxDH = (int)(Math.min(mainLayout.getWidth(), mainLayout.getHeight()) / 13f);
+            int minDH = (int)(Math.min(w, h) / 14f);
+            int maxDH = (int)(Math.min(w, h) / 13f);
             dh = Math.min(maxDH, Math.max(minDH, dh));
 
             appContext.metricsAndPaints = new MetricsAndPaints(density, dh);

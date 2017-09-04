@@ -93,7 +93,11 @@ public class SurfConditionsRetriever extends AsyncTask<String, Void, TreeMap<Lon
         boolean startFound = false;
         while ((line = reader.readLine()) != null) {
             if (toParce == null) {
-                if (line.startsWith(LINE_START)) toParce = line;
+                int i = line.indexOf(LINE_START);
+                if (i >= 0) {
+                    toParce = line.substring(i);
+//                    Log.i(TAG, "readPage() | LINE_START - " + toParce);
+               }
             }
             else {
                 toParce += line;
@@ -104,6 +108,7 @@ public class SurfConditionsRetriever extends AsyncTask<String, Void, TreeMap<Lon
                     int start = toParce.indexOf(TABLE_START);
                     if (start != -1) {
                         toParce = toParce.substring(start + TABLE_START.length());
+//                        Log.i(TAG, "readPage() | TABLE_START - " + toParce);
                         startFound = true;
                     }
                 }

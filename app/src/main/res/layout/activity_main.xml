@@ -46,18 +46,18 @@
             android:id="@+id/llRating"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
-            android:orientation="horizontal">
+            android:orientation="vertical">
             <TextView
                 android:id="@+id/tvRating"
                 android:layout_width="wrap_content"
-                android:layout_height="match_parent"
+                android:layout_height="wrap_content"
                 android:textColor="#ddffffff"
                 android:gravity="left|center_vertical"
                 android:text="RATING NOW "/>
             <com.avaa.surfforecast.views.RatingView
                 android:id="@+id/ratingView"
-                android:layout_width="match_parent"
-                android:layout_height="match_parent"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
                 android:layout_gravity="center_vertical"/>
         </LinearLayout>
 
@@ -140,17 +140,15 @@
         </RelativeLayout>
         <!--</HorizontalScrollView>-->
     </RelativeLayout>
-
-    <com.avaa.surfforecast.views.SurfConditionsForecastView
-        android:id="@+id/rlBottom"
-        android:layout_width="match_parent"
-        android:layout_height="0px"
-        android:layout_weight="0"
-        android:elevation="4dp"
-        android:background="#ffffff">
-    </com.avaa.surfforecast.views.SurfConditionsForecastView>
 </LinearLayout>
-
+    <com.avaa.surfforecast.views.SurfConditionsForecastView
+        android:id="@+id/scfv"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_weight="0"
+        android:background="#00ffffff">
+        <!--android:elevation="4dp"-->
+    </com.avaa.surfforecast.views.SurfConditionsForecastView>
 <FrameLayout
     android:id="@+id/flVoiceInterface"
     android:layout_width="match_parent"

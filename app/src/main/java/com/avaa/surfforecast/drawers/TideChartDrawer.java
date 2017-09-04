@@ -45,7 +45,7 @@ public class TideChartDrawer {
     private MetricsAndPaints metricsAndPaints;
     private int dh;
     private int dayWidth;
-    private int h;
+    public int h;
 
 //    private long drawnForDay = 0;
     public TideData tideData = null;

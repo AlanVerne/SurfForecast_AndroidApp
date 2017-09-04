@@ -16,6 +16,7 @@ import android.view.MotionEvent;
 import android.view.View;
 import android.widget.HorizontalScrollView;
 import android.widget.LinearLayout;
+import android.widget.OverScroller;
 
 import com.avaa.surfforecast.AppContext;
 import com.avaa.surfforecast.MainActivity;
@@ -96,11 +97,25 @@ public class SurfConditionsForecastView extends HorizontalScrollView { //extends
     }
 
 
+//    @Override
+//    public boolean onTouchEvent(MotionEvent ev) {
+//
+//        return super.onTouchEvent(ev);
+//    }
+//
+
+    float fx, fy;
+    boolean isScrollY = false;
+
     public Runnable onTouchActionDown = null;
     OnTouchListener tl = new View.OnTouchListener() {
         @Override
         public boolean onTouch(View v, MotionEvent event) {
-            if (event.getAction() == MotionEvent.ACTION_DOWN && onTouchActionDown != null) onTouchActionDown.run();
+//            if (event.getY() < getContentTop()) return false;
+
+            if (event.getAction() == MotionEvent.ACTION_DOWN && onTouchActionDown != null) {
+                onTouchActionDown.run();
+            }
 
             if (mGestureDetector.onTouchEvent(event)) { //If the user swipes
                 return true;
@@ -108,11 +123,24 @@ public class SurfConditionsForecastView extends HorizontalScrollView { //extends
             else if (event.getAction() == MotionEvent.ACTION_UP || event.getAction() == MotionEvent.ACTION_CANCEL){
                 mActiveFeature = xToDay(getScrollX());
                 smoothScrollTo(dayToX(mActiveFeature), 0);
+                if (isScrollY) {
+                    if (scrollY > (dh*12+dh*4)/2) scrollY(dh*12);
+                    if (scrollY > (dh*4+0)/2) scrollY(dh*4);
+                    else scrollY(0);
+                }
                 return true;
             }
-            else {
-                return false;
+            else if (event.getAction() == MotionEvent.ACTION_MOVE) {
+                if (isScrollY) {
+                    scrollY -= event.getY() - fy;
+                    if (scrollY < 0) scrollY = 0;
+                    fy = event.getY();
+                    onScrollY.run();
+                    postInvalidate();
+                    return true;
+                }
             }
+            return false;
         }
     };
     private int xToDay(int x) {
@@ -126,16 +154,24 @@ public class SurfConditionsForecastView extends HorizontalScrollView { //extends
         @Override
         public boolean onFling(MotionEvent e1, MotionEvent e2, float velocityX, float velocityY) {
             try {
-                //right to left
-                if(velocityX<0 && Math.abs(velocityX) > SWIPE_THRESHOLD_VELOCITY) {
-                    mActiveFeature = xToDay(getScrollX() + dh*8);
-                    smoothScrollTo(mActiveFeature* dh*16 + dh*8 - getWidth()/2, 0);
+                if (Math.abs(velocityX) > Math.abs(velocityY) && Math.abs(velocityX) > SWIPE_THRESHOLD_VELOCITY) {
+                    if (velocityX < 0) { //right to left
+                        mActiveFeature = xToDay(getScrollX() + dh * 8);
+                        smoothScrollTo(mActiveFeature * dh * 16 + dh * 8 - getWidth() / 2, 0);
+                    }
+                    else { //left to right
+                        mActiveFeature = xToDay(getScrollX() - dh * 8);
+                        smoothScrollTo(mActiveFeature * dh * 16 + dh * 8 - getWidth() / 2, 0);
+                    }
                     return true;
                 }
-                //left to right
-                else if (velocityX>0 && Math.abs(velocityX) > SWIPE_THRESHOLD_VELOCITY) {
-                    mActiveFeature = xToDay(getScrollX() - dh*8);
-                    smoothScrollTo(mActiveFeature* dh*16 + dh*8 - getWidth()/2, 0);
+                else if (Math.abs(velocityY) > SWIPE_THRESHOLD_VELOCITY) {
+                    if (velocityY < 0) {
+                        scrollY(dh * 12);
+                    }
+                    else {
+                        scrollY(0);
+                    }
                     return true;
                 }
             }
@@ -182,6 +218,42 @@ public class SurfConditionsForecastView extends HorizontalScrollView { //extends
         setHorizontalScrollBarEnabled(false);
 
         setOnTouchListener(tl);
+
+        scrollerY = new OverScroller(getContext());
+    }
+
+
+    @Override
+    public void computeScroll() {
+        super.computeScroll();
+        if (scrollerY.computeScrollOffset()) {
+            scrollY = scrollerY.getCurrY();
+            onScrollY.run();
+            postInvalidateOnAnimation();
+        }
+    }
+
+
+    @Override
+    public boolean onTouchEvent(MotionEvent event) {
+        if (event.getY() < getContentTop()-dh*4) return false;
+
+        if (event.getAction() == MotionEvent.ACTION_DOWN) {
+            fx = event.getX();
+            fy = event.getY();
+            isScrollY = false;
+            scrollerY.abortAnimation();
+        }
+
+        if (event.getAction() == MotionEvent.ACTION_MOVE) {
+            if (!isScrollY && Math.abs(fx - event.getX()) < 15 && Math.abs(fy - event.getY()) > 15) {
+                isScrollY = true;
+            }
+        }
+
+//        if (!isScrollY && event.getY() < getContentTop()) return false;
+
+        return super.onTouchEvent(event);
     }
 
 
@@ -240,24 +312,37 @@ public class SurfConditionsForecastView extends HorizontalScrollView { //extends
     }
 
 
-    @Override
-    public void onDraw(Canvas canvas) {
+    int rightPaneX;
+
+    public Runnable onScrollY = new Runnable() {
+        @Override
+        public void run() {
+
+        }
+    };
+
+
+    private void drawWindSwell(Canvas canvas) {
         int sx = getScrollX();
 
-        float windy = dh*9.5f;
-        float windh = dh*2f;
+        float recty = 0;//getHeight() - dh*10f;
+
+        float windy = recty + dh*0.5f;
+        float swelly = recty + dh*3f;
+
 
         Trace.beginSection("DRAW");
         int x = -dh;
 
-        int rightPaneX = getWidth()-dh;
-
         paintBGs.setColor(0xffe0e0e0);
+        canvas.translate(0, recty);
         canvas.drawRect(sx+0, 0, sx+dh, dh*8, paintBGs);
         canvas.drawRect(sx+rightPaneX, 0, sx+getWidth(), dh*8, paintBGs);
+        canvas.translate(0, -recty);
 
         canvas.save();
-        canvas.translate(dh + getScrollX() - labelsY, getHeight());
+
+        canvas.translate(dh + getScrollX() - labelsY, dh*10);
         canvas.rotate(-90);
         //canvas.drawText("TIDE", dh * 1, 0, p);
 
@@ -273,40 +358,81 @@ public class SurfConditionsForecastView extends HorizontalScrollView { //extends
             canvas.drawText(STR_S, dh * 4.5f, rightPaneX, paintLabels);
         }
         paintLabels.setColor(0x66000000);
-        canvas.drawText(STR_WIND_U, windy - windh/2, 0, paintLabels);
-        canvas.drawText(STR_KMH, windy - windh/2, rightPaneX, paintLabels);
+        canvas.drawText(STR_WIND_U, dh*8.5f, 0, paintLabels);
+        canvas.drawText(STR_KMH, dh*8.5f, rightPaneX, paintLabels);
 
         canvas.restore();
+
 
         canvas.save();
         canvas.clipRect(getScrollX() + dh, 0, getScrollX() + rightPaneX, getHeight());
 
+
+
         paintBGs.setColor(0xfff4f4f4);
+
+        Paint paintWhite = new Paint(paintBGs);
+        paintWhite.setColor(0xffffffff);
+
         int w = dh * 16;
         int i = 0;
         SurfConditionsProvider conditionsProvider = AppContext.instance.surfSpots.getSelectedSpot().conditionsProvider;
         for (SurfConditionsOneDayBitmaps b : bitmaps) {
             if (x + w > getScrollX()) {
                 if (x > getScrollX() + getWidth()) break;
+
+                canvas.translate(0, recty);
                 if (conditionsProvider.isDetailed(i)) {
                     canvas.drawRect(x + 0, 0, x + dh * 6, dh * 8, paintBGs);
+                    canvas.drawRect(x + dh * 6, 0, x + dh * 12, dh * 8, paintWhite);
                     canvas.drawRect(x + dh * 12, 0, x + dh * 16, dh * 8, paintBGs);
                 }
                 else {
                     canvas.drawRect(x + 0, 0, x + dh * 3, dh * 8, paintBGs);
+                    canvas.drawRect(x + dh * 3, 0, x + dh * 15, dh * 8, paintWhite);
                     canvas.drawRect(x + dh * 15, 0, x + dh * 16, dh * 8, paintBGs);
                 }
+                canvas.translate(0, -recty);
 
                 paintLabels.setColor(0x33000000);
-                if (b.wind != null) canvas.drawBitmap(b.wind, x, getHeight() - windy, null);
-                else canvas.drawText(STR_NO_WIND_DATA, x+dh*9, getHeight()-windy+dh+textH/2, paintLabels);
-                if (b.wave != null) canvas.drawBitmap(b.wave, x, getHeight() - dh * 7, null);
-                else canvas.drawText(STR_NO_SWELL_DATA, x+dh*9, getHeight()- dh*7+dh*1.5f+textH/2, paintLabels);
+
+                if (b.wind != null) canvas.drawBitmap(b.wind, x, windy, null);
+                else canvas.drawText(STR_NO_WIND_DATA, x+dh*9, windy+dh+textH/2, paintLabels);
+
+                if (b.wave != null) canvas.drawBitmap(b.wave, x, swelly, null);
+                else canvas.drawText(STR_NO_SWELL_DATA, x+dh*9, swelly+dh*1.5f+textH/2, paintLabels);
             }
             x += w;
             i++;
         }
         canvas.restore();
+    }
+
+
+    public int scrollY = 0;
+
+
+    public int getContentTop() {
+        return getHeight() - (scrollY <= tideChartDrawer.h ? scrollY : Math.max(tideChartDrawer.h, scrollY-dh*2));
+    }
+
+
+    @Override
+    public void onDraw(Canvas canvas) {
+        int sx = getScrollX();
+
+        Log.i(TAG, "onDraw() | " + scrollY);
+
+        Trace.beginSection("DRAW");
+
+        rightPaneX = getWidth()-dh;
+
+        canvas.translate(0, getHeight()-scrollY+dh*2);
+        drawWindSwell(canvas);
+
+        canvas.translate(0, -getHeight()+scrollY-dh*2);
+
+        canvas.translate(0, Math.min(tideChartDrawer.h, Math.max(0, -scrollY + tideChartDrawer.h)));
 
         if (tideChartDrawer != null) tideChartDrawer.draw(canvas, getWidth(), getHeight(), getScrollX(), orientation);
 
@@ -379,6 +505,12 @@ public class SurfConditionsForecastView extends HorizontalScrollView { //extends
 
     public int dayToX(int i) {
         return i * dh*16 + dh*8 - getWidth()/2; // i * dh * 16 + dh * 2;
+    }
+
+
+    private OverScroller scrollerY;
+    public void scrollY(int y) {
+        scrollerY.startScroll(0, scrollY, 0, y-scrollY);
     }
 
 

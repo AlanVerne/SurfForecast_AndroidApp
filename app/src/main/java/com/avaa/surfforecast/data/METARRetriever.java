@@ -13,7 +13,7 @@ import java.io.InputStreamReader;
 /**
  * Created by Alan on 30 Nov 2016.
  */
-public class METARRetriever extends AsyncTask<String, Void, METAR> {
+public class METARRetriever extends AsyncTask<Object, Void, METAR> {
     private static final String TAG = "metarRetriever";
 
     private final METARProvider metarProvider;
@@ -30,7 +30,7 @@ public class METARRetriever extends AsyncTask<String, Void, METAR> {
         metarProvider.bsl.busyStateChanged(true);
     }
 
-    protected METAR doInBackground(String... addr) {
+    protected METAR doInBackground(Object... addr) {
         METAR metar = null;
 
         BufferedReader reader = null;

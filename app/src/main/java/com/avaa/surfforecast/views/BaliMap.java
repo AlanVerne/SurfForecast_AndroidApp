@@ -20,10 +20,12 @@ import android.view.View;
 import android.widget.Scroller;
 
 import com.avaa.surfforecast.AppContext;
+import com.avaa.surfforecast.MainModel;
 import com.avaa.surfforecast.R;
 import com.avaa.surfforecast.data.Common;
 import com.avaa.surfforecast.data.METAR;
 import com.avaa.surfforecast.data.SurfConditions;
+import com.avaa.surfforecast.data.SurfConditionsOneDay;
 import com.avaa.surfforecast.data.SurfSpot;
 import com.avaa.surfforecast.data.SurfSpots;
 import com.avaa.surfforecast.data.TideData;
@@ -36,6 +38,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.Timer;
 import java.util.TimerTask;
 
@@ -144,6 +147,8 @@ public class BaliMap extends View {
     private float fontBigH;
     private float fontH;
 
+    private MainModel mainModel = null;
+
     
     public void setDh(int dh) {
         if (dh == 0) return;
@@ -165,6 +170,8 @@ public class BaliMap extends View {
         pathTerrain.transform(matrix, pathTemp);
         c.drawPath(pathTemp, paintTerrain);
 
+        onSizeChanged(getWidth(), getHeight(), getWidth(), getHeight());
+
         Log.i(TAG, "setDh() | this.getHeight() = " + getHeight());
     }
     public void setHintsVisiblePolicy(int hintsVisiblePolicy) {
@@ -184,6 +191,28 @@ public class BaliMap extends View {
     public BaliMap(Context context, AttributeSet attrs, int defStyleAttr) {
         super(context, attrs, defStyleAttr);
         init(context);
+    }
+
+
+    public void setMainModel(MainModel mainModel) {
+        this.mainModel = mainModel;
+        mainModel.addChangeListener(changes -> {
+            currentConditions = mainModel.selectedConditions;
+            currentMETAR = mainModel.selectedMETAR;
+
+            if (currentMETAR != null) strWindSpeed = String.valueOf(currentMETAR.windSpeed);
+            else if (currentConditions != null) strWindSpeed = String.valueOf(currentConditions.windSpeed);
+            else strWindSpeed = STR_DASH;
+
+            if (currentConditions != null) {
+                strWaveHeight = String.valueOf(currentConditions.getWaveHeightInFt());
+                strWavePeriod = String.valueOf(currentConditions.wavePeriod);
+            }
+            else {
+                strWaveHeight = STR_DASH;
+                strWavePeriod = STR_DASH;
+            }
+        });
     }
 
 
@@ -269,6 +298,7 @@ public class BaliMap extends View {
             bmpMapZoomedInForSpotI = -1;
             pathCropMap = new Region(0, 0, getWidth() + 4 * dh, getHeight() + 4 * dh).getBoundaryPath();
         }
+        Log.i(TAG, "onSizeChanged() | " + bmpMapZoomedIn==null?"null":"ok");
     }
 
 
@@ -779,7 +809,7 @@ public class BaliMap extends View {
     private static final float paddingBottom = 4.8f;
 
     private static final float rOut = 200;
-    private static final float rIn  = 100;
+    private static final float rIn  = 25;
 
     private final RectF rectfTemp = new RectF();
 
@@ -861,6 +891,7 @@ public class BaliMap extends View {
         return needRepaint;
     }
 
+    public int insetY = 0;
 
     @Override
     protected void onDraw(Canvas canvas) {
@@ -871,31 +902,36 @@ public class BaliMap extends View {
 
         boolean needRepaint = computeArrowsAnimation();
 
-        int h = getHeight() - (int)((paddingTop+paddingBottom) * dh);
+        int height = getHeight() - insetY;
+
+        int h = height - (int)((paddingTop+paddingBottom) * dh);
 
         updateShownSpotsBoundRect();
 
         if (shownSpotsBoundRect == null) return;
 
-        float scale = (1 - awakenedState) * dh*2 / rOut + awakenedState * h/rIn;
+//        float scale = (1 - awakenedState) * dh*2 / rOut + awakenedState * h / rIn;
+        float scale = (1 - awakenedState) * dh*2 / rOut + awakenedState * dh*2 / rIn;
 
         float dx, dy;
         dx = -shownSpotsBoundRect.left * scale;
         dy = -shownSpotsBoundRect.top  * scale;
 
         dx += awakenedState * (getWidth() - (3*dh));
+//        dy += awakenedState * (paddingTop*dh + h/2);
         dy += awakenedState * (paddingTop*dh + h/2);
         dx += (1-awakenedState) * (getWidth() - (3*dh));
-        dy += (1-awakenedState) * (getHeight() - 2*dh) / 2;
+        dy += (1-awakenedState) * (height - 2*dh) / 2;
 
-        PointF pp = parallaxHelper.applyParallax(getWidth()/2, getHeight()/2, -dh*1.0f);
+        int mapCenterY = getHeight()/2 - insetY/2;
+
+        PointF pp = parallaxHelper.applyParallax(getWidth()/2, mapCenterY, -dh*1.0f);
         pp.offset(-getWidth()/2, -getHeight()/2);
 
         if (awakenedState == 0) {
             canvas.drawBitmap(bmpMapZoomedOut, dx+pp.x, dy+pp.y, null);
         }
-        else if (awakenedState == 1) {
-            if (bmpMapZoomedIn != null) {
+        else if (awakenedState == 1 && bmpMapZoomedIn != null) {
                 if (bmpMapZoomedInForSpotI != surfSpots.selectedSpotI) {
                     bmpMapZoomedIn.eraseColor(0x00000000);
                     Canvas c = new Canvas(bmpMapZoomedIn);
@@ -913,10 +949,10 @@ public class BaliMap extends View {
                     bmpMapZoomedInForSpotI = surfSpots.selectedSpotI;
                 }
                 canvas.drawBitmap(bmpMapZoomedIn, pp.x - 2 * dh, pp.y - 2 * dh, null);
-            }
         }
         else {
             float s = scale/(dh*2f/rOut);
+//            float s = scale/(h/rOut);
             rectfTemp.set(dx+pp.x, dy+pp.y, dx+pp.x + bmpMapZoomedOut.getWidth()*s, dy+pp.y + bmpMapZoomedOut.getHeight()*s);
             canvas.drawBitmap(bmpMapZoomedOut, null, rectfTemp, null);
         }
@@ -930,11 +966,14 @@ public class BaliMap extends View {
 
         int selectedSpotI = surfSpots.selectedSpotI;
 
-        pp = parallaxHelper.applyParallax(getWidth()/2, getHeight()/2, -dh*0.9f*(1-awakenedState));
-        pp.offset(-getWidth()/2, -getHeight()/2);
+        pp = parallaxHelper.applyParallax(getWidth()/2, height /2, -dh*0.9f*(1-awakenedState));
+        pp.offset(-getWidth()/2, -height /2);
         dx += pp.x; dy += pp.y;
 
         int i = 0;
+        float best = -1000;
+        Integer bestTime = 0;
+        SurfSpot bestSpot = null;
         for (SurfSpot spot : surfSpotsList) {
             float highlighted = isHighlighted(i);
             if (highlighted > 0 && i != selectedSpotI) {
@@ -946,8 +985,64 @@ public class BaliMap extends View {
                 paintBG.setColor((int)(t * 0xff) * 0x1000000 + colorSpotDot);
                 canvas.drawCircle(x, y, r, paintBG);
             }
+            if (awakenedState == 1 && insetY < dh*4) {
+                float t = Math.max(0, 1f - (float)insetY/(dh*4)); //(1f - awakenedState);
+                float x = spot.pointOnSVG.x * scale + dx;
+                float y = spot.pointOnSVG.y * scale + dy;
+                float r = densityDHDep * 1.5f;
+
+                paintBG.setColor((int)(t * 0xff) * 0x1000000 + colorSpotDot);
+                canvas.drawCircle(x, y, r, paintBG);
+
+                x += dh/5;
+                y += dh/5;
+
+                paintFont.setColor((int)(t * 0xff) * 0x1000000 + colorSpotDot); //MetricsAndPaints.colorWhite);
+                paintFont.setTextAlign(Paint.Align.LEFT);
+                canvas.drawText(spot.name.substring(0, 3), x, y, paintFont);
+
+                int plusDays = 0;
+                if (mainModel != null) {
+                    plusDays = Math.round(mainModel.getDay());
+                }
+                SurfConditions surfConditions = null;
+                int nowTimeInt = Common.getNowTimeInt(Common.TIME_ZONE);
+                float rate = 0;
+//                if (plusDays == 0) {
+//                    surfConditions = spot.conditionsProvider.getNow();
+//                }
+//                else {
+                    SurfConditionsOneDay surfConditionsOneDay = spot.conditionsProvider.get(plusDays);
+                    if (surfConditionsOneDay == null) continue;
+                    int bestForThisSpot = -1;
+                    for (Map.Entry<Integer, SurfConditions> entry : surfConditionsOneDay.entrySet()) {
+                        Integer time = entry.getKey();
+                        if ((plusDays == 0 && time < nowTimeInt - 120) || time < 5 * 60 || time > 19 * 60) continue;
+                        rate = entry.getValue().rate(spot, AppContext.instance.tideDataProvider.getTideData(spot.tidePortID), plusDays, time);
+                        if (rate > bestForThisSpot) {
+//                            best = rate;
+                            surfConditions = entry.getValue(); //spot.conditionsProvider.get(plusDays);
+                        }
+                        if (rate > best) {
+                            best = rate;
+                            bestTime = time;
+                            bestSpot = spot;
+//                            surfConditions = entry.getValue(); //spot.conditionsProvider.get(plusDays);
+                        }
+                    }
+//                }
+
+                if (surfConditions != null) {
+//                    TideData tideData = AppContext.instance.tideDataProvider.getTideData(spot.tidePortID);
+//                    if (tideData != null) {
+//                        float rate = surfConditions.rate(spot, tideData, 0, Common.getNowTimeInt(Common.TIME_ZONE));
+                        RatingView.drawStatic(canvas, (int)x-dh, (int)y, dh/4, rate, surfConditions.waveRating*surfConditions.tideRating, (int) (t*255));
+//                    }
+                }
+            }
             i++;
         }
+        paintFont.setTextAlign(Paint.Align.CENTER);
 
         if (selectedSpotI != -1) {
             SurfSpot spot = surfSpots.getSelectedSpot();
@@ -960,6 +1055,9 @@ public class BaliMap extends View {
                 canvas.drawCircle(x, y, densityDHDep * (2 + isHighlighted(selectedSpotI)), paintBG);
             }
             else {
+                float t = awakenedState;
+                awakenedState *= Math.min(1, (float)insetY/(dh*4));
+
                 float r = (dh * 1.5f - densityDHDep * 3) * awakenedState + densityDHDep * 3;
                 if (awakenedState > 0) {
                     paintSelectedSpot(canvas, x, y, r);
@@ -968,6 +1066,8 @@ public class BaliMap extends View {
                     paintBG.setColor(((int)((1f - awakenedState / 0.2f) * 0xff) << 24) | 0x2696bb); //colorWaterColor
                     canvas.drawCircle(x, y, r, paintBG);
                 }
+
+                awakenedState = t;
             }
         }
 

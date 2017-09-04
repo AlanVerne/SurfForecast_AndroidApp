@@ -2,8 +2,6 @@ package com.avaa.surfforecast.ai;
 
 import android.util.Log;
 
-import java.util.Arrays;
-
 /**
  * Created by Alan on 19 Jan 2017.
  */
@@ -74,7 +72,7 @@ public class Answer {
 
 
     public void addClarification(String s) {
-        if (clarification == null) clarification = CommandsExecutor.upperCaseFirstLetter(s);
+        if (clarification == null) clarification = CommandsExecutor.capitalize(s);
         else clarification += " " + s;
     }
 

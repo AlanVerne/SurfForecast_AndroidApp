@@ -1,12 +1,15 @@
 package com.avaa.surfforecast;
 
+import android.content.Context;
 import android.content.SharedPreferences;
 import android.util.Log;
 
+import com.avaa.surfforecast.data.Common;
 import com.avaa.surfforecast.data.METAR;
 import com.avaa.surfforecast.data.SurfConditions;
+import com.avaa.surfforecast.data.SurfConditionsOneDay;
 import com.avaa.surfforecast.data.SurfSpot;
-import com.avaa.surfforecast.data.SurfSpots;
+import com.avaa.surfforecast.data.TideData;
 
 import java.util.HashMap;
 import java.util.HashSet;
@@ -14,12 +17,14 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import static com.avaa.surfforecast.data.Common.TIME_ZONE;
+
 /**
  * Created by Alan on 30 May 2017.
  */
 
-public class ModelMain {
-    private static final String TAG = "ModelMain";
+public class MainModel {
+    private static final String TAG = "MainModel";
 
     private static final String SPKEY_FAV_SPOTS = "favSpots";
     private static final String SPKEY_SELECTED_SPOT = "selectedSpot";
@@ -28,6 +33,11 @@ public class ModelMain {
 
     public final int willBeSelectedSpotI = 3; //TODO
     public int selectedSpotI = -1;
+
+
+    public MainModel(Context context) {
+
+    }
 
 
     public void setSelectedSpotI(int i) {
@@ -42,17 +52,83 @@ public class ModelMain {
         SharedPreferences sp = AppContext.instance.sharedPreferences;
         sp.edit().putInt(SPKEY_SELECTED_SPOT, selectedSpotI).apply();
     }
+
     public SurfSpot getSelectedSpot() {
         List<SurfSpot> list = AppContext.instance.surfSpots.getAll();
+        selectedSpotI = AppContext.instance.surfSpots.selectedSpotI;
         if (selectedSpotI == -1) return list.get(willBeSelectedSpotI);
         if (selectedSpotI >= list.size()) selectedSpotI = list.size() - 1;
         return list.get(selectedSpotI);
     }
 
 
-    public SurfConditions currentConditions = null;
-    public METAR currentMETAR = null;
-//    public TideData currentTideData = null; // unsupported
+    public SurfConditions selectedConditions = null;
+    public METAR selectedMETAR = null;
+    public TideData selectedTideData = null;
+
+    public SurfConditions nowConditions = null;
+    public METAR nowMETAR = null;
+    public TideData nowTideData = null;
+
+    public float nowH;
+
+    private float day = 0;
+    public float time = -1;
+
+    public float selectedRating = -1;
+    public int selectedTime = -1;
+
+
+    public float getDay() {
+        return day;
+    }
+    public void setDay(float day) {
+        if (this.day == day) return;
+
+        if (Math.round(this.day) == Math.round(day)) {
+            this.day = day;
+            return;
+        }
+        else {
+            this.day = day;
+        }
+
+        SurfSpot spot = getSelectedSpot();
+        SurfConditionsOneDay conditionsOneDay = spot.conditionsProvider.get(Math.round(day));
+        SurfConditions newSC = null;
+
+        if (time == -1) {
+            int nowTimeInt = Common.getNowTimeInt(TIME_ZONE);
+
+            if (conditionsOneDay == null) {
+                selectedTime = -1;
+                selectedRating = -1;
+                selectedConditions = null;
+                return; //continue;
+            }
+
+            selectedRating = -1;
+
+            for (Map.Entry<Integer, SurfConditions> entry : conditionsOneDay.entrySet()) {
+                Integer time = entry.getKey();
+                if ((day == 0 && time < nowTimeInt - 120 && nowTimeInt < 18*60) || time < 5 * 60 || time > 19 * 60) continue;
+                float rate = entry.getValue().rate(spot, AppContext.instance.tideDataProvider.getTideData(spot.tidePortID), Math.round(day), time);
+                if (rate > selectedRating) {
+                    selectedRating = rate;
+                    selectedTime = time;
+                    newSC = entry.getValue();
+                }
+            }
+        }
+
+        if (selectedConditions != newSC) {
+            selectedConditions = newSC;
+            fireChanged(new HashSet<Change>() {{
+                add(Change.CURRENT_CONDITIONS);
+            }});
+        }
+    }
+
 
     public void updateCurrentConditions() {
         updateCurrentConditions(true);
@@ -67,10 +143,10 @@ public class ModelMain {
         SurfConditions newCC = spot.conditionsProvider.getNow();
         METAR newMETAR = AppContext.instance.metarProvider.get(spot.metarName);
 
-        if (newCC == currentConditions && newMETAR == currentMETAR) return;
+        if (newCC == nowConditions && newMETAR == nowMETAR) return;
 
-        currentConditions = newCC;
-        currentMETAR = newMETAR;
+        nowConditions = newCC;
+        nowMETAR = newMETAR;
 
         Log.i(TAG, newMETAR == null ? "null" : newMETAR.toString());
 
@@ -81,7 +157,7 @@ public class ModelMain {
     public interface ChangeListener {
         void onChange(Set<Change> changes);
     }
-    public enum Change { SELECTED_SPOT, CONDITIONS, CURRENT_CONDITIONS }
+    public enum Change { SELECTED_SPOT, CONDITIONS, CURRENT_CONDITIONS, TIDE }
     private Map<ChangeListener, Set<Change>> cls = new HashMap<>();
     public void addChangeListener(ChangeListener l) {
         cls.put(l, null);

@@ -1,8 +1,6 @@
 package com.avaa.surfforecast.data;
 
 import android.content.SharedPreferences;
-import android.os.AsyncTask;
-import android.util.Log;
 
 import com.avaa.surfforecast.AppContext;
 
@@ -11,40 +9,55 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+
 /**
  * Created by Alan on 2 Jul 2016.
  */
 
+
 public class METARProvider {
-    public METAR get(String name) {
-        if (name == null) return null;
-        METAR metar = metars.get(name);
-//        Log.i(TAG, "get() " + toString(name, metar));
-        long currentTimeMillis = System.currentTimeMillis();
-        if (metar == null || (metar.isMinutePassedFromLastFetch(currentTimeMillis) && metar.isOld(currentTimeMillis))) update(name);
-        if (metar == null) return null;
-        if (metar.isVeryOld(currentTimeMillis)) return null;
-        return metar;
+    public METAR get(String id) {
+//        Log.i(TAG, "get() " + toString(id, metar));
+
+        if (id == null) return null;
+
+        METAR metar = metars.get(id);
+
+        if (metar == null) {
+            update(id);
+            return null;
+        } else {
+            long currentTimeMillis = System.currentTimeMillis();
+            if (metar.isMinutePassedFromLastFetch(currentTimeMillis) && metar.isOld(currentTimeMillis)) {
+                update(id);
+            }
+            if (metar.isVeryOld(currentTimeMillis)) {
+                metars.remove(id);
+                return null;
+            } else {
+                return metar;
+            }
+        }
     }
 
 
-    public void update(String name) {
-//        Log.i(TAG, "update() " + name);
-        if (name == null) return;
-        METARRetriever task = tasks.get(name);
-        if (task != null && task.getStatus() != AsyncTask.Status.FINISHED) {
+    public void update(String id) {
+//        Log.i(TAG, "update(" + id + ")");
+
+        if (id == null) return;
+
+        if (DataRetrieversPool.getTask(id, METARRetriever.class) == null) {
 //            Log.i(TAG, "UPDATE IS ALREADY RUNNING");
             return;
         }
-        task = new METARRetriever(this, name);
-        tasks.put(name, task);
-        task.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
+        DataRetrieversPool.addTask(id, new METARRetriever(this, id));
     }
 
 
     public interface UpdateListener {
-        void onUpdate(String name, METAR metar);
+        void onUpdate(String id, METAR metar);
     }
+
     public void addUpdateListener(UpdateListener ul) {
         uls.add(ul);
     }
@@ -61,7 +74,6 @@ public class METARProvider {
     public BusyStateListener bsl = null;
 
     private Map<String, METAR> metars = new HashMap<>();
-    private Map<String, METARRetriever> tasks = new HashMap<>();
 
 
     public METARProvider(BusyStateListener bsl) {
@@ -75,22 +87,25 @@ public class METARProvider {
     }
 
 
-    public void newMetar(String name, METAR metar) {
-        metars.put(name, metar);
+    public void newMetar(String id, METAR metar) {
+        metars.put(id, metar);
         if (!metar.isVeryOld()) {
-            fireUpdated(name, metar);
+            fireUpdated(id, metar);
         }
     }
 
 
-    public void fireUpdated(String name, METAR metar) {
-        for (UpdateListener ul : uls) ul.onUpdate(name, metar);
+    public void fireUpdated(String id, METAR metar) {
+        for (UpdateListener ul : uls) ul.onUpdate(id, metar);
     }
 
 
-    public static String toString(String name, METAR metar) {
-        return "Metar for " + name + ": " + (metar == null ? "null" : metar.toString());
+    public static String toString(String id, METAR metar) {
+        return "Metar for " + id + ": " + (metar == null ? "null" : metar.toString());
     }
+
+
+    // --
 
 
     private void load() {
@@ -106,6 +121,7 @@ public class METARProvider {
             if (!metar.isVeryOld()) metars.put(split[i], metar);
         }
     }
+
     public void save() {
 //        Log.i(TAG, "save()");
         StringBuilder sb = new StringBuilder(100);

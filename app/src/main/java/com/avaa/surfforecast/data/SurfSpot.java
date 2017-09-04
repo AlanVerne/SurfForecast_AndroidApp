@@ -37,6 +37,8 @@ public class SurfSpot {
 
     public String tidePortID = Common.BENOA_PORT_ID;
 
+//    public
+
 
     public String getSFURL() {
         return conditionsProvider.getURL();

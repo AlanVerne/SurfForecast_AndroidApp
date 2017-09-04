@@ -23,6 +23,7 @@ import com.avaa.surfforecast.drawers.MetricsAndPaints;
 
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
+import java.util.Locale;
 import java.util.SortedMap;
 import java.util.Timer;
 import java.util.TimerTask;
@@ -203,7 +204,7 @@ public class OneDayConditionsSmallView extends LinearLayout {
     public void setDate(Calendar c) {
         tvDate.setText(String.valueOf(c.get(Calendar.DATE)));
 
-        tvDayOfWeek.setText(DAY_FORMAT.format(c.getTime()).toUpperCase());
+        tvDayOfWeek.setText(c.getDisplayName(Calendar.DAY_OF_WEEK, Calendar.SHORT, Locale.getDefault())); //DAY_FORMAT.format(c.getTime()).toUpperCase());
 
         int dayOfWeek = c.get(Calendar.DAY_OF_WEEK);
         if (dayOfWeek == Calendar.SATURDAY || dayOfWeek == Calendar.SUNDAY) {

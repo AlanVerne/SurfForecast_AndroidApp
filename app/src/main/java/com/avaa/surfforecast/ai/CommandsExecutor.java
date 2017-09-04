@@ -67,17 +67,18 @@ public class CommandsExecutor {
         sToTime.put(" sunset ",  18*60);
         sToTime.put(" evening ",  18*60);
     }
+
     private void initSToDay() {
         String today = DateUtils.getRelativeTimeSpanString(
                 0, 0, DateUtils.DAY_IN_MILLIS,
                 DateUtils.FORMAT_SHOW_WEEKDAY).toString().toLowerCase();
 
         String tomorrow = DateUtils.getRelativeTimeSpanString(
-                1000 * 60 * 60 * 24, 0, DateUtils.DAY_IN_MILLIS,
+                DateUtils.DAY_IN_MILLIS, 0, DateUtils.DAY_IN_MILLIS,
                 DateUtils.FORMAT_SHOW_WEEKDAY).toString().toLowerCase();
 
         String afterTomorrow = DateUtils.getRelativeTimeSpanString(
-                2 * 1000 * 60 * 60 * 24, 0, DateUtils.DAY_IN_MILLIS,
+                2 * DateUtils.DAY_IN_MILLIS, 0, DateUtils.DAY_IN_MILLIS,
                 DateUtils.FORMAT_SHOW_WEEKDAY).toString().toLowerCase();
 
         sToDay.put(" " + today + " ", 0);
@@ -111,7 +112,7 @@ public class CommandsExecutor {
     // --
 
 
-    public static String upperCaseFirstLetter(String s) {
+    public static String capitalize(String s) {
         if (s != null && s.length() > 1) s = s.substring(0, 1).toUpperCase() + s.substring(1);
         return s;
     }
@@ -160,13 +161,13 @@ public class CommandsExecutor {
     // --
 
 
-    public String intDayToNL(int day) {
+    public static String intDayToNL(int day) {
         for (Map.Entry<String, Integer> e : AppContext.instance.commandsExecutor.sToDay.entrySet()) {
             if (day == e.getValue()) return e.getKey().trim();
         }
         return null;
     }
-    public String intTimeToNL(int time) {
+    public static String intTimeToNL(int time) {
         for (Map.Entry<String, Integer> e : AppContext.instance.commandsExecutor.sToTime.entrySet()) {
             if (time == e.getValue()) {
                 if (time == -1) return e.getKey().trim();
@@ -338,7 +339,7 @@ public class CommandsExecutor {
                         "[spot]" + bestSpot.getShortName() + " " + intDayToNL,
                         //"[cond]" + bestSpot.getShortName() + " " + intDayToNL + " " + timeToNL,
                         "[cond]Conditions will be?",
-                        //bestTime == 6*60 ? "[i]I want to sleep at sunrise" : "[i]I can't at " + timeToNL,
+                        //selectedTime == 6*60 ? "[i]I want to sleep at sunrise" : "[i]I can't at " + timeToNL,
                         "[q]Now?", //"[q]Where to surf now?",
                         //plusDays == 0 ? "[q]Where to surf tomorrow?" : "[q]Where to surf today?",
                         plusDays == 0 ? "[q]Tomorrow?" : "[q]Today?",
@@ -355,7 +356,7 @@ public class CommandsExecutor {
                         "time,day - Where to surf [day] [time]?",
                         "time - Where to surf " + intDayToNL + " [time]?",
                         "day - Where to surf [day]?",
-                        //bestTime == 6*60 ? "I want to sleep at sunrise - Where to surf " + intDayToNL(plusDays) + " except sunrise?" :
+                        //selectedTime == 6*60 ? "I want to sleep at sunrise - Where to surf " + intDayToNL(plusDays) + " except sunrise?" :
                         "I can't at " + timeToNL + " - Where to surf " + intDayToNL + " except " + timeToNL + "?",
                 };
             }

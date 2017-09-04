@@ -1,24 +1,13 @@
 package com.avaa.surfforecast.data;
 
 import android.content.SharedPreferences;
-import android.os.AsyncTask;
 import android.support.annotation.NonNull;
-import android.support.annotation.Nullable;
 import android.util.Log;
 
 import com.avaa.surfforecast.AppContext;
 
-import java.io.BufferedReader;
-import java.io.ByteArrayOutputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.net.HttpURLConnection;
-import java.net.URL;
 import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
 import java.util.SortedMap;
 import java.util.TreeMap;
@@ -36,7 +25,6 @@ public class TideDataProvider {
     public static final Long ONE_DAY = 1000*60*60*24*1L;
 
     protected final SortedMap<String, TideData> portIDToTideData = new TreeMap<>();
-    private final Map<String, TideDataRetriever> asyncTasks = new HashMap<>();
 
     public interface TideDataProviderListener {
         void updated(String portID);
@@ -58,12 +46,9 @@ public class TideDataProvider {
 
     public void fetchIfNeed(@NonNull String portID) {
         TideData tideData = portIDToTideData.get(portID);
-        if (tideData == null || tideData.needUpdate()) fetch(portID, null);
+        if (tideData == null || tideData.needUpdate()) fetch(portID);
     }
     public void fetch(@NonNull String portID) {
-        fetch(portID, null);
-    }
-    public void fetch(@NonNull String portID, @Nullable final Runnable runnableRunAfter) {
         Log.i(TAG, "fetch() | " + portID);
 
         TideData tideData = portIDToTideData.get(portID);
@@ -73,20 +58,16 @@ public class TideDataProvider {
         }
         else portIDToTideData.put(portID, new TideData(System.currentTimeMillis()));
 
-        TideDataRetriever asyncTask = asyncTasks.get(portID);
-        if (asyncTask == null || asyncTask.getStatus().equals(AsyncTask.Status.FINISHED)) {
+        if (DataRetrieversPool.getTask(portID, TideDataRetriever.class)==null) {
             fireLoadingStateChanged(portID, true);
-            asyncTask = new TideDataRetriever(this, portID, runnableRunAfter);
-            asyncTasks.put(portID, asyncTask);
-            asyncTask.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
+            DataRetrieversPool.addTask(portID, new TideDataRetriever(this, portID));
         }
     }
 
 
-    public boolean loadingInProgress(String portID) {
-        TideDataRetriever asyncTask = asyncTasks.get(portID);
-        return asyncTask != null && !asyncTask.getStatus().equals(AsyncTask.Status.FINISHED);
-    }
+//    public boolean loadingInProgress(String portID) {
+//        return DataRetrieversPool.getTask(portID, TideDataRetriever.class) != null;
+//    }
 
 
     // --
@@ -117,7 +98,7 @@ public class TideDataProvider {
     public TideData getTideData(String portID) {
         TideData tideData = portIDToTideData.get(portID);
         //Log.i(TAG, "getTideData() " + tideData==null?"null":tideData.toString());
-        if (tideData == null || tideData.needAndCanUpdate()) fetch(portID, null);
+        if (tideData == null || tideData.needAndCanUpdate()) fetch(portID);
         if (tideData != null && tideData.isEmpty()) tideData = null;
         return tideData;
     }
