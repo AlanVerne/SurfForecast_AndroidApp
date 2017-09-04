@@ -109,16 +109,26 @@ public class MainModel {
 
             selectedRating = -1;
 
-            for (Map.Entry<Integer, SurfConditions> entry : conditionsOneDay.entrySet()) {
-                Integer time = entry.getKey();
-                if ((day == 0 && time < nowTimeInt - 120 && nowTimeInt < 18*60) || time < 5 * 60 || time > 19 * 60) continue;
-                float rate = entry.getValue().rate(spot, AppContext.instance.tideDataProvider.getTideData(spot.tidePortID), Math.round(day), time);
+            for (int time = 5; time < 18; time++) {
+                SurfConditions conditions = conditionsOneDay.get(time);
+                if ((day == 0 && time*60 < nowTimeInt - 120 && nowTimeInt < 18) || time < 5 || time > 19) continue;
+                float rate = conditions.rate(spot, AppContext.instance.tideDataProvider.getTideData(spot.tidePortID), Math.round(day), time*60);
                 if (rate > selectedRating) {
                     selectedRating = rate;
-                    selectedTime = time;
-                    newSC = entry.getValue();
+                    selectedTime = time*60;
+                    newSC = conditions;
                 }
             }
+//            for (Map.Entry<Integer, SurfConditions> entry : conditionsOneDay.entrySet()) {
+//                Integer time = entry.getKey();
+//                if ((day == 0 && time < nowTimeInt - 120 && nowTimeInt < 18*60) || time < 5 * 60 || time > 19 * 60) continue;
+//                float rate = entry.getValue().rate(spot, AppContext.instance.tideDataProvider.getTideData(spot.tidePortID), Math.round(day), time);
+//                if (rate > selectedRating) {
+//                    selectedRating = rate;
+//                    selectedTime = time;
+//                    newSC = entry.getValue();
+//                }
+//            }
         }
 
         if (selectedConditions != newSC) {

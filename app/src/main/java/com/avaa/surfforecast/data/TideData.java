@@ -196,8 +196,8 @@ public class TideData {
 
     public static int tideToHML(int tide) {
         int t = 2;
-        if (tide < 0.7) t = 1;
-        if (tide > 1.4) t = 4;
+        if (tide < 75) t = 1;
+        if (tide >= 145) t = 4;
         return t;
     }
 
