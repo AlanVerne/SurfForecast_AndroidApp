@@ -1,12 +1,10 @@
 package com.avaa.surfforecast.views;
 
-import android.annotation.TargetApi;
 import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
 import android.graphics.Paint;
 import android.graphics.Typeface;
-import android.os.Build;
 import android.util.AttributeSet;
 import android.util.Log;
 import android.util.TypedValue;
@@ -36,14 +34,14 @@ public class OneDayConditionsSmallView extends LinearLayout {
     private static final String TAG = "OneDayCSV";
     private static final SimpleDateFormat DAY_FORMAT = new SimpleDateFormat("EEE");
 
-    private static final int LONG_DELAY  = 500;
+    private static final int LONG_DELAY = 500;
     private static final int SHORT_DELAY = 50;
 
 
     private final Paint p = new Paint();
 
-    private TextView  tvDate;
-    private TextView  tvDayOfWeek;
+    private TextView tvDate;
+    private TextView tvDayOfWeek;
     private ImageView ivValue;
 
     private int colorText = 0x000000;
@@ -69,6 +67,7 @@ public class OneDayConditionsSmallView extends LinearLayout {
     public int getColorText() {
         return colorText;
     }
+
     public void setColorText(int colorText) {
         this.colorText = colorText;
         p.setColor(0xdd000000 | colorText);
@@ -81,11 +80,11 @@ public class OneDayConditionsSmallView extends LinearLayout {
 
         Log.i(TAG, "setMetrics " + metrics.density + " " + metrics.dh);
 
-        d  = (int)(3.5 * metrics.densityDHDependent);
-        s  = (int)(1.5 * metrics.densityDHDependent);
-        bh = ((d+s)*6+d);
+        d = (int) (3.5 * metrics.densityDHDependent);
+        s = (int) (1.5 * metrics.densityDHDependent);
+        bh = ((d + s) * 6 + d);
 
-        b = Bitmap.createBitmap(d*3+s*2, bh, Bitmap.Config.ARGB_8888);
+        b = Bitmap.createBitmap(d * 3 + s * 2, bh, Bitmap.Config.ARGB_8888);
         c = new Canvas(b);
 
         repaintBitmap();
@@ -105,15 +104,14 @@ public class OneDayConditionsSmallView extends LinearLayout {
                 SurfConditions ic = conditions.get((i == 0 ? 5 : i == 1 ? 11 : 17) * 60);
                 if (ic == null && i == 0) ic = conditions.get(2 * 60);
                 if (ic != null) {
-                    int n = (int)((ic.getWaveHeightInFt() + 0.5) / 2);
+                    int n = (int) ((ic.getWaveHeightInFt() + 0.5) / 2);
                     n *= 2;
                     if ((ic.getWaveHeightInFt() + 0.5) % 2 > 1) n++;
 
                     dh[i] = n;
                 }
             }
-        }
-        else {
+        } else {
             for (int i = 0; i < 3; i++) dh[i] = 0;
             if (!isVisible() && equalizeH()) repaintBitmap();
         }
@@ -136,7 +134,7 @@ public class OneDayConditionsSmallView extends LinearLayout {
 
 
     private boolean isVisible() {
-        return ((RelativeLayout)(this.getParent().getParent())).getAlpha() >= 0.75;
+        return ((RelativeLayout) (this.getParent().getParent())).getAlpha() >= 0.75;
     }
 
 
@@ -144,6 +142,7 @@ public class OneDayConditionsSmallView extends LinearLayout {
         for (int i = 0; i < 3; i++) if (h[i] != dh[i]) return true;
         return false;
     }
+
     private boolean equalizeH() {
         boolean changed = false;
 
@@ -156,6 +155,7 @@ public class OneDayConditionsSmallView extends LinearLayout {
 
         return changed;
     }
+
     private boolean animateH() {
         boolean changed = false;
 
@@ -179,7 +179,7 @@ public class OneDayConditionsSmallView extends LinearLayout {
 
             int y = bh;
 
-            for (int j = 0; j < n/2; j++) {
+            for (int j = 0; j < n / 2; j++) {
                 c.drawRect(i * (d + s), y - d, i * (d + s) + d, y, p);
                 y -= d + s;
             }
@@ -211,8 +211,7 @@ public class OneDayConditionsSmallView extends LinearLayout {
             tvDate.setTextColor(0xdd000000 | colorText);
             tvDayOfWeek.setTextColor(0xdd000000 | colorText);
             tvDayOfWeek.setTypeface(null, Typeface.BOLD);
-        }
-        else {
+        } else {
             tvDate.setTextColor(0xdd000000 | colorText);
             tvDayOfWeek.setTextColor(0x88000000 | colorText);
         }
@@ -232,10 +231,10 @@ public class OneDayConditionsSmallView extends LinearLayout {
 
         tvDate = new TextView(context);
         tvDate.setGravity(Gravity.CENTER);
-        tvDate.setTextSize(TypedValue.COMPLEX_UNIT_PX, density*14);
+        tvDate.setTextSize(TypedValue.COMPLEX_UNIT_PX, density * 14);
         tvDayOfWeek = new TextView(context);
         tvDayOfWeek.setGravity(Gravity.CENTER);
-        tvDayOfWeek.setTextSize(TypedValue.COMPLEX_UNIT_PX, density*10);
+        tvDayOfWeek.setTextSize(TypedValue.COMPLEX_UNIT_PX, density * 10);
         ivValue = new ImageView(context);
 
         View space = new View(context);
@@ -248,11 +247,11 @@ public class OneDayConditionsSmallView extends LinearLayout {
         addView(space);
         addView(ivValue);
 
-        d  = (int)(3.5 * density);
-        s  = (int)(1.5 * density);
-        bh = ((d+s)*6+d);
+        d = (int) (3.5 * density);
+        s = (int) (1.5 * density);
+        bh = ((d + s) * 6 + d);
 
-        b = Bitmap.createBitmap(d*3+s*2, bh, Bitmap.Config.ARGB_8888);
+        b = Bitmap.createBitmap(d * 3 + s * 2, bh, Bitmap.Config.ARGB_8888);
         c = new Canvas(b);
 
 //        setBackgroundColor(0x33000000);

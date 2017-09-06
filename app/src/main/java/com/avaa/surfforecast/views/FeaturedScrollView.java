@@ -17,15 +17,20 @@ public class FeaturedScrollView extends ScrollView {
     public FeaturedScrollView(Context context) {
         super(context);
     }
+
     public FeaturedScrollView(Context context, AttributeSet attrs) {
         super(context, attrs);
     }
+
     public FeaturedScrollView(Context context, AttributeSet attrs, int defStyleAttr) {
         super(context, attrs, defStyleAttr);
     }
 
-    protected void onScrollStart() {}
-    protected void onScrollEnd()   {}
+    protected void onScrollStart() {
+    }
+
+    protected void onScrollEnd() {
+    }
 
     protected boolean isScrolling() {
         return lastScrollUpdate != -1;

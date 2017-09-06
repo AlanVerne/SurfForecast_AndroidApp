@@ -11,22 +11,22 @@ import java.util.Map;
 
 public class ToNL {
     private static final Map<Integer, String> WIND_DA_TO_STRING = new HashMap<Integer, String>() {{
-        put(0,      "on shore");
-        put(90-45,  "cross-on shore");
-        put(90,     "cross shore");
-        put(90+45,  "cross-off shore");
-        put(180,    "off shore");
-        put(270-45, "cross-off shore");
-        put(270,    "cross shore");
-        put(270+45, "cross-on shore");
-        put(360,    "on shore");
+        put(0, "on shore");
+        put(90 - 45, "cross-on shore");
+        put(90, "cross shore");
+        put(90 + 45, "cross-off shore");
+        put(180, "off shore");
+        put(270 - 45, "cross-off shore");
+        put(270, "cross shore");
+        put(270 + 45, "cross-on shore");
+        put(360, "on shore");
     }};
     private static final Map<Integer, String> WIND_DA_TO_NL = new HashMap<Integer, String>() {{
-        put(0,      "on shore");
-        put(90,     "cross shore");
-        put(180,    "off shore");
-        put(270,    "cross shore");
-        put(360,    "on shore");
+        put(0, "on shore");
+        put(90, "cross shore");
+        put(180, "off shore");
+        put(270, "cross shore");
+        put(360, "on shore");
     }};
 
 
@@ -46,20 +46,21 @@ public class ToNL {
 
 
     public static String windRelativeToString(float a) {
-        return WIND_DA_TO_STRING.get((int)(Math.round(a*4/Math.PI)*45));
+        return WIND_DA_TO_STRING.get((int) (Math.round(a * 4 / Math.PI) * 45));
     }
+
     public static String windRelativeToNL(float a) {
-        return WIND_DA_TO_NL.get((int)(Math.round(a*2/Math.PI)*90));
+        return WIND_DA_TO_NL.get((int) (Math.round(a * 2 / Math.PI) * 90));
     }
 
 
     public static String floatToNL(float f) {
         int i = Math.round(f);
-        if (i == f || (f-0.15f < i && i < f+0.15f)) return String.valueOf(i);
+        if (i == f || (f - 0.15f < i && i < f + 0.15f)) return String.valueOf(i);
 
-        i = Math.round(f-0.5f);
-        if (f-0.15f-0.5f < i && i < f+0.15f-0.5f) return i + " and a half";
+        i = Math.round(f - 0.5f);
+        if (f - 0.15f - 0.5f < i && i < f + 0.15f - 0.5f) return i + " and a half";
 
-        return String.valueOf(Math.round(f*10)/10f);
+        return String.valueOf(Math.round(f * 10) / 10f);
     }
 }

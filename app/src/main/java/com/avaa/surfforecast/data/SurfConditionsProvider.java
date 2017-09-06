@@ -39,15 +39,14 @@ public class SurfConditionsProvider {
     public String urlfull = "";
     public String urlfullweek = "";
 
-    public  TreeMap<Long, SurfConditions> conditions = null;
-    public  HashMap<Integer, TreeMap<Long, SurfConditions>> allconditions = null;
-    public  long lastUpdate = 0;
+    public TreeMap<Long, SurfConditions> conditions = null;
+    public HashMap<Integer, TreeMap<Long, SurfConditions>> allconditions = null;
+    public long lastUpdate = 0;
     private List<UpdateListener> uls = new ArrayList<>();
-    public  BusyStateListener bsl = null;
+    public BusyStateListener bsl = null;
 
     private SurfConditionsRetriever t0 = null;
     private SurfConditionsRetriever t1 = null;
-
 
 
     public SurfConditionsProvider(String url) {
@@ -71,11 +70,12 @@ public class SurfConditionsProvider {
         SurfConditionsOneDay sc = get(0);
         return sc == null ? null : sc.getNow();
     }
+
     public SortedMap<Integer, SurfConditions> getFixed(int plusDays) {
         SurfConditionsOneDay sc = get(plusDays);
         return sc == null ? null : sc.getFixed();
     }
-    
+
 
     public boolean isDetailed(int plusDays) {
         SurfConditionsOneDay conditions = get(plusDays);
@@ -83,7 +83,10 @@ public class SurfConditionsProvider {
     }
 
 
-    public SurfConditionsOneDay get() { return get(0); }
+    public SurfConditionsOneDay get() {
+        return get(0);
+    }
+
     public SurfConditionsOneDay get(int plusDays) {
         if (!loaded) load();
 
@@ -100,7 +103,7 @@ public class SurfConditionsProvider {
         calendar.add(Calendar.DATE, plusDays);
         long start = calendar.getTime().getTime();
         calendar.add(Calendar.DATE, 1);
-        long end   = calendar.getTime().getTime();
+        long end = calendar.getTime().getTime();
 
         SortedMap<Long, SurfConditions> bef = conditions.headMap(start);
         SortedMap<Long, SurfConditions> aft = conditions.tailMap(end);
@@ -108,8 +111,8 @@ public class SurfConditionsProvider {
         //Log.i("SFProvider", bef.size()+" "+aft.size()+" "+conditionsTodayRaw.size()+" "+conditionsTodayRaw.toString()+" "+start+" "+end);
         SurfConditionsOneDay conditionsToday = new SurfConditionsOneDay();
         for (Map.Entry<Long, SurfConditions> tide : conditionsTodayRaw.entrySet()) {
-            int h = (int)((tide.getKey() - start) / 1000 / 60);
-            if (h > -5*60) conditionsToday.put(h, tide.getValue());
+            int h = (int) ((tide.getKey() - start) / 1000 / 60);
+            if (h > -5 * 60) conditionsToday.put(h, tide.getValue());
         }
 
         //Log.i(TAG, "get(int plusDays) " + plusDays +" "+ conditionsToday.size());
@@ -124,11 +127,13 @@ public class SurfConditionsProvider {
 
 
     public int hoursFromLastUpdate() {
-        return (int)((new Date().getTime() - lastUpdate)/1000/60/60);
+        return (int) ((new Date().getTime() - lastUpdate) / 1000 / 60 / 60);
     }
+
     public boolean needUpdate() {
         return hoursFromLastUpdate() > 3;
     }
+
     public boolean updateIfNeed() {
         if (needUpdate()) {
             update();
@@ -141,8 +146,7 @@ public class SurfConditionsProvider {
     public void update() {
         if (t0 != null && t0.getStatus() != AsyncTask.Status.FINISHED || t1 != null && t1.getStatus() != AsyncTask.Status.FINISHED) {
             //Log.i(TAG, "UPDATE IS ALREADY RUNNING" + url + " last update was " + hoursFromLastUpdate() + "h before");
-        }
-        else {
+        } else {
             //Log.i(TAG, "UPDATE " + url + " last update was " + hoursFromLastUpdate() + "h before");
             t0 = new SurfConditionsRetriever(this, false);
             t1 = new SurfConditionsRetriever(this, true);
@@ -173,6 +177,7 @@ public class SurfConditionsProvider {
     public void addUpdateListener(UpdateListener ul) {
         uls.add(ul);
     }
+
     public String getURL() {
         return urlfull;
     }
@@ -197,6 +202,7 @@ public class SurfConditionsProvider {
 
         return needUpdate();
     }
+
     public void save() {
         SharedPreferences sp = MainModel.instance.sharedPreferences;
 

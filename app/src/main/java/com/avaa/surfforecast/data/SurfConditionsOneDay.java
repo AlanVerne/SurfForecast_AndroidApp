@@ -1,11 +1,8 @@
 package com.avaa.surfforecast.data;
 
-import android.util.Log;
-
 import java.util.Calendar;
 import java.util.GregorianCalendar;
 import java.util.Map;
-import java.util.SortedMap;
 import java.util.TreeMap;
 
 import static com.avaa.surfforecast.data.Common.TIME_ZONE;
@@ -28,6 +25,7 @@ public class SurfConditionsOneDay extends TreeMap<Integer, SurfConditions> { // 
         }
         return null;
     }
+
     public SurfConditions get(int time) {
         for (Map.Entry<Integer, SurfConditions> c : entrySet()) {
             if (c.getKey() >= time - 90 - 60) {
@@ -45,13 +43,14 @@ public class SurfConditionsOneDay extends TreeMap<Integer, SurfConditions> { // 
             for (int i = -60; i < 23 * 60; i += 3 * 60) {
                 fixedConditions.put(i + 60, super.get(i));
             }
-            if (fixedConditions.get(15*60) == null) fixedConditions.put(15*60, super.get(11*60));
-            if (fixedConditions.get(21*60) == null) fixedConditions.put(21*60, super.get(17*60));
-        }
-        else {
-            fixedConditions.put((int)( 7.5 * 60), super.get( 2 * 60));
-            fixedConditions.put((int)(12.0 * 60), super.get(11 * 60));
-            fixedConditions.put((int)(16.5 * 60), super.get(17 * 60));
+            if (fixedConditions.get(15 * 60) == null)
+                fixedConditions.put(15 * 60, super.get(11 * 60));
+            if (fixedConditions.get(21 * 60) == null)
+                fixedConditions.put(21 * 60, super.get(17 * 60));
+        } else {
+            fixedConditions.put((int) (7.5 * 60), super.get(2 * 60));
+            fixedConditions.put((int) (12.0 * 60), super.get(11 * 60));
+            fixedConditions.put((int) (16.5 * 60), super.get(17 * 60));
         }
 
 //        Log.i("SurfConditionsOneDay", "getFixed() | " + this + "\n" + isDetailed() + "\n" + fixedConditions);
@@ -59,7 +58,8 @@ public class SurfConditionsOneDay extends TreeMap<Integer, SurfConditions> { // 
     }
 
     public boolean isDetailed() {
-        if (detailed == -1) detailed = (super.get(5 * 60) != null && super.get(8 * 60) != null || super.get(14 * 60) != null || super.get(23 * 60) != null) ? 1 : 0;
+        if (detailed == -1)
+            detailed = (super.get(5 * 60) != null && super.get(8 * 60) != null || super.get(14 * 60) != null || super.get(23 * 60) != null) ? 1 : 0;
         return detailed == 1;
     }
 }

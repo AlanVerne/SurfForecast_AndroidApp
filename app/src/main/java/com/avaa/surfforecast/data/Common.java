@@ -1,7 +1,5 @@
 package com.avaa.surfforecast.data;
 
-import android.graphics.PointF;
-
 import java.util.Calendar;
 import java.util.GregorianCalendar;
 import java.util.TimeZone;
@@ -18,23 +16,23 @@ public class Common {
     public static final double LATITUDE = -8.7716057;
     public static final double LONGITUDE = 115.1718322;
 
-    public static final String STR_NOW  = "now";
-    public static final String STR_FT   = "ft";
-    public static final String STR_S    = "s";
-    public static final String STR_M    = "m";
-    public static final String STR_KMH  = "km/h";
+    public static final String STR_NOW = "now";
+    public static final String STR_FT = "ft";
+    public static final String STR_S = "s";
+    public static final String STR_M = "m";
+    public static final String STR_KMH = "km/h";
 
-    public static final String STR_WIND     = "wind";
-    public static final String STR_SWELL    = "swell";
-    public static final String STR_TIDE     = "tide";
+    public static final String STR_WIND = "wind";
+    public static final String STR_SWELL = "swell";
+    public static final String STR_TIDE = "tide";
 
-    public static final String STR_WIND_U   = "Wind";
-    public static final String STR_SWELL_U  = "Swell";
-    public static final String STR_TIDE_U   = "Tide";
+    public static final String STR_WIND_U = "Wind";
+    public static final String STR_SWELL_U = "Swell";
+    public static final String STR_TIDE_U = "Tide";
 
-    public static final String STR_NO_WIND_DATA     = "No wind data";
-    public static final String STR_NO_SWELL_DATA    = "No swell data";
-    public static final String STR_NO_TIDE_DATA     = "No tide data";
+    public static final String STR_NO_WIND_DATA = "No wind data";
+    public static final String STR_NO_SWELL_DATA = "No swell data";
+    public static final String STR_NO_TIDE_DATA = "No tide data";
 
 
     public static int strToInt(String s, int def) {
@@ -50,6 +48,7 @@ public class Common {
     public static long getToday(TimeZone timeZone) {
         return getDay(0, timeZone);
     }
+
     public static long getDay(int plusDays, TimeZone timeZone) {
         Calendar calendar = new GregorianCalendar(timeZone);
         calendar.set(calendar.get(Calendar.YEAR), calendar.get(Calendar.MONTH), calendar.get(Calendar.DATE), 0, 0, 0);
@@ -57,6 +56,7 @@ public class Common {
         calendar.add(Calendar.DATE, plusDays);
         return calendar.getTime().getTime() / 1000;
     }
+
     public static Calendar getCalendarToday(TimeZone timeZone) {
         Calendar calendar = new GregorianCalendar(timeZone);
         calendar.set(calendar.get(Calendar.YEAR), calendar.get(Calendar.MONTH), calendar.get(Calendar.DATE), 0, 0, 0);
@@ -76,7 +76,7 @@ public class Common {
 
     public static int getNowTimeInt(TimeZone timeZone) {
         Calendar calendar = new GregorianCalendar(timeZone);
-        return calendar.get(Calendar.HOUR_OF_DAY)*60 + calendar.get(Calendar.MINUTE);
+        return calendar.get(Calendar.HOUR_OF_DAY) * 60 + calendar.get(Calendar.MINUTE);
     }
 }
 

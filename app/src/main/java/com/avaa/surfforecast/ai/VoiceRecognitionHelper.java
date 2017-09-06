@@ -30,7 +30,7 @@ public class VoiceRecognitionHelper {
                     "cancel - forget it,exit,close" + "\n" +
                     "ok - good" + "\n" +
                     "where to surf - go to surf,where's the surf,where's the service,why the surf,where to go,where's the seraph,where to serve,where are to surf,what to serve" + "\n" +
-                    "best spot - mess for,best for,best book,best butt,best sport,best sports,baysport,passport at"  + "\n" +
+                    "best spot - mess for,best for,best book,best butt,best sport,best sports,baysport,passport at" + "\n" +
 //            "best waves"  + "\n" +
                     "what's up here - what's up there,what's a panera,what's on there,what's out there" + "\n" +
                     "repeat" + "\n" +
@@ -51,14 +51,14 @@ public class VoiceRecognitionHelper {
 
     private static final String SOUND_LIKE_TIME_OF_DAY =
             "now - " + "\n" +
-            "sunset - sun set" + "\n" +
-            "sunrise - sonrise,sun rise" + "\n" +
-            "midday - " + "\n" +
-            "afternoon - " + "\n" +
-            "morning - " + "\n" +
-            "evening - " + "\n" +
-            "[number] am - " + "\n" +
-            "[number] pm - " + "\n";
+                    "sunset - sun set" + "\n" +
+                    "sunrise - sonrise,sun rise" + "\n" +
+                    "midday - " + "\n" +
+                    "afternoon - " + "\n" +
+                    "morning - " + "\n" +
+                    "evening - " + "\n" +
+                    "[number] am - " + "\n" +
+                    "[number] pm - " + "\n";
 
     private static final String SOUND_LIKE_SPOT = "" +
             "Medewi - mandiri,madeira,man baby,man daily,mondavi,big daddy,men daily,andretti,when daddy" + "\n" +
@@ -191,17 +191,20 @@ public class VoiceRecognitionHelper {
         if (!spothits.isEmpty()) s = spothits.get(0);
         else if (!slSpothits.isEmpty()) s = slSpothits.get(0).getValue();
 
-        if (!slKeywordHits.isEmpty()) s = s == null ? slKeywordHits.get(0).getValue() : s + " " + slKeywordHits.get(0).getValue();
+        if (!slKeywordHits.isEmpty())
+            s = s == null ? slKeywordHits.get(0).getValue() : s + " " + slKeywordHits.get(0).getValue();
 
         if (!dayhits.isEmpty()) s = s == null ? dayhits.get(0) : s + " " + dayhits.get(0);
-        else if (!slDayhits.isEmpty()) s = s == null ? slDayhits.get(0).getValue() : s + " " + slDayhits.get(0).getValue();
+        else if (!slDayhits.isEmpty())
+            s = s == null ? slDayhits.get(0).getValue() : s + " " + slDayhits.get(0).getValue();
 
         if (!(!dayhits.isEmpty() && dayhits.contains("now") || dayhits.isEmpty() && !slDayhits.isEmpty() && "now".equals(slDayhits.get(0)))) {
             if (!timehits.isEmpty()) s = s == null ? timehits.get(0) : s + " at " + timehits.get(0);
-            else if (!slTimeHits.isEmpty()) s = s == null ? slTimeHits.get(0).getValue() : s + " at " + slTimeHits.get(0).getValue();
+            else if (!slTimeHits.isEmpty())
+                s = s == null ? slTimeHits.get(0).getValue() : s + " at " + slTimeHits.get(0).getValue();
         }
 
-        if (s != null ) {
+        if (s != null) {
             Log.i(TAG, "                    | spot = " + spothits);
             Log.i(TAG, "                    | spot = " + slSpothits);
             Log.i(TAG, "                    | keyw = " + slKeywordHits);

@@ -9,7 +9,10 @@ import com.avaa.surfforecast.data.SurfSpot;
 import com.avaa.surfforecast.data.SurfSpots;
 import com.avaa.surfforecast.data.TideData;
 
-import static com.avaa.surfforecast.ai.ToNL.*;
+import static com.avaa.surfforecast.ai.ToNL.floatToNL;
+import static com.avaa.surfforecast.ai.ToNL.windRelativeToNL;
+import static com.avaa.surfforecast.ai.ToNL.windRelativeToString;
+import static com.avaa.surfforecast.ai.ToNL.windToNL;
 
 /**
  * Created by Alan on 19 Jan 2017.
@@ -31,16 +34,20 @@ public class Answers {
         SurfSpots surfSpots = mainModel.surfSpots;
 
         METAR currentMETAR = surfSpots.currentMETAR;
-        if (currentMETAR != null) return windAns(currentMETAR.windSpeed, currentMETAR.windAngle, mainModel.getSelectedSpot());
+        if (currentMETAR != null)
+            return windAns(currentMETAR.windSpeed, currentMETAR.windAngle, mainModel.getSelectedSpot());
 
         SurfConditions currentConditions = surfSpots.currentConditions;
-        if (currentConditions != null) return windAns(currentConditions.windSpeed, currentConditions.windAngle, mainModel.getSelectedSpot());
+        if (currentConditions != null)
+            return windAns(currentConditions.windSpeed, currentConditions.windAngle, mainModel.getSelectedSpot());
 
         return null;
     }
+
     public Answer swellNow() {
         return swellAns(mainModel.surfSpots.currentConditions);
     }
+
     public Answer tideNow() {
         return tideNowAns(mainModel.tideDataProvider.getTideData(Common.BENOA_PORT_ID)); // mainModel.surfSpots.currentTideData // TODO
     }
@@ -55,14 +62,17 @@ public class Answers {
 
         return null;
     }
+
     public Answer tide(int plusDays, int time) {
         SurfSpot surfSpot = mainModel.getSelectedSpot();
         return tideAns(mainModel.tideDataProvider.getTideData(surfSpot.tidePortID), plusDays, time); // mainModel.surfSpots.currentTideData // TODO
     }
+
     public Answer wind(int pd, int time) {
         SurfSpot surfSpot = mainModel.getSelectedSpot();
         SurfConditions conditions = surfSpot.conditionsProvider.get(pd).get(time);
-        if (conditions != null) return windAns(conditions.windSpeed, conditions.windAngle, surfSpot);
+        if (conditions != null)
+            return windAns(conditions.windSpeed, conditions.windAngle, surfSpot);
 
         return null;
     }
@@ -79,6 +89,7 @@ public class Answers {
     public Answer windAns(int speed, float angle) {
         return windAns(speed, angle, null);
     }
+
     public Answer windAns(int speed, float angle, SurfSpot spot) {
         Direction angleDir = null;
         String angleDirStr = "";
@@ -96,8 +107,7 @@ public class Answers {
             String windNL = windToNL(speed, angleNL);
 
             return new Answer("Wind:   " + speed + "km/h from " + angleDirStr + ".", windNL + ".");
-        }
-        else {
+        } else {
             float windRelativeAngle = spot.getWindRelativeAngle(angle);
             //Log.i(TAG, "windAns() | " + windRelativeAngle);
 
@@ -114,6 +124,7 @@ public class Answers {
             return new Answer("Wind:   " + speed + "km/h " + angleDirStr + "\n" + angleRelativeString, windNL + ".");
         }
     }
+
     public Answer tideAns(TideData tideData, int plusDays, int time) {
         Integer h = tideData.getTide(plusDays, time);
 
@@ -124,6 +135,7 @@ public class Answers {
         return new Answer("Tide:   " + TideData.intToString(h) + "m, " + state.toLowerCase(),
                 floatToMeters(h / 100f) + ", " + state + " tide.");
     }
+
     public Answer tideNowAns(TideData tideData) {
         Integer h = tideData.getNow();
 

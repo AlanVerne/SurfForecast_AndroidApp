@@ -6,8 +6,8 @@ import android.graphics.Paint;
 import android.os.AsyncTask;
 import android.util.Log;
 
-import com.avaa.surfforecast.MainModel;
 import com.avaa.surfforecast.MainActivity;
+import com.avaa.surfforecast.MainModel;
 import com.avaa.surfforecast.data.Common;
 import com.avaa.surfforecast.data.DateTimeHelper;
 import com.avaa.surfforecast.data.SurfSpot;
@@ -18,12 +18,15 @@ import com.avaa.surfforecast.views.SurfConditionsForecastView;
 import java.util.Calendar;
 import java.util.List;
 
-import static com.avaa.surfforecast.data.Common.TIME_ZONE;
-import static com.avaa.surfforecast.data.Common.STR_NO_TIDE_DATA;
 import static com.avaa.surfforecast.data.Common.STR_M;
 import static com.avaa.surfforecast.data.Common.STR_NOW;
+import static com.avaa.surfforecast.data.Common.STR_NO_TIDE_DATA;
 import static com.avaa.surfforecast.data.Common.STR_TIDE;
-import static com.avaa.surfforecast.drawers.MetricsAndPaints.*;
+import static com.avaa.surfforecast.data.Common.TIME_ZONE;
+import static com.avaa.surfforecast.drawers.MetricsAndPaints.colorTideBG;
+import static com.avaa.surfforecast.drawers.MetricsAndPaints.colorTideChartBG;
+import static com.avaa.surfforecast.drawers.MetricsAndPaints.colorTideText;
+import static com.avaa.surfforecast.drawers.MetricsAndPaints.getColorMinor;
 
 
 /**
@@ -95,8 +98,8 @@ public class TideChartDrawer {
 
         this.dh = metricsAndPaints.dh;
 
-        dayWidth = dh*16;
-        h        = dh*4;
+        dayWidth = dh * 16;
+        h = dh * 4;
 
         paintFont.setTextSize(metricsAndPaints.font);
         paintFontSmall.setTextSize(metricsAndPaints.fontSmall);
@@ -114,6 +117,7 @@ public class TideChartDrawer {
 
 
     private int nowx = 0, nowy = 0;
+
     public void draw(Canvas c, int w, int h, int dx, int orientation) {
         Integer nowTime = Common.getNowTimeInt(TIME_ZONE);
 
@@ -128,15 +132,14 @@ public class TideChartDrawer {
         }
 
         int si = dx / dayWidth;
-        int ei = Math.min(MainActivity.NDAYS-1, (dx+w) / dayWidth);
+        int ei = Math.min(MainActivity.NDAYS - 1, (dx + w) / dayWidth);
         int x = si * dayWidth;
         for (int i = si; i <= ei; i++) {
             if (bitmaps[i] != null) {
                 c.drawBitmap(bitmaps[i], x, h - this.h, null);
-            }
-            else {
-                c.drawRect(x, h - this.h * 2/3, x + dayWidth, h, paintBGNoData);
-                c.drawText(STR_NO_TIDE_DATA, x + dayWidth/2, h - this.h/2 + metricsAndPaints.fontH, paintFontNoData);
+            } else {
+                c.drawRect(x, h - this.h * 2 / 3, x + dayWidth, h, paintBGNoData);
+                c.drawText(STR_NO_TIDE_DATA, x + dayWidth / 2, h - this.h / 2 + metricsAndPaints.fontH, paintFontNoData);
             }
             x += dayWidth;
         }
@@ -153,8 +156,7 @@ public class TideChartDrawer {
                 } else {
                     c.drawText(tide, nowx, nowy + metricsAndPaints.fontHDiv2, paintFont);
                 }
-            }
-            else {
+            } else {
                 c.drawCircle(nowx, nowy, dh * 1.0f, paintCircle);
 //                if (orientation == 1) {
 //                    c.rotate(-90);
@@ -163,17 +165,17 @@ public class TideChartDrawer {
 //                    c.rotate(90);
 //                }
 //                else {
-                    float strTideWidth = paintFont.measureText(tide);
+                float strTideWidth = paintFont.measureText(tide);
 
-                    paintFontSmall.setTextAlign(Paint.Align.CENTER);
-                    c.drawText(STR_TIDE, nowx, nowy - metricsAndPaints.fontHDiv2 - metricsAndPaints.fontSmallSpacing, paintFontSmall);
-                    c.drawText(STR_NOW, nowx , nowy + metricsAndPaints.fontHDiv2 + metricsAndPaints.fontSmallH + metricsAndPaints.fontSmallSpacing, paintFontSmall);
+                paintFontSmall.setTextAlign(Paint.Align.CENTER);
+                c.drawText(STR_TIDE, nowx, nowy - metricsAndPaints.fontHDiv2 - metricsAndPaints.fontSmallSpacing, paintFontSmall);
+                c.drawText(STR_NOW, nowx, nowy + metricsAndPaints.fontHDiv2 + metricsAndPaints.fontSmallH + metricsAndPaints.fontSmallSpacing, paintFontSmall);
 
-                    nowy += metricsAndPaints.fontSmallH/12;
+                nowy += metricsAndPaints.fontSmallH / 12;
 
-                    paintFontSmall.setTextAlign(Paint.Align.LEFT);
-                    c.drawText(tide, nowx - strMWidth/3, nowy + metricsAndPaints.fontHDiv2, paintFont);
-                    c.drawText(STR_M, nowx - strMWidth/3 + strTideWidth/2, nowy + metricsAndPaints.fontHDiv2, paintFontSmall);
+                paintFontSmall.setTextAlign(Paint.Align.LEFT);
+                c.drawText(tide, nowx - strMWidth / 3, nowy + metricsAndPaints.fontHDiv2, paintFont);
+                c.drawText(STR_M, nowx - strMWidth / 3 + strTideWidth / 2, nowy + metricsAndPaints.fontHDiv2, paintFontSmall);
 //                }
             }
         }
@@ -221,6 +223,7 @@ public class TideChartDrawer {
 
         return false;
     }
+
     public void bitmapsReady(List<Bitmap> bitmaps, int fromDay) {
         for (Bitmap bitmap : bitmaps) this.bitmaps[fromDay++] = bitmap;
         view.postInvalidate();

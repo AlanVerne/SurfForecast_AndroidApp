@@ -21,8 +21,9 @@ public class SunTimesProvider {
         long time = Common.getDay(0, timeZone);
         return get(latitude, longitude, time, timeZone);
     }
+
     public static SunTimes get(final double latitude, final double longitude, long date, TimeZone timeZone) {
-        double  lw = -longitude * deg2rad,
+        double lw = -longitude * deg2rad,
                 phi = latitude * deg2rad,
                 J = unixToJulian(date),
                 n = getJulianCycle(J, lw),
@@ -82,11 +83,11 @@ public class SunTimesProvider {
 
 
     private static double unixToJulian(long unixSecs) {
-        return (int)(unixSecs / 86400.0f) + 2440587.5f;
+        return (int) (unixSecs / 86400.0f) + 2440587.5f;
     }
 
     private static long julianToUnix(double unixSecs) {
-        return (long)((unixSecs - 2440587.5) * 86400.0);
+        return (long) ((unixSecs - 2440587.5) * 86400.0);
     }
 
     private static double getJulianCycle(double J, double lw) {
@@ -148,14 +149,14 @@ public class SunTimesProvider {
     }
 
     private static double[] getSunPosition(double J, double lw, double phi) {
-        double  M = getSolarMeanAnomaly(J),
+        double M = getSolarMeanAnomaly(J),
                 C = getEquationOfCenter(M),
                 Lsun = getEclipticLongitude(M, C),
                 d = getSunDeclination(Lsun),
                 a = getRightAscension(Lsun),
                 th = getSiderealTime(J, lw);
 
-        double  azimuth = getAzimuth(th, a, phi, d),
+        double azimuth = getAzimuth(th, a, phi, d),
                 altitude = getAltitude(th, a, phi, d);
 
         return new double[]{azimuth, altitude};

@@ -1,6 +1,5 @@
 package com.avaa.surfforecast.data;
 
-import android.content.ContentProvider;
 import android.graphics.PointF;
 
 /**
@@ -23,7 +22,7 @@ public class SurfSpot {
     public int tides = 0; // 1-low 2-mid 3-high
     public int minSwell, maxSwell;
 
-    public int brakeType  = 0;
+    public int brakeType = 0;
     public int difficulty = 1;
 
     public boolean favorite;
@@ -45,7 +44,7 @@ public class SurfSpot {
     }
 
 
-//    public SurfSpot(String name, SurfConditionsProvider conditionsProvider, PointF pointOnSVG, PointF pointEarth, Direction waveDirection) {
+    //    public SurfSpot(String name, SurfConditionsProvider conditionsProvider, PointF pointOnSVG, PointF pointEarth, Direction waveDirection) {
 //        this.name = name;
 //        this.conditionsProvider = conditionsProvider;
 //        this.pointOnSVG = pointOnSVG;
@@ -86,6 +85,7 @@ public class SurfSpot {
         this.la = la;
         this.lo = lo;
     }
+
     public SurfSpot(String name, String[] alt, String conditionsProvider, PointF pointOnSVG, PointF pointEarth, Direction waveDirection, int leftright, int tides, int minSwell, int maxSwell, String urlMSW, String urlCam, double la, double lo) {
         this.name = name;
         this.altNames = alt;
@@ -117,10 +117,10 @@ public class SurfSpot {
 
 
     public float getWindRelativeAngle(float windAngle) {
-        float a = windAngle - (float)Math.PI - Direction.directionToAngle(waveDirection);
+        float a = windAngle - (float) Math.PI - Direction.directionToAngle(waveDirection);
 
-        if (a < 0) a += Math.PI*2;
-        else if (a >= Math.PI*2) a -= Math.PI*2;
+        if (a < 0) a += Math.PI * 2;
+        else if (a >= Math.PI * 2) a -= Math.PI * 2;
 
         return a;
     }

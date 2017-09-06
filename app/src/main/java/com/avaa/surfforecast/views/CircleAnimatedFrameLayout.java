@@ -18,8 +18,14 @@ import android.widget.FrameLayout;
 public class CircleAnimatedFrameLayout extends FrameLayout {
     public static final FastOutSlowInInterpolator FAST_OUT_SLOW_IN_INTERPOLATOR = new FastOutSlowInInterpolator();
 
-    private final Paint bgShadow = new Paint() {{ setAntiAlias(false); setColor(0xffffffff); }};
-    private final Paint bgMain   = new Paint() {{ setAntiAlias(true);  setColor(0xffffffff); }};
+    private final Paint bgShadow = new Paint() {{
+        setAntiAlias(false);
+        setColor(0xffffffff);
+    }};
+    private final Paint bgMain = new Paint() {{
+        setAntiAlias(true);
+        setColor(0xffffffff);
+    }};
 
     private long prevTime = -1;
     private int state = 0;
@@ -49,8 +55,7 @@ public class CircleAnimatedFrameLayout extends FrameLayout {
             super.setVisibility(INVISIBLE);
             i = 0;
             return;
-        }
-        else if (i >= 1) i = 1;
+        } else if (i >= 1) i = 1;
         else repaint();
 
         float i = state == 1 ? FAST_OUT_SLOW_IN_INTERPOLATOR.getInterpolation(this.i) : 1 - FAST_OUT_SLOW_IN_INTERPOLATOR.getInterpolation(1 - this.i);
@@ -62,7 +67,7 @@ public class CircleAnimatedFrameLayout extends FrameLayout {
             p.reset();
             p.addCircle(state == 2 ? width * (1 - i * 2 / 3) : width * i / 3, height, r, Path.Direction.CCW);
 
-            bgShadow.setColor((int)(0xaa*i) * 0x1000000 | 0xaaaaaa);
+            bgShadow.setColor((int) (0xaa * i) * 0x1000000 | 0xaaaaaa);
         }
 
         canvas.drawRect(0, 0, width, height, bgShadow);
@@ -70,11 +75,10 @@ public class CircleAnimatedFrameLayout extends FrameLayout {
         if (this.i == 1) {
             canvas.drawPath(p, bgMain);
             super.draw(canvas);
-        }
-        else {
+        } else {
             canvas.save();
             canvas.clipPath(p);
-            canvas.drawRect(0, height-r, width, height, bgMain);
+            canvas.drawRect(0, height - r, width, height, bgMain);
             super.draw(canvas);
             canvas.restore();
         }
@@ -92,8 +96,7 @@ public class CircleAnimatedFrameLayout extends FrameLayout {
         if (visibility == VISIBLE) {
             super.setVisibility(visibility);
             state = 1;
-        }
-        else if (visibility == INVISIBLE) state = 2;
+        } else if (visibility == INVISIBLE) state = 2;
 
         prevTime = SystemClock.uptimeMillis();
 

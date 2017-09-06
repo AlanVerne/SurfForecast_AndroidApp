@@ -233,7 +233,8 @@ public class BaliMap extends View {
             currentMETAR = surfSpots.currentMETAR;
 
             if (currentMETAR != null) strWindSpeed = String.valueOf(currentMETAR.windSpeed);
-            else if (currentConditions != null) strWindSpeed = String.valueOf(currentConditions.windSpeed);
+            else if (currentConditions != null)
+                strWindSpeed = String.valueOf(currentConditions.windSpeed);
             else strWindSpeed = STR_DASH;
 
             if (currentConditions != null) {

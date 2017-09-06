@@ -5,7 +5,6 @@ import android.graphics.Canvas;
 import android.graphics.Paint;
 import android.os.Build;
 import android.util.AttributeSet;
-import android.util.Log;
 import android.view.View;
 
 /**
@@ -17,11 +16,15 @@ public class CircleVoiceIndicator extends View {
         super(context, attrs);
     }
 
-//    public static final int COLOR_ACTIVE   = 0x66f50057;
-    public static final int COLOR_ACTIVE   = 0x66f50057;
+    //    public static final int COLOR_ACTIVE   = 0x66f50057;
+    public static final int COLOR_ACTIVE = 0x66f50057;
     public static final int COLOR_INACTIVE = 0x33000000;
 
-    Paint pMain = new Paint() {{ setAntiAlias(true); setStyle(Style.FILL); setColor(COLOR_INACTIVE); }};
+    Paint pMain = new Paint() {{
+        setAntiAlias(true);
+        setStyle(Style.FILL);
+        setColor(COLOR_INACTIVE);
+    }};
 
     //long prevTime = -1;
 
@@ -42,6 +45,7 @@ public class CircleVoiceIndicator extends View {
     public boolean isAwakened() {
         return awakened;
     }
+
     public void setAwakened(boolean b) {
         if (awakened == b) return;
         awakened = b;
@@ -55,9 +59,9 @@ public class CircleVoiceIndicator extends View {
         r += rv;
         rv *= 0.65f;
 
-        r += (awakened ? getResources().getDisplayMetrics().density*60 - r : getResources().getDisplayMetrics().density*20 - r) * 0.1f;
+        r += (awakened ? getResources().getDisplayMetrics().density * 60 - r : getResources().getDisplayMetrics().density * 20 - r) * 0.1f;
 
-        if (!awakened) pMain.setAlpha((int)(pMain.getAlpha()*0.9));
+        if (!awakened) pMain.setAlpha((int) (pMain.getAlpha() * 0.9));
 
         if (awakened || r > 25 || pMain.getAlpha() > 10) repaint();
 

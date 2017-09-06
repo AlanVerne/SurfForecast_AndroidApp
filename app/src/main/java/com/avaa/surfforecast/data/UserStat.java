@@ -35,14 +35,16 @@ public class UserStat {
 
 
     public void incrementSpotsShownCount() {
-        setSpotsShownCount(spotsShownCount+1);
+        setSpotsShownCount(spotsShownCount + 1);
     }
 
 
     public interface UserLevelListener {
         void UserLevelChanged(int l);
     }
+
     public List<UserLevelListener> ulls = new ArrayList<>();
+
     public void addUserLevelListener(UserLevelListener ull) {
         ulls.add(ull);
         ull.UserLevelChanged(userLevel);
@@ -56,8 +58,7 @@ public class UserStat {
             for (UserLevelListener userLevelListener : ulls) {
                 userLevelListener.UserLevelChanged(userLevel);
             }
-        }
-        else {
+        } else {
             spotsShownCount = c;
         }
 
@@ -70,6 +71,7 @@ public class UserStat {
         if (spotsShownCount > 10) userLevel = 1;
         surfingExperience = sharedPreferences.getInt(SPKEY_SURFING_EXPERIENCE, -1);
     }
+
     public void save() {
         SharedPreferences.Editor spe = MainModel.instance.sharedPreferences.edit();
         spe.putInt(SPKEY_SPOTS_SHOWN_COUNT, spotsShownCount);

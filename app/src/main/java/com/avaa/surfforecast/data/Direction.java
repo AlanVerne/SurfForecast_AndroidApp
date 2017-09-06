@@ -1,6 +1,5 @@
 package com.avaa.surfforecast.data;
 
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -15,7 +14,7 @@ public enum Direction {
     S, SSE, SE, ESE;
 
     public static float directionToAngle(Direction d) {
-        return (float)(d.ordinal() * Math.PI * 2 / 16);
+        return (float) (d.ordinal() * Math.PI * 2 / 16);
     }
 
     public static int directionToAngleInDegrees(Direction d) {
@@ -23,7 +22,7 @@ public enum Direction {
     }
 
     public static Direction angleToDirection(float a) {
-        return Direction.values()[(int)Math.round(a / Math.PI * 8) % 16];
+        return Direction.values()[(int) Math.round(a / Math.PI * 8) % 16];
     }
 
     public static final Map<Integer, String> ANGLE_TO_LONG_STRING_DIRECTION = new HashMap<Integer, String>() {{
@@ -33,8 +32,8 @@ public enum Direction {
         put(270, "South");
         put(360, "East");
         put(45, "North-east");
-        put(90+45, "North-west");
-        put(180+45, "South-west");
-        put(270+45, "South-east");
+        put(90 + 45, "North-west");
+        put(180 + 45, "South-west");
+        put(270 + 45, "South-east");
     }};
 }

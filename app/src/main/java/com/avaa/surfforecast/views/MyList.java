@@ -9,7 +9,6 @@ import android.os.Handler;
 import android.os.PowerManager;
 import android.os.SystemClock;
 import android.util.AttributeSet;
-import android.util.Log;
 import android.view.MotionEvent;
 import android.view.View;
 import android.widget.LinearLayout;
@@ -19,7 +18,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Timer;
 import java.util.TimerTask;
-import java.util.function.Consumer;
 
 /**
  * Created by Alan on 7 Jul 2016.
@@ -36,7 +34,7 @@ public class MyList extends FeaturedScrollView {
 
     private int spacing = 0;
     private int paddingLeft = 0;
-    private int paddingTop  = 0; //paddingLeft - spacing/2;
+    private int paddingTop = 0; //paddingLeft - spacing/2;
 
     private final LinearLayout layout;
 
@@ -47,17 +45,19 @@ public class MyList extends FeaturedScrollView {
     private boolean firstSelection = true;
 
     volatile private boolean awake = false;
-    volatile private float   awakeState = 0; // 0 - not awakened - no list, 1 - awakened - all spots list
+    volatile private float awakeState = 0; // 0 - not awakened - no list, 1 - awakened - all spots list
 
     private long prevTime = -1;
 
     public interface OnSelectedListener {
         void onSelected(int i);
     }
-    public OnSelectedListener onSelected = (i) -> {};
+
+    public OnSelectedListener onSelected = (i) -> {
+    };
 
     private Runnable afterAwakened = null;
-    private Runnable afterSlept    = null;
+    private Runnable afterSlept = null;
 
     private Timer timerSleep = null;
 
@@ -75,8 +75,10 @@ public class MyList extends FeaturedScrollView {
 
     public interface ScrollListener {
         void scrolled(float shownI, float firstI, float lastI, float awakeState);
+
         void scrolled(float awakeState);
     }
+
     public ScrollListener sl = null;
 
     int pointers = 0;
@@ -89,11 +91,13 @@ public class MyList extends FeaturedScrollView {
         layout = new LinearLayout(context);
         init();
     }
+
     public MyList(Context context, AttributeSet attrs) {
         super(context, attrs);
         layout = new LinearLayout(context);
         init();
     }
+
     public MyList(Context context) {
         this(context, null);
     }
@@ -113,9 +117,9 @@ public class MyList extends FeaturedScrollView {
     public void setDH(int dh) {
         this.dh = dh;
 
-        spacing = dh/2;
+        spacing = dh / 2;
         paddingLeft = dh;
-        paddingTop  = dh/2; //paddingLeft - spacing/2;
+        paddingTop = dh / 2; //paddingLeft - spacing/2;
     }
 
 
@@ -146,8 +150,7 @@ public class MyList extends FeaturedScrollView {
             if (awakeState == 1 && afterAwakened != null) {
                 afterAwakened.run();
                 afterAwakened = null;
-            }
-            else if (awakeState == 0 && afterSlept != null) {
+            } else if (awakeState == 0 && afterSlept != null) {
                 afterSlept.run();
                 afterSlept = null;
             }
@@ -156,10 +159,9 @@ public class MyList extends FeaturedScrollView {
                 for (final View view : views) {
                     if (view != selectedView) view.setVisibility(INVISIBLE);
                 }
-            }
-            else {
+            } else {
                 for (final View view : views) {
-                    if (view != selectedView) view.setAlpha(awakeState*0.99f);
+                    if (view != selectedView) view.setAlpha(awakeState * 0.99f);
                 }
             }
 
@@ -168,8 +170,7 @@ public class MyList extends FeaturedScrollView {
             if (sl != null) sl.scrolled(awakeState);
 
             repaint();
-        }
-        else {
+        } else {
             prevTime = -1;
         }
     }
@@ -181,6 +182,7 @@ public class MyList extends FeaturedScrollView {
         timerSleep = new Timer();
         timerSleep.schedule(new TimerTaskSleep(), DELAY_BEFORE_SLEEP);
     }
+
     private void cancelSleepTimer() {
         if (timerSleep != null) {
             timerSleep.cancel();
@@ -196,6 +198,7 @@ public class MyList extends FeaturedScrollView {
             awake();
         }
     }
+
     public void awake() {
         //Log.i(TAG, "awake() " + awake + " " + prevTime + " " + awakeState);
 
@@ -207,18 +210,20 @@ public class MyList extends FeaturedScrollView {
             repaint();
         }
     }
+
     public void scrollTo(View v, Runnable after) {
         ObjectAnimator objectAnimator = ObjectAnimator.ofInt(this, "scrollY", v.getTop() - paddingTop).setDuration(AWAKENING_TIME);
 
         Animator.AnimatorListener al = new AnimatorListenerAdapter() {
             @Override
             public void onAnimationCancel(Animator animation) {
-                if (after!=null) after.run();
+                if (after != null) after.run();
                 objectAnimator.removeAllListeners();
             }
+
             @Override
             public void onAnimationEnd(Animator animation) {
-                if (after!=null) after.run();
+                if (after != null) after.run();
                 objectAnimator.removeAllListeners();
             }
         };
@@ -227,6 +232,7 @@ public class MyList extends FeaturedScrollView {
 
         objectAnimator.start();
     }
+
     public void sleep() {
         cancelSleepTimer();
         //smoothScrollTo(0, selectedView.getTop() - paddingTop);
@@ -234,8 +240,7 @@ public class MyList extends FeaturedScrollView {
             firstSelection = false;
             ObjectAnimator objectAnimator = ObjectAnimator.ofInt(this, "scrollY", selectedView.getTop() - paddingTop).setDuration(0);
             objectAnimator.start();
-        }
-        else {
+        } else {
             ObjectAnimator objectAnimator = ObjectAnimator.ofInt(this, "scrollY", selectedView.getTop() - paddingTop).setDuration(AWAKENING_TIME);
             objectAnimator.start();
         }
@@ -254,7 +259,7 @@ public class MyList extends FeaturedScrollView {
 
 
     private boolean isViewSelectable(View v) {
-        return ((TextView)v).getTextSize() > dh/2f;
+        return ((TextView) v).getTextSize() > dh / 2f;
     }
 
 
@@ -282,6 +287,7 @@ public class MyList extends FeaturedScrollView {
         afterSlept = after;
         select(view);
     }
+
     public void select(View view) {
         if (view == null) return;
         //Log.i(TAG, "select() | " + "ignoreSelectedViewSelection = " + ignoreSelectedViewSelection);
@@ -301,7 +307,7 @@ public class MyList extends FeaturedScrollView {
 
     public void updatePadding(int h) {
         if (!views.isEmpty()) {
-            int pb = h - dh*2 - paddingTop; //views.get(views.size() - 1).getHeight() - paddingTop*2;
+            int pb = h - dh * 2 - paddingTop; //views.get(views.size() - 1).getHeight() - paddingTop*2;
             if (layout.getPaddingBottom() != pb) {
                 //layout.setPadding(90, 990, 90, 9990);
                 layout.setPadding(0, paddingTop, 0, pb);
@@ -318,6 +324,7 @@ public class MyList extends FeaturedScrollView {
     protected void onScrollStart() {
         cancelSleepTimer();
     }
+
     protected void onScrollEnd() {
         if (pointers == 0) resetSleepTimer();
     }
@@ -326,11 +333,12 @@ public class MyList extends FeaturedScrollView {
     public TextView getView(int i) {
         for (View view : views) {
             if (isViewSelectable(view)) {
-                if (i-- == 0) return (TextView)view;
+                if (i-- == 0) return (TextView) view;
             }
         }
         return null;
     }
+
     public int getIndex(View v) {
         int i = 0;
         for (View view : views) {
@@ -358,12 +366,12 @@ public class MyList extends FeaturedScrollView {
         for (View view : views) {
             if (isViewSelectable(view)) {
                 if (view.getTop() <= kt + paddingTop && si == -1)
-                    si = i + (float)(kt + paddingTop - view.getTop()) / view.getHeight();
+                    si = i + (float) (kt + paddingTop - view.getTop()) / view.getHeight();
 
                 if (fi == -1 && view.getTop() + view.getHeight() > kt)
-                    fi = Math.max(i, i + (float)(kt - view.getTop()) / view.getHeight());
+                    fi = Math.max(i, i + (float) (kt - view.getTop()) / view.getHeight());
                 if (li == -1 && view.getTop() + view.getHeight() > bottom)
-                    li = Math.max(i, i + (float)(bottom - view.getTop()) / view.getHeight())-1;
+                    li = Math.max(i, i + (float) (bottom - view.getTop()) / view.getHeight()) - 1;
 
                 i++;
             }
@@ -374,7 +382,7 @@ public class MyList extends FeaturedScrollView {
         if (li == -1) li = i - 1f;
 
         si = Math.max(0f, Math.min(i - 1f, si));
-        if (sl != null) sl.scrolled(si, fi, Math.min(i-1f, li), awakeState);
+        if (sl != null) sl.scrolled(si, fi, Math.min(i - 1f, li), awakeState);
     }
 
 
@@ -382,7 +390,7 @@ public class MyList extends FeaturedScrollView {
     public boolean onInterceptTouchEvent(MotionEvent ev) {
         if (ev.getAction() == MotionEvent.ACTION_DOWN) {
             //Log.i(TAG, "onInterceptTouchEvent() | " + awake + " " + prevTime + " " + awakeState);
-            if (awakeState == 0 && ev.getY() > dh*3.5) return false;
+            if (awakeState == 0 && ev.getY() > dh * 3.5) return false;
             if (!awake) {
                 ignoreSelectedViewSelection = true;
             }
@@ -396,7 +404,7 @@ public class MyList extends FeaturedScrollView {
         pointers = ev.getPointerCount();
 
         if (ev.getAction() == MotionEvent.ACTION_DOWN) {
-            if (awakeState == 0 && ev.getY() > dh*3.5) return false;
+            if (awakeState == 0 && ev.getY() > dh * 3.5) return false;
             awake();
         }
         if (ev.getAction() == MotionEvent.ACTION_MOVE) awake();

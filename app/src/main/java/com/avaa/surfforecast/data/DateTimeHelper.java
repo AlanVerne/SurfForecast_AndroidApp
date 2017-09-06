@@ -2,7 +2,6 @@ package com.avaa.surfforecast.data;
 
 import java.util.Calendar;
 import java.util.GregorianCalendar;
-import java.util.TimeZone;
 
 /**
  * Created by Alan on 9 Aug 2016.

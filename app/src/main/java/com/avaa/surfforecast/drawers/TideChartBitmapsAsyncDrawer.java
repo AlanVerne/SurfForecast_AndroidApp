@@ -5,8 +5,8 @@ import android.graphics.Canvas;
 import android.os.AsyncTask;
 import android.util.Log;
 
-import com.avaa.surfforecast.MainModel;
 import com.avaa.surfforecast.MainActivity;
+import com.avaa.surfforecast.MainModel;
 import com.avaa.surfforecast.data.SurfSpot;
 import com.avaa.surfforecast.data.TideData;
 

@@ -22,16 +22,21 @@ public class TideDataProvider {
     private static final String SPKEY_TIDE_DATA_PRECISE = "TideDataPrecise";
     private static final String SPKEY_TIDE_DATA_EXTREMUMS = "TideDataExtremums";
 
-    public static final Long ONE_DAY = 1000*60*60*24*1L;
+    public static final Long ONE_DAY = 1000 * 60 * 60 * 24 * 1L;
 
     protected final SortedMap<String, TideData> portIDToTideData = new TreeMap<>();
 
     public interface TideDataProviderListener {
         void updated(String portID);
+
         void loadingStateChanged(String portID, boolean loading);
     }
+
     private final List<TideDataProviderListener> listeners = new ArrayList<>();
-    public void addListener(TideDataProviderListener l) { listeners.add(l); }
+
+    public void addListener(TideDataProviderListener l) {
+        listeners.add(l);
+    }
 
 
     public void newDataFetched(String portID, TideData tideData) {
@@ -48,6 +53,7 @@ public class TideDataProvider {
         TideData tideData = portIDToTideData.get(portID);
         if (tideData == null || tideData.needUpdate()) fetch(portID);
     }
+
     public void fetch(@NonNull String portID) {
         Log.i(TAG, "fetch() | " + portID);
 
@@ -55,10 +61,9 @@ public class TideDataProvider {
         if (tideData != null) {
             //Log.i(TAG, "Current tidedata " + tideData.toString());
             tideData.fetched = System.currentTimeMillis();
-        }
-        else portIDToTideData.put(portID, new TideData(System.currentTimeMillis()));
+        } else portIDToTideData.put(portID, new TideData(System.currentTimeMillis()));
 
-        if (DataRetrieversPool.getTask(portID, TideDataRetriever.class)==null) {
+        if (DataRetrieversPool.getTask(portID, TideDataRetriever.class) == null) {
             fireLoadingStateChanged(portID, true);
             DataRetrieversPool.addTask(portID, new TideDataRetriever(this, portID));
         }
@@ -78,6 +83,7 @@ public class TideDataProvider {
             listener.loadingStateChanged(portID, loading);
         }
     }
+
     protected void fireUpdated(String portID) {
         for (TideDataProviderListener listener : listeners) {
             listener.updated(portID);
@@ -90,7 +96,7 @@ public class TideDataProvider {
     }
 
 
-//    public TideData getTideData(String portID, Runnable afterFetch) {
+    //    public TideData getTideData(String portID, Runnable afterFetch) {
 //        TideData tideData = portIDToTideData.get(portID);
 //        if (tideData == null || tideData.needAndCanUpdate()) fetch(portID, afterFetch);
 //        return tideData;
@@ -114,7 +120,7 @@ public class TideDataProvider {
         if (portIDs == null) return;
 
         for (String portID : portIDs) {
-            String precise   = sp.getString(SPKEY_TIDE_DATA_PRECISE   + portID, null);
+            String precise = sp.getString(SPKEY_TIDE_DATA_PRECISE + portID, null);
             String extremums = sp.getString(SPKEY_TIDE_DATA_EXTREMUMS + portID, null);
             if (precise != null && extremums != null) {
                 TideData tideData = new TideData(precise, extremums);
@@ -132,7 +138,7 @@ public class TideDataProvider {
         edit.putStringSet(SPKEY_SAVED_PORT_IDS, portIDToTideData.keySet());
 
         TideData tideData = portIDToTideData.get(id);
-        edit.putString(SPKEY_TIDE_DATA_PRECISE   + id, tideData.preciseStr);
+        edit.putString(SPKEY_TIDE_DATA_PRECISE + id, tideData.preciseStr);
         edit.putString(SPKEY_TIDE_DATA_EXTREMUMS + id, tideData.extremumsStr);
 
         edit.apply();

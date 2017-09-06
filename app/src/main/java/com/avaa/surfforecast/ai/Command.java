@@ -29,11 +29,11 @@ public class Command {
 //        Log.i("Command", "fits("+s+")");
 
         if (spot != null && !s.contains("spot")) return false;
-        if (day  != null && !s.contains("day"))  return false;
+        if (day != null && !s.contains("day")) return false;
         if (time != null && !s.contains("time")) return false;
         if (keywords != null) {
             for (String keyword : keywords) {
-                if (!s.contains("kw:"+keyword)) return false;
+                if (!s.contains("kw:" + keyword)) return false;
             }
         }
 
@@ -42,27 +42,30 @@ public class Command {
         String[] split = s.split(",");
 
         for (String si : split) {
-            if ("spot".equals(si)) { if (spot == null) return false; }
-            else if ("day".equals(si)) { if (day == null) return false; }
-            else if ("time".equals(si)) { if (time == null) return false; }
-            else if (si.startsWith("kw:")) {
+            if ("spot".equals(si)) {
+                if (spot == null) return false;
+            } else if ("day".equals(si)) {
+                if (day == null) return false;
+            } else if ("time".equals(si)) {
+                if (time == null) return false;
+            } else if (si.startsWith("kw:")) {
                 //Log.i("Command", "fits("+s+") | " + keywords + " " + si.substring(3) + " - " + keywords.contains(si.substring(3)));
-                if (keywords == null || keywords.contains(si.substring(3)) == false) return false; }
+                if (keywords == null || keywords.contains(si.substring(3)) == false) return false;
+            }
         }
 
         return true;
     }
+
     public String fill(String s) {
         if (spot != null) s = s.replace("[spot]", spot.getShortName());
 
         if (isTimeNow()) {
             if (s.contains("[time]")) {
-                s = s.replace("[time]",  "now");
-                s = s.replace(" [day] ",  " ");
-            }
-            else s = s.replace("[day]",  "today");
-        }
-        else {
+                s = s.replace("[time]", "now");
+                s = s.replace(" [day] ", " ");
+            } else s = s.replace("[day]", "today");
+        } else {
             if (day != null) {
                 s = s.replace("[day]", MainModel.instance.commandsExecutor.intDayToNL(day));
             }

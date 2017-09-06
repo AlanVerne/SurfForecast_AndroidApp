@@ -2,7 +2,6 @@ package com.avaa.surfforecast.drawers;
 
 import android.graphics.Path;
 import android.graphics.Point;
-import android.util.Log;
 
 /**
  * Created by Alan on 5 Oct 2016.
@@ -25,8 +24,7 @@ public class SVGPathToAndroidPath {
                     tokens[i] = token.substring(1);
                     token = token.substring(0, 1);
                     //Log.i("Con/", token + "  " + tokens[i]);
-                }
-                else i++;
+                } else i++;
                 switch (token) {
                     case "m": {
                         float x = Float.valueOf(tokens[i++]);
@@ -56,8 +54,7 @@ public class SVGPathToAndroidPath {
                         //throw new RuntimeException("unknown command [" + token + "]");
                 }
             }
-        }
-        catch (IndexOutOfBoundsException e) {
+        } catch (IndexOutOfBoundsException e) {
             throw new RuntimeException("bad data ", e);
         }
 

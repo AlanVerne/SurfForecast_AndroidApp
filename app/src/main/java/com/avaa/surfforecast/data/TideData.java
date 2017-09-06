@@ -1,20 +1,15 @@
 package com.avaa.surfforecast.data;
 
 import android.graphics.Path;
-import android.util.Log;
 
-import java.util.AbstractMap;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.GregorianCalendar;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
-import java.util.Set;
 import java.util.SortedMap;
-import java.util.TimeZone;
 import java.util.TreeMap;
-import java.util.TreeSet;
 
 import static com.avaa.surfforecast.data.Common.TIME_ZONE;
 
@@ -29,8 +24,8 @@ public class TideData {
 
     //public TimeZone timeZone = null;
 
-    public long  fetched;
-    public long  fetchedSuccessfully;
+    public long fetched;
+    public long fetchedSuccessfully;
 
     public final String preciseStr;
     public final String extremumsStr;
@@ -43,7 +38,7 @@ public class TideData {
 
 
     public boolean equals(TideData o) {
-        return o!=null && precise.equals(o.precise) && extremums.equals(o.extremums);
+        return o != null && precise.equals(o.precise) && extremums.equals(o.extremums);
     }
 
 
@@ -54,9 +49,11 @@ public class TideData {
         this.preciseStr = null;
         this.extremumsStr = null;
     }
+
     public TideData(String precise, String extremums) {
         this(precise, extremums, 0l, 0l);
     }
+
     public TideData(String preciseStr, String extremumsStr, Long fetched, Long fetchedSuccessfully) {
         this.fetched = fetched;
         this.fetchedSuccessfully = fetchedSuccessfully;
@@ -85,7 +82,7 @@ public class TideData {
             if (split.length % 2 == 1) return;
 
             for (int i = 0; i < split.length; i += 2) {
-                this.extremums.put(Long.valueOf(split[i]), Integer.valueOf(split[i+1]));
+                this.extremums.put(Long.valueOf(split[i]), Integer.valueOf(split[i + 1]));
             }
         }
     }
@@ -121,58 +118,65 @@ public class TideData {
     public boolean needUpdate() {
         return hasDays() < 7;
     }
+
     public boolean needAndCanUpdate() {
         long currentTimeMillis = System.currentTimeMillis();
-        return (fetched == 0 || fetched + 60*1000 < currentTimeMillis) &&
-               (fetchedSuccessfully == 0 || fetchedSuccessfully + 60*60*1000 < currentTimeMillis) &&
-               needUpdate();
+        return (fetched == 0 || fetched + 60 * 1000 < currentTimeMillis) &&
+                (fetchedSuccessfully == 0 || fetchedSuccessfully + 60 * 60 * 1000 < currentTimeMillis) &&
+                needUpdate();
     }
 
 
     public Path getPath(long day, float w, float h, int min, int max) {
         return getPath(day, w, h, min, max, 0, 24);
     }
+
     public Path getPath(long day, float w, float h, int min, int max, int hStart, int hEnd) {
         int[] values = precise.get(day);
         if (values == null) return null;
 
         Path p = new Path();
 
-        p.moveTo(0, h*2);
+        p.moveTo(0, h * 2);
 
-        hStart *= 6; hEnd *= 6;
+        hStart *= 6;
+        hEnd *= 6;
         int hWidth = hEnd - hStart;
         int minMaxH = max - min;
         for (int i = hStart; i <= hEnd; i++) {
-            p.lineTo(w * (i-hStart) / hWidth, h * (1f - ((float)values[i]/10.0f - min) / minMaxH));
+            p.lineTo(w * (i - hStart) / hWidth, h * (1f - ((float) values[i] / 10.0f - min) / minMaxH));
         }
 
-        p.lineTo(w, h*2);
+        p.lineTo(w, h * 2);
         p.close();
 
         return p;
     }
+
     public Path getPath2(long day, float w, float h, int min, int max, int hStart, int hEnd) {
-        int[] values  = precise.get(day);
+        int[] values = precise.get(day);
         Calendar c = new GregorianCalendar(Common.TIME_ZONE);
-        c.setTime(new Date(day*1000));
+        c.setTime(new Date(day * 1000));
         c.add(Calendar.DATE, 1);
-        int[] values2 = precise.get(c.getTime().getTime()/1000);
+        int[] values2 = precise.get(c.getTime().getTime() / 1000);
         if (values == null || values2 == null) return null;
 
         Path p = new Path();
 
-        p.moveTo(0, h*2);
+        p.moveTo(0, h * 2);
 
-        hStart *= 6; hEnd *= 6;
+        hStart *= 6;
+        hEnd *= 6;
         int hWidth = hEnd - hStart;
         int minMaxH = max - min;
         for (int i = hStart; i <= hEnd; i++) {
-            if (i > 24*6) p.lineTo(w * (i-hStart) / hWidth, h * (1f - ((float)values2[i-24*6]/10.0f - min) / minMaxH));
-            else if (i >= 0) p.lineTo(w * (i-hStart) / hWidth, h * (1f - ((float)values[i]/10.0f - min) / minMaxH));
+            if (i > 24 * 6)
+                p.lineTo(w * (i - hStart) / hWidth, h * (1f - ((float) values2[i - 24 * 6] / 10.0f - min) / minMaxH));
+            else if (i >= 0)
+                p.lineTo(w * (i - hStart) / hWidth, h * (1f - ((float) values[i] / 10.0f - min) / minMaxH));
         }
 
-        p.lineTo(w, h*2);
+        p.lineTo(w, h * 2);
         p.close();
 
         return p;
@@ -182,13 +186,14 @@ public class TideData {
     public SortedMap<Integer, Integer> getHourly(long day) {
         return getHourly(day, 0, 24);
     }
+
     public SortedMap<Integer, Integer> getHourly(long day, int start, int end) {
         int[] values = precise.get(day);
         if (values == null) return null;
 
         SortedMap<Integer, Integer> r = new TreeMap<>();
         for (int h = start; h <= end; h++) {
-            r.put(h, Math.round((float)values[h*6] / 10.0f));
+            r.put(h, Math.round((float) values[h * 6] / 10.0f));
         }
         return r;
     }
@@ -203,8 +208,9 @@ public class TideData {
 
 
     public Integer getTide(int plusDays, int time) {
-        return getTide(Common.getDay(plusDays, Common.TIME_ZONE) + time*60);
+        return getTide(Common.getDay(plusDays, Common.TIME_ZONE) + time * 60);
     }
+
     public Integer getTide(long time) {
         float now = time / 60;
 
@@ -217,19 +223,19 @@ public class TideData {
         }
 
         if (values == null) return null;
-        if (now > 24*60) return null;
+        if (now > 24 * 60) return null;
 
         now /= 10;
 
-        int i1 = (int)Math.floor(now);
-        int i2 = (int)Math.ceil(now);
+        int i1 = (int) Math.floor(now);
+        int i2 = (int) Math.ceil(now);
         //Log.i(TAG, i1 + " " + i2 + " | " + values.length);
 //        if (true) return null;
         if (i2 >= values.length) return values[i1];
         int h1 = values[i1];
         int h2 = values[i2];
 
-        int h = Math.round((h1 + (h2-h1) * (now-i1)) / 10.0f);
+        int h = Math.round((h1 + (h2 - h1) * (now - i1)) / 10.0f);
 
         return h;
     }
@@ -243,12 +249,12 @@ public class TideData {
         float now = calendar.get(Calendar.HOUR_OF_DAY) * 60 + calendar.get(Calendar.MINUTE) + calendar.get(Calendar.SECOND) / 60.0f;
         now /= 10;
 
-        int i1 = (int)Math.floor(now);
-        int i2 = (int)Math.ceil(now);
+        int i1 = (int) Math.floor(now);
+        int i2 = (int) Math.ceil(now);
         int h1 = values[i1];
         int h2 = values[i2];
 
-        int h = Math.round((h1 + (h2-h1) * (now-i1)) / 10.0f);
+        int h = Math.round((h1 + (h2 - h1) * (now - i1)) / 10.0f);
 
         return h;
     }
@@ -257,10 +263,12 @@ public class TideData {
     public String getStateNow() {
         return getState(Common.getToday(TIME_ZONE), System.currentTimeMillis() / 1000);
     }
+
     public String getState(long day, int t) {
-        ClosestExtremums ce = getClosestExtremums(day, day + t*60);
+        ClosestExtremums ce = getClosestExtremums(day, day + t * 60);
         return ce.getNowDirString();
     }
+
     public String getState(long day, long l) {
         ClosestExtremums ce = getClosestExtremums(day, l);
         return ce.getNowDirString();
@@ -268,7 +276,7 @@ public class TideData {
 
 
     public static String intToString(int h) {
-        return String.valueOf(Math.round(h/10f)/10f);
+        return String.valueOf(Math.round(h / 10f) / 10f);
     }
 
 
@@ -281,7 +289,7 @@ public class TideData {
         boolean nowinside;
         int nowdir;
 
-        private static final Map<Integer, String> dirToString = new HashMap<Integer, String>(){{
+        private static final Map<Integer, String> dirToString = new HashMap<Integer, String>() {{
             put(0, "mid to low");
             put(1, "low");
             put(2, "low to mid");
@@ -301,10 +309,10 @@ public class TideData {
             rising = h2 > h1;
             nowinside = t1 < now;
 
-            if (true           && now < t1 - 60) nowdir = 0;
-            if (t1 - 60 <= now && now < t1)        nowdir = 1;
-            if (t1 + 00 <= now && now < (t1+t2)/2 - 60) nowdir = 2;
-            if ((t1+t2)/2 - 60 <= now && true)      nowdir = 3;
+            if (true && now < t1 - 60) nowdir = 0;
+            if (t1 - 60 <= now && now < t1) nowdir = 1;
+            if (t1 + 00 <= now && now < (t1 + t2) / 2 - 60) nowdir = 2;
+            if ((t1 + t2) / 2 - 60 <= now && true) nowdir = 3;
 
             if (!rising) nowdir += 4;
         }
@@ -322,9 +330,9 @@ public class TideData {
         Map.Entry<Long, Integer> e2 = iterator.next();
 
         ClosestExtremums ce = new ClosestExtremums();
-        ce.now = (int)((time - day) / 60); //Common.getNowTimeInt(TIME_ZONE);
-        ce.set((int)((e1.getKey()-day) / 60), e1.getValue() / 10,
-               (int)((e2.getKey()-day) / 60), e2.getValue() / 10);
+        ce.now = (int) ((time - day) / 60); //Common.getNowTimeInt(TIME_ZONE);
+        ce.set((int) ((e1.getKey() - day) / 60), e1.getValue() / 10,
+                (int) ((e2.getKey() - day) / 60), e2.getValue() / 10);
         return ce;
     }
 
@@ -332,7 +340,7 @@ public class TideData {
     public Map<Integer, Integer> getExtremums(long day) {
         Map<Integer, Integer> result = new TreeMap<>();
         for (Map.Entry<Long, Integer> entry : extremums.subMap(day, day + 60L * 60 * 24).entrySet()) {
-            result.put((int)((entry.getKey()-day) / 60), entry.getValue() / 10);
+            result.put((int) ((entry.getKey() - day) / 60), entry.getValue() / 10);
         }
         return result;
     }

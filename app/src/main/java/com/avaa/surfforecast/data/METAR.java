@@ -16,24 +16,27 @@ public class METAR {
 
 
     public boolean isOld() {
-        return time + 40*60*1000 < System.currentTimeMillis();
+        return time + 40 * 60 * 1000 < System.currentTimeMillis();
     }
+
     public boolean isOld(long currentTimeMillis) {
-        return time + 40*60*1000 < currentTimeMillis;
+        return time + 40 * 60 * 1000 < currentTimeMillis;
     }
 
     public boolean isVeryOld() {
-        return time + 90*60*1000 < System.currentTimeMillis();
+        return time + 90 * 60 * 1000 < System.currentTimeMillis();
     }
+
     public boolean isVeryOld(long currentTimeMillis) {
-        return time + 90*60*1000 < currentTimeMillis;
+        return time + 90 * 60 * 1000 < currentTimeMillis;
     }
 
     public boolean isMinutePassedFromLastFetch() { // not fetched recently
-        return timeFetched + 1*60*1000 < System.currentTimeMillis();
+        return timeFetched + 1 * 60 * 1000 < System.currentTimeMillis();
     }
+
     public boolean isMinutePassedFromLastFetch(long currentTimeMillis) {
-        return timeFetched + 1*60*1000 < currentTimeMillis;
+        return timeFetched + 1 * 60 * 1000 < currentTimeMillis;
     }
 
 
@@ -41,12 +44,12 @@ public class METAR {
     public String toString() {
         long currentTimeMillis = System.currentTimeMillis();
         return "wind = " + windAngle + "deg " + windSpeed + "km/h" + ", time = " + time + ", time fetched = " + timeFetched +
-                ";   isMinutePassedFromLastFetch = " + isMinutePassedFromLastFetch(currentTimeMillis) + ", isOld = " + isOld(currentTimeMillis)  + ", isVeryOld = " + isVeryOld(currentTimeMillis);
+                ";   isMinutePassedFromLastFetch = " + isMinutePassedFromLastFetch(currentTimeMillis) + ", isOld = " + isOld(currentTimeMillis) + ", isVeryOld = " + isVeryOld(currentTimeMillis);
     }
 
     public String toSavableString() {
         return String.valueOf(timeFetched) + "\t" + String.valueOf(time) + "\t" +
-               String.valueOf(windAngle) + "\t" + String.valueOf(windSpeed);
+                String.valueOf(windAngle) + "\t" + String.valueOf(windSpeed);
     }
 
     public static METAR fromSavableString(String s) {
@@ -73,19 +76,18 @@ public class METAR {
                 int t = Common.strToInt(si.substring(0, 6), 0);
                 if (t == 0) return null;
                 Calendar c = GregorianCalendar.getInstance(TimeZone.getTimeZone("GMT+0"));
-                c.set(Calendar.DATE, t/10000);
-                c.set(Calendar.HOUR, t/100%100);
-                c.set(Calendar.MINUTE, t%100);
+                c.set(Calendar.DATE, t / 10000);
+                c.set(Calendar.HOUR, t / 100 % 100);
+                c.set(Calendar.MINUTE, t % 100);
                 c.set(Calendar.SECOND, 0);
                 c.set(Calendar.MILLISECOND, 0);
                 metar.time = c.getTime().getTime();
-            }
-            else if (si.endsWith("KT")) {
+            } else if (si.endsWith("KT")) {
                 metar.windAngle = Common.strToInt(si.substring(0, 3), -1);
                 if (metar.windAngle != -1) {
-                    metar.windAngle = (float)(((360+90 - metar.windAngle)%360) * Math.PI / 180f);
+                    metar.windAngle = (float) (((360 + 90 - metar.windAngle) % 360) * Math.PI / 180f);
                 }
-                metar.windSpeed = (int)(Common.strToInt(si.substring(3, 5), 0) * 1.852);
+                metar.windSpeed = (int) (Common.strToInt(si.substring(3, 5), 0) * 1.852);
             }
         }
 

@@ -53,17 +53,14 @@ public class METARRetriever extends AsyncTask<Object, Void, METAR> {
             metar = METAR.fromMETARString(s, System.currentTimeMillis());
 
             Log.i(TAG, "doInBackground() | " + s);
-        }
-        catch (Exception e) {
+        } catch (Exception e) {
             Log.i(TAG, "doInBackground() | update failed");
             //e.printStackTrace();
-        }
-        finally {
+        } finally {
             if (reader != null) {
                 try {
                     reader.close();
-                }
-                catch (IOException ioe) {
+                } catch (IOException ioe) {
                     Log.i(TAG, "doInBackground() | update failed");
                     //ioe.printStackTrace();
                 }

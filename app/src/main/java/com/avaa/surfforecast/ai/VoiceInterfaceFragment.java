@@ -25,9 +25,9 @@ import android.widget.TextView;
 
 import com.avaa.surfforecast.MainModel;
 import com.avaa.surfforecast.R;
+import com.avaa.surfforecast.views.AnswerFrameLayout;
 import com.avaa.surfforecast.views.CircleAnimatedFrameLayout;
 import com.avaa.surfforecast.views.CircleVoiceIndicator;
-import com.avaa.surfforecast.views.AnswerFrameLayout;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -66,9 +66,12 @@ public class VoiceInterfaceFragment extends Fragment {
     private SpeechRecognizer speech;
     final RecognitionListener rl = new RecognitionListener() {
         @Override
-        public void onReadyForSpeech(Bundle params) { }
+        public void onReadyForSpeech(Bundle params) {
+        }
+
         @Override
-        public void onBeginningOfSpeech() { }
+        public void onBeginningOfSpeech() {
+        }
 
         @Override
         public void onRmsChanged(float rms) {
@@ -76,7 +79,8 @@ public class VoiceInterfaceFragment extends Fragment {
         }
 
         @Override
-        public void onBufferReceived(byte[] buffer) { }
+        public void onBufferReceived(byte[] buffer) {
+        }
 
 
         @Override
@@ -106,7 +110,7 @@ public class VoiceInterfaceFragment extends Fragment {
 
             String text = "";
             for (Map.Entry<Float, String> e : res.entrySet()) {
-                text += (int)(100*e.getKey()) + " " + e.getValue() + "\n";
+                text += (int) (100 * e.getKey()) + " " + e.getValue() + "\n";
             }
             Log.i(TAG, "onResults()\n" + text);
 
@@ -124,8 +128,7 @@ public class VoiceInterfaceFragment extends Fragment {
 
                     uiShowAnswer(answer);
                     flHint.postDelayed(() -> say(answer), 250);
-                }
-                else {
+                } else {
 //                    tvPrerecognized.setVisibility(View.VISIBLE);
 //                    view.findViewById(R.id.flPrerecognizedCircle).setVisibility(View.VISIBLE);
 //                    tvPrerecognized.setText(s);
@@ -161,7 +164,7 @@ public class VoiceInterfaceFragment extends Fragment {
     };
 
     View.OnClickListener clHintOpt = v -> {
-        TextView tvHintOpt = ((TextView)v);
+        TextView tvHintOpt = ((TextView) v);
 
         speech.cancel();
         uiNotListening();
@@ -171,22 +174,21 @@ public class VoiceInterfaceFragment extends Fragment {
         Answer answer = commandsExecutor.performCommand(tvHintOpt.getText().toString());
         if (answer != null) {
             uiShowAnswer(answer);
-        }
-        else {
+        } else {
             uiHideHint();
         }
     };
 
 
-    public VoiceInterfaceFragment() { }
+    public VoiceInterfaceFragment() {
+    }
 
 
     public void btnMicClicked(View view) {
         if (circleVoiceIndicator.isAwakened()) {
             stopListening();
             uiHideHint();
-        }
-        else {
+        } else {
             startListening();
             uiShowWelcomeHint();
         }
@@ -196,14 +198,15 @@ public class VoiceInterfaceFragment extends Fragment {
     private void uiListening() {
         btnMicImage.setAlpha(0.95f);
         //if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN) {
-            btnMic.setBackground(getContext().getResources().getDrawable(R.drawable.round_button));
+        btnMic.setBackground(getContext().getResources().getDrawable(R.drawable.round_button));
         //}
         circleVoiceIndicator.setAwakened(true);
     }
+
     private void uiNotListening() {
         if (flHint.getState() != 1) btnMicImage.setAlpha(0.95f);
 //        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN) {
-            btnMic.setBackground(getContext().getResources().getDrawable(R.drawable.round_button_transparent));
+        btnMic.setBackground(getContext().getResources().getDrawable(R.drawable.round_button_transparent));
 //        }
         circleVoiceIndicator.setAwakened(false);
         if (flHint.getState() != 1) btnMicImage.setAlpha(0.2f); // TODO fix
@@ -225,7 +228,8 @@ public class VoiceInterfaceFragment extends Fragment {
 
         commandsExecutor.lastAnswer = null;
     }
-//    private void uiApprove(TextView tv) {
+
+    //    private void uiApprove(TextView tv) {
 //
 //    }
     public boolean onBackPressed() {
@@ -245,10 +249,12 @@ public class VoiceInterfaceFragment extends Fragment {
         }
         return r;
     }
+
     private void uiHideWelcomeHint() {
         if (!circleVoiceIndicator.isAwakened()) btnMicImage.setAlpha(0.2f);
         flHint.setVisibility(View.INVISIBLE);
     }
+
     private void uiHideHint() {
         uiHideWelcomeHint();
         if (ans != null) ans.setVisibility(View.INVISIBLE);
@@ -258,11 +264,10 @@ public class VoiceInterfaceFragment extends Fragment {
     private void setHintText(String text) {
         if (text.length() > 50) {
             tvHintText.setTextSize(18);
-            tvHintText.setPadding(tvHintText.getPaddingLeft(), 0, tvHintText.getPaddingRight(), 30*3);
-        }
-        else {
+            tvHintText.setPadding(tvHintText.getPaddingLeft(), 0, tvHintText.getPaddingRight(), 30 * 3);
+        } else {
             tvHintText.setTextSize(24);
-            tvHintText.setPadding(tvHintText.getPaddingLeft(), 0, tvHintText.getPaddingRight(), 18*3);
+            tvHintText.setPadding(tvHintText.getPaddingLeft(), 0, tvHintText.getPaddingRight(), 18 * 3);
         }
         tvHintText.setText(text);
     }
@@ -282,35 +287,30 @@ public class VoiceInterfaceFragment extends Fragment {
                     String s = opts[i].substring(1);
                     if (s.startsWith("[")) {
                         String image = s.substring(1, s.indexOf("]"));
-                        s = s.substring(s.indexOf("]")+1);
+                        s = s.substring(s.indexOf("]") + 1);
 
                         int d = STRING_TO_DRAWABLE_RESOURCE.get(image);
                         if (d != 0) {
                             ivHintOptRed.setBackgroundResource(d);
                             ivHintOptRed.setVisibility(View.VISIBLE);
-                        }
-                        else ivHintOptRed.setVisibility(View.INVISIBLE);
-                    }
-                    else {
+                        } else ivHintOptRed.setVisibility(View.INVISIBLE);
+                    } else {
                         ivHintOptRed.setVisibility(View.INVISIBLE);
                     }
                     tvHintOptRed.setText(s);
                     rlHintOptRed.setVisibility(View.VISIBLE);
-                }
-                else {
+                } else {
                     String s = opts[i];
                     if (s.startsWith("[")) {
                         String image = s.substring(1, s.indexOf("]"));
-                        s = s.substring(s.indexOf("]")+1);
+                        s = s.substring(s.indexOf("]") + 1);
 
                         int d = STRING_TO_DRAWABLE_RESOURCE.get(image);
                         if (d != 0) {
                             ivHintOpts[i].setBackgroundResource(d);
                             ivHintOpts[i].setVisibility(View.VISIBLE);
-                        }
-                        else ivHintOpts[i].setVisibility(View.INVISIBLE);
-                    }
-                    else {
+                        } else ivHintOpts[i].setVisibility(View.INVISIBLE);
+                    } else {
                         ivHintOpts[i].setVisibility(View.INVISIBLE);
                     }
                     tvHintOpts[i].setText(s);
@@ -329,8 +329,9 @@ public class VoiceInterfaceFragment extends Fragment {
     AnswerFrameLayout prevAns;
 
     boolean waitingForAnswer = false;
+
     private void uiShowAnswer(Answer a) {
-        RelativeLayout answers = (RelativeLayout)view.findViewById(R.id.rlAnswers);
+        RelativeLayout answers = (RelativeLayout) view.findViewById(R.id.rlAnswers);
 
         prevAns = ans;
 
@@ -370,6 +371,7 @@ public class VoiceInterfaceFragment extends Fragment {
         speech.cancel();
         uiNotListening();
     }
+
     public void startListening() {
         if (!circleVoiceIndicator.isAwakened() && recognitionAvailable) {
             if (ContextCompat.checkSelfPermission(getActivity(), Manifest.permission.RECORD_AUDIO) != PackageManager.PERMISSION_GRANTED) {
@@ -417,20 +419,23 @@ public class VoiceInterfaceFragment extends Fragment {
                 tts.setLanguage(Locale.UK);
                 tts.setOnUtteranceProgressListener(new UtteranceProgressListener() {
                     @Override
-                    public void onStart(String utteranceId) { }
+                    public void onStart(String utteranceId) {
+                    }
+
                     @Override
                     public void onDone(String utteranceId) {
                         flHint.post(() -> {
                             if (!waitingForAnswer) {
                                 //flHint.postDelayed(() -> uiHideHint(), 6000);
-                            }
-                            else {
+                            } else {
                                 flHint.postDelayed(() -> startListening(), 250);
                             }
                         });
                     }
+
                     @Override
-                    public void onError(String utteranceId) { }
+                    public void onError(String utteranceId) {
+                    }
                 });
             }
         });
@@ -479,7 +484,7 @@ public class VoiceInterfaceFragment extends Fragment {
         ivHintOpts[3] = (ImageView) view.findViewById(R.id.ivHintOpt4);
         ivHintOpts[4] = (ImageView) view.findViewById(R.id.ivHintOpt5);
         ivHintOptRed = (ImageView) view.findViewById(R.id.ivHintOptRed);
-        
+
 //        tvPrerecognized = (TextView) view.findViewById(R.id.tvPrerecognized);
 
         btnMic.setOnClickListener(this::btnMicClicked);
@@ -487,8 +492,8 @@ public class VoiceInterfaceFragment extends Fragment {
         for (TextView tvHintOpt : tvHintOpts) tvHintOpt.setOnClickListener(clHintOpt);
         tvHintOptRed.setOnClickListener(clHintOpt);
 
-        circleVoiceIndicator.x = 15*getResources().getDisplayMetrics().density;
-        circleVoiceIndicator.y = 15*getResources().getDisplayMetrics().density;
+        circleVoiceIndicator.x = 15 * getResources().getDisplayMetrics().density;
+        circleVoiceIndicator.y = 15 * getResources().getDisplayMetrics().density;
 
         flHint.bgClick = () -> {
             uiHideHint();
@@ -503,6 +508,7 @@ public class VoiceInterfaceFragment extends Fragment {
     public void onAttach(Context context) {
         super.onAttach(context);
     }
+
     @Override
     public void onDetach() {
         super.onDetach();

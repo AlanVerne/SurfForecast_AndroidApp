@@ -8,7 +8,6 @@ import android.os.Build;
 import android.os.SystemClock;
 import android.support.v4.view.animation.FastOutSlowInInterpolator;
 import android.util.AttributeSet;
-import android.view.MotionEvent;
 import android.widget.FrameLayout;
 
 /**
@@ -18,8 +17,14 @@ import android.widget.FrameLayout;
 public class TwoCirclesAnimatedFrameLayout extends FrameLayout {
     private static final FastOutSlowInInterpolator FAST_OUT_SLOW_IN_INTERPOLATOR = new FastOutSlowInInterpolator();
 
-    private final Paint bgShadow = new Paint() {{ setAntiAlias(false); setColor(0xffffffff); }};
-    private final Paint bgMain   = new Paint() {{ setAntiAlias(true);  setColor(0xff0091c1); }};
+    private final Paint bgShadow = new Paint() {{
+        setAntiAlias(false);
+        setColor(0xffffffff);
+    }};
+    private final Paint bgMain = new Paint() {{
+        setAntiAlias(true);
+        setColor(0xff0091c1);
+    }};
 
     private long prevTime = -1;
     private int state = 0;
@@ -49,25 +54,24 @@ public class TwoCirclesAnimatedFrameLayout extends FrameLayout {
         if (i <= 0) {
             super.setVisibility(INVISIBLE);
             i = 0;
-        }
-        else if (i >= 1) i = 1;
+        } else if (i >= 1) i = 1;
         else repaint();
 
         float i = state == 1 ? FAST_OUT_SLOW_IN_INTERPOLATOR.getInterpolation(this.i) : 1 - FAST_OUT_SLOW_IN_INTERPOLATOR.getInterpolation(1 - this.i);
 
-        float r  = (height+300); // - getPaddingTop());
+        float r = (height + 300); // - getPaddingTop());
         float r2 = (getPaddingBottom());
 
         float ar = r2; //(r+r2)/2;
 
         if (state == 2) ar *= i;
-        else ar = ar/2 + ar/2*i;
+        else ar = ar / 2 + ar / 2 * i;
 
-        r  = ar + (r - ar) * i;
+        r = ar + (r - ar) * i;
         r2 = ar;
 
 
-        int x = width*1/3;
+        int x = width * 1 / 3;
 
         float y = height; //+width*i;
 //        r  += width*i;
@@ -76,8 +80,8 @@ public class TwoCirclesAnimatedFrameLayout extends FrameLayout {
         if (pi != i) {
             pi = i;
             p.reset();
-            p.addCircle(state == 2 ? width *(1 - i*2/3) : x, y, r, Path.Direction.CCW);
-            p.addCircle(state == 2 ? width *(1 - i*2/3) : x, y, r2, Path.Direction.CW);
+            p.addCircle(state == 2 ? width * (1 - i * 2 / 3) : x, y, r, Path.Direction.CCW);
+            p.addCircle(state == 2 ? width * (1 - i * 2 / 3) : x, y, r2, Path.Direction.CW);
         }
 
 //        bgShadow.setColor((int)(0xaa*i) * 0x1000000 | 0xaaaaaa);
@@ -86,11 +90,10 @@ public class TwoCirclesAnimatedFrameLayout extends FrameLayout {
         if (this.i == 1) {
             canvas.drawPath(p, bgMain);
             super.draw(canvas);
-        }
-        else {
+        } else {
             canvas.save();
             canvas.clipPath(p);
-            canvas.drawRect(0, height-r, width, height, bgMain);
+            canvas.drawRect(0, height - r, width, height, bgMain);
             super.draw(canvas);
             canvas.restore();
         }
@@ -108,8 +111,7 @@ public class TwoCirclesAnimatedFrameLayout extends FrameLayout {
         if (visibility == VISIBLE) {
             super.setVisibility(visibility);
             state = 1;
-        }
-        else if (visibility == INVISIBLE) state = 2;
+        } else if (visibility == INVISIBLE) state = 2;
 
         prevTime = SystemClock.uptimeMillis();
 

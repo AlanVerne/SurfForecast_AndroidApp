@@ -176,7 +176,7 @@ public class SurfConditions {
 //        if (windRating == -1)
         rateWind(spot);
 
-        Log.i("SurfConditions", "rate(" + spot.getShortName() + ", " + time/60 + ":00), rated: " + waveRating + ", " + windRating + ", " + tideRating);
+        Log.i("SurfConditions", "rate(" + spot.getShortName() + ", " + time / 60 + ":00), rated: " + waveRating + ", " + windRating + ", " + tideRating);
 
         return waveRating * windRating * tideRating;
     }

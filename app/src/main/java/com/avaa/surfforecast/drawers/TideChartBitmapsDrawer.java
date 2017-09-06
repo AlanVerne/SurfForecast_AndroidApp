@@ -69,7 +69,7 @@ public class TideChartBitmapsDrawer {
 
         final SunTimes sunTimes = SunTimesProvider.get(la, lo, day, Common.TIME_ZONE);
 
-        final Path area = tideData.getPath(day, width, chartH*2, -300, 300);
+        final Path area = tideData.getPath(day, width, chartH * 2, -300, 300);
 
         if (area == null) return null;
 
@@ -82,9 +82,9 @@ public class TideChartBitmapsDrawer {
         c.drawPath(area, paintR);
 
         int firstlight = sunTimes.cSunrise * width / MINUTES_IN_DAY;
-        int lastlight  = sunTimes.cSunset  * width / MINUTES_IN_DAY;
-        int sunrise    = sunTimes.sunrise  * width / MINUTES_IN_DAY;
-        int sunset     = sunTimes.sunset   * width / MINUTES_IN_DAY;
+        int lastlight = sunTimes.cSunset * width / MINUTES_IN_DAY;
+        int sunrise = sunTimes.sunrise * width / MINUTES_IN_DAY;
+        int sunset = sunTimes.sunset * width / MINUTES_IN_DAY;
 
         //Region sunReg = new Region(sunrise, 0, sunset, height);
         Region firstLightReg = new Region(firstlight, 0, sunrise, height);

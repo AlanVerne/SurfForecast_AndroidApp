@@ -5,9 +5,9 @@ import android.content.SharedPreferences;
 import android.graphics.PorterDuff;
 import android.hardware.SensorManager;
 import android.net.Uri;
+import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.v7.app.AppCompatActivity;
-import android.os.Bundle;
 import android.util.Log;
 import android.util.TypedValue;
 import android.view.Gravity;
@@ -24,6 +24,7 @@ import android.widget.RelativeLayout;
 import android.widget.TextView;
 
 import com.avaa.surfforecast.ai.CommandsExecutor;
+import com.avaa.surfforecast.ai.VoiceInterfaceFragment;
 import com.avaa.surfforecast.data.BusyStateListener;
 import com.avaa.surfforecast.data.Common;
 import com.avaa.surfforecast.data.SurfConditions;
@@ -37,7 +38,6 @@ import com.avaa.surfforecast.views.MyList;
 import com.avaa.surfforecast.views.OneDayConditionsSmallView;
 import com.avaa.surfforecast.views.RatingView;
 import com.avaa.surfforecast.views.SurfConditionsForecastView;
-import com.avaa.surfforecast.ai.VoiceInterfaceFragment;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -98,14 +98,15 @@ public class MainActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-        colorBG     = getResources().getColor(R.color.colorWaterBG);
+        colorBG = getResources().getColor(R.color.colorWaterBG);
         colorAccent = getResources().getColor(R.color.colorWater);
 
         sharedPreferences = getSharedPreferences("com.avaa.surfforecast", MODE_PRIVATE);
 
         BusyStateListener bsl = busy -> {
             busyCount += busy ? 1 : -1;
-            if (progressBar != null) progressBar.setVisibility(busyCount > 0 ? View.VISIBLE : View.INVISIBLE);
+            if (progressBar != null)
+                progressBar.setVisibility(busyCount > 0 ? View.VISIBLE : View.INVISIBLE);
             //Log.i(TAG, "busyCount: " + busyCount);
         };
 
@@ -113,12 +114,11 @@ public class MainActivity extends AppCompatActivity {
         model = MainModel.getInstance(this, sharedPreferences, bsl);
 
         model.addChangeListener(changes -> {
-            if (model.selectedConditions==null) {
+            if (model.selectedConditions == null) {
                 int day = Math.round(model.getDay());
                 tvRating.setText(capitalize(CommandsExecutor.intDayToNL(day)));
                 rv.setRating(0, 0);
-            }
-            else {
+            } else {
                 int day = Math.round(model.getDay());
                 tvRating.setText(capitalize(CommandsExecutor.intDayToNL(day)) + " " + CommandsExecutor.intTimeToNL(model.selectedTime));
                 rv.setRating(model.selectedRating, model.selectedConditions.waveRating);
@@ -145,7 +145,7 @@ public class MainActivity extends AppCompatActivity {
                 if (tideData != null) {
                     float rate = now.rate(surfSpot, tideData, 0, Common.getNowTimeInt(Common.TIME_ZONE));
                     //((TextView)findViewById(R.id.tvRating)).setText("Rating: " + rate + "\nWave: " + now.waveRating + "\nWind: " + now.windRating + "\nTide: " + now.tideRating);
-                    rv.setRating(rate, now.waveRating*now.tideRating);
+                    rv.setRating(rate, now.waveRating * now.tideRating);
                 }
             }
         });
@@ -161,23 +161,23 @@ public class MainActivity extends AppCompatActivity {
 
         setContentView(R.layout.activity_main);
 
-        vif = (VoiceInterfaceFragment)getSupportFragmentManager().findFragmentById(R.id.vif);
+        vif = (VoiceInterfaceFragment) getSupportFragmentManager().findFragmentById(R.id.vif);
         mainLayout = findViewById(R.id.mainlayout);
         baliMap = (BaliMap) findViewById(R.id.balimap);
         daysScroller = (ImageView) findViewById(R.id.ivDaysScroller);
         listSpots = (MyList) findViewById(R.id.svSpots);
         forecast = (SurfConditionsForecastView) findViewById(R.id.scfv);
-        progressBar = (MaterialProgressBar)findViewById(R.id.progressBar);
-        rlDays = (RelativeLayout)findViewById(R.id.vllDays);
-        btnMenu = (FrameLayout)findViewById(R.id.flBtnMenu);
+        progressBar = (MaterialProgressBar) findViewById(R.id.progressBar);
+        rlDays = (RelativeLayout) findViewById(R.id.vllDays);
+        btnMenu = (FrameLayout) findViewById(R.id.flBtnMenu);
 
-        llRating = (LinearLayout)findViewById(R.id.llRating);
+        llRating = (LinearLayout) findViewById(R.id.llRating);
         tvRating = ((TextView) findViewById(R.id.tvRating));
         rv = ((RatingView) findViewById(R.id.ratingView));
 
         vif.commandsExecutor = new CommandsExecutor(model);
 
-        progressBar.getIndeterminateDrawable().setColorFilter(0xffffffff, PorterDuff.Mode.SRC_IN );
+        progressBar.getIndeterminateDrawable().setColorFilter(0xffffffff, PorterDuff.Mode.SRC_IN);
         progressBar.setVisibility(busyCount > 0 ? View.VISIBLE : View.INVISIBLE);
 
         btnMenu.setOnClickListener(v2 -> {
@@ -187,37 +187,37 @@ public class MainActivity extends AppCompatActivity {
 
             menu.setOnMenuItemClickListener(item -> {
                 switch (item.getItemId()) {
-                case 0:
-                    spot.conditionsProvider.update();
-                    model.metarProvider.update(spot.metarName);
-                    model.tideDataProvider.fetchIfNeed(spot.tidePortID);
-                    return true;
-                case 1:
-                    model.surfSpots.swapFavorite(spot);
-                    listSpots.getView(model.selectedSpotI).setText(spot.name + (spot.favorite ? "   " + "\u2605" : ""));
-                    return true;
-                case 2: {
-                    Intent geoIntent = new Intent(Intent.ACTION_VIEW, Uri.parse("geo:" + spot.la + "," + spot.lo + "?q=" + spot.la + "," + spot.lo + "(" + spot.name + ")"));
-                    startActivity(geoIntent);
-                    return true;
-                }
-                case 3: {
-                    Intent browserIntent = new Intent(Intent.ACTION_VIEW, Uri.parse(spot.urlMSW));
-                    startActivity(browserIntent);
-                    return true;
-                }
-                case 4: {
-                    Intent browserIntent = new Intent(Intent.ACTION_VIEW, Uri.parse(spot.getSFURL()));
-                    startActivity(browserIntent);
-                    return true;
-                }
-                case 5: {
-                    Intent browserIntent = new Intent(Intent.ACTION_VIEW, Uri.parse(spot.urlCam));
-                    startActivity(browserIntent);
-                    return true;
-                }
-                default:
-                    return true;
+                    case 0:
+                        spot.conditionsProvider.update();
+                        model.metarProvider.update(spot.metarName);
+                        model.tideDataProvider.fetchIfNeed(spot.tidePortID);
+                        return true;
+                    case 1:
+                        model.surfSpots.swapFavorite(spot);
+                        listSpots.getView(model.selectedSpotI).setText(spot.name + (spot.favorite ? "   " + "\u2605" : ""));
+                        return true;
+                    case 2: {
+                        Intent geoIntent = new Intent(Intent.ACTION_VIEW, Uri.parse("geo:" + spot.la + "," + spot.lo + "?q=" + spot.la + "," + spot.lo + "(" + spot.name + ")"));
+                        startActivity(geoIntent);
+                        return true;
+                    }
+                    case 3: {
+                        Intent browserIntent = new Intent(Intent.ACTION_VIEW, Uri.parse(spot.urlMSW));
+                        startActivity(browserIntent);
+                        return true;
+                    }
+                    case 4: {
+                        Intent browserIntent = new Intent(Intent.ACTION_VIEW, Uri.parse(spot.getSFURL()));
+                        startActivity(browserIntent);
+                        return true;
+                    }
+                    case 5: {
+                        Intent browserIntent = new Intent(Intent.ACTION_VIEW, Uri.parse(spot.urlCam));
+                        startActivity(browserIntent);
+                        return true;
+                    }
+                    default:
+                        return true;
                 }
             });
 
@@ -253,8 +253,7 @@ public class MainActivity extends AppCompatActivity {
 
             if (offset > 0) {
                 j++;
-            }
-            else {
+            } else {
                 j--;
                 offset = -offset;
             }
@@ -277,7 +276,8 @@ public class MainActivity extends AppCompatActivity {
         smallViews.add((OneDayConditionsSmallView) findViewById(R.id.odcs4));
         smallViews.add((OneDayConditionsSmallView) findViewById(R.id.odcs5));
         smallViews.add((OneDayConditionsSmallView) findViewById(R.id.odcs6));
-        for (OneDayConditionsSmallView smallView : smallViews) smallView.setColorText(colorConditionsPreviews);
+        for (OneDayConditionsSmallView smallView : smallViews)
+            smallView.setColorText(colorConditionsPreviews);
 
         listSpots.sl = new MyList.ScrollListener() {
             @Override
@@ -286,12 +286,14 @@ public class MainActivity extends AppCompatActivity {
                 baliMap.show(shownI, firstI, lastI, awakeState);
                 changed(awakeState);
             }
+
             @Override
             public void scrolled(float awakeState) {
                 awakeState = 1f - awakeState;
                 baliMap.setAwakenedState(awakeState);
                 changed(awakeState);
             }
+
             private void changed(float awakeState) {
                 rlDays.setVisibility(awakeState == 0 ? View.INVISIBLE : View.VISIBLE);
                 rlDays.setAlpha(awakeState);
@@ -366,6 +368,7 @@ public class MainActivity extends AppCompatActivity {
         model.updateCurrentConditions();
         baliMap.resume();
     }
+
     @Override
     protected void onStop() {
         model.userStat.save();
@@ -389,6 +392,7 @@ public class MainActivity extends AppCompatActivity {
     }
 
     Calendar c = null;
+
     private void resetDates() {
         Calendar c = Common.getCalendarToday(Common.TIME_ZONE);
         if (this.c != null && this.c.get(Calendar.DATE) == c.get(Calendar.DATE)) return;
@@ -408,31 +412,31 @@ public class MainActivity extends AppCompatActivity {
         forecast.setDH(dh);
 
         float fontRating = metrics.font;
-        int starH = (int)(fontRating*1.2);
+        int starH = (int) (fontRating * 1.2);
         LinearLayout.LayoutParams rvlp = new LinearLayout.LayoutParams(starH * 10, starH);
         rvlp.gravity = Gravity.CENTER_VERTICAL;
-        rvlp.topMargin = dh/8;
+        rvlp.topMargin = dh / 8;
         //rvlp.leftMargin = (int)fontRating/2;
         rv.setLayoutParams(rvlp);
 
-        RelativeLayout.LayoutParams llRatingLP = new RelativeLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, (int)(dh*1.5f));
-        llRatingLP.topMargin = (int)(dh*2.5);
-        llRatingLP.leftMargin = (int)(dh);
+        RelativeLayout.LayoutParams llRatingLP = new RelativeLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, (int) (dh * 1.5f));
+        llRatingLP.topMargin = (int) (dh * 2.5);
+        llRatingLP.leftMargin = (int) (dh);
         llRating.setLayoutParams(llRatingLP);
 
         View ivBtnMenu = findViewById(R.id.ivBtnMenu);
         ViewGroup.LayoutParams layoutParams = ivBtnMenu.getLayoutParams();
-        layoutParams.width = (int)metrics.fontHeader;
-        layoutParams.height = (int)metrics.fontHeader;
+        layoutParams.width = (int) metrics.fontHeader;
+        layoutParams.height = (int) metrics.fontHeader;
         ivBtnMenu.setLayoutParams(layoutParams);
 
-        ((TextView)findViewById(R.id.tvRating)).setTextSize(TypedValue.COMPLEX_UNIT_PX, fontRating);
+        ((TextView) findViewById(R.id.tvRating)).setTextSize(TypedValue.COMPLEX_UNIT_PX, fontRating);
 
-        final RelativeLayout spotsRL = (RelativeLayout)findViewById(R.id.top);
+        final RelativeLayout spotsRL = (RelativeLayout) findViewById(R.id.top);
 
         ViewGroup.LayoutParams mParams = spotsRL.getLayoutParams();
 
-        int h = (int)(dh * 10.1);
+        int h = (int) (dh * 10.1);
         mParams.height = mainLayout.getHeight() - h;
         spotsRL.setLayoutParams(mParams);
 
@@ -443,7 +447,7 @@ public class MainActivity extends AppCompatActivity {
         forecast.onScrollY = new Runnable() {
             @Override
             public void run() {
-                baliMap.insetY = (int)(forecast.getHeight() - forecast.getContentTop());
+                baliMap.insetY = (int) (forecast.getHeight() - forecast.getContentTop());
                 rlDays.setY(forecast.getContentTop() - rlDays.getHeight());
             }
         };
@@ -452,18 +456,18 @@ public class MainActivity extends AppCompatActivity {
         forecast.invalidate();
         mainLayout.invalidate();
 
-        int daysBottom = (int)(dh*0.75);
+        int daysBottom = (int) (dh * 0.75);
 
         RelativeLayout.LayoutParams vllDaysLayoutParams = (RelativeLayout.LayoutParams) rlDays.getLayoutParams();
-        vllDaysLayoutParams.height = (int)(dh*3 + daysBottom);
+        vllDaysLayoutParams.height = (int) (dh * 3 + daysBottom);
 
         View rlDaysScroller = findViewById(R.id.rlDaysScroller);
-        RelativeLayout.LayoutParams rlDaysScrollerLayoutParams = (RelativeLayout.LayoutParams)rlDaysScroller.getLayoutParams();
-        rlDaysScrollerLayoutParams.bottomMargin = (int)(daysBottom - density);
-        rlDaysScrollerLayoutParams.height = (int)(metrics.densityDHDependent*3.5f);
+        RelativeLayout.LayoutParams rlDaysScrollerLayoutParams = (RelativeLayout.LayoutParams) rlDaysScroller.getLayoutParams();
+        rlDaysScrollerLayoutParams.bottomMargin = (int) (daysBottom - density);
+        rlDaysScrollerLayoutParams.height = (int) (metrics.densityDHDependent * 3.5f);
         rlDaysScroller.setLayoutParams(rlDaysScrollerLayoutParams);
 
-        RelativeLayout.LayoutParams lp = new RelativeLayout.LayoutParams(dh*2, (int)(dh*3));
+        RelativeLayout.LayoutParams lp = new RelativeLayout.LayoutParams(dh * 2, (int) (dh * 3));
         lp.addRule(RelativeLayout.ALIGN_PARENT_RIGHT);
         //lp.addRule(RelativeLayout.LEFT_OF, R.id.id_to_be_left_of);
         //btnMenu.setPadding(dh, 0, dh, 0);
@@ -472,17 +476,15 @@ public class MainActivity extends AppCompatActivity {
 
         int i = 2;
         for (OneDayConditionsSmallView scv : smallViews) {
-            LinearLayout.LayoutParams params = (LinearLayout.LayoutParams)scv.getLayoutParams();
-            params.width = (int)(dh * MetricsAndPaints.TEXT_K);
+            LinearLayout.LayoutParams params = (LinearLayout.LayoutParams) scv.getLayoutParams();
+            params.width = (int) (dh * MetricsAndPaints.TEXT_K);
             if (i == 2) {
-                params.setMargins(dh / 2, 0, 0, daysBottom+dh/2);
+                params.setMargins(dh / 2, 0, 0, daysBottom + dh / 2);
                 params.width = dh * 2;
-            }
-            else if (i == 1) {
-                params.setMargins(0, 0, 0, daysBottom+dh/2);
+            } else if (i == 1) {
+                params.setMargins(0, 0, 0, daysBottom + dh / 2);
                 params.width = dh * 2;
-            }
-            else params.setMargins(0, 0, 0, daysBottom+dh/2);
+            } else params.setMargins(0, 0, 0, daysBottom + dh / 2);
 
             scv.setLayoutParams(params);
             scv.setMetrics(model.metricsAndPaints);
@@ -499,8 +501,9 @@ public class MainActivity extends AppCompatActivity {
     }
 
 
-//    private boolean olclWorked = false;
+    //    private boolean olclWorked = false;
     private int w, h;
+
     class OLCL implements ViewTreeObserver.OnGlobalLayoutListener {
         @Override
         public void onGlobalLayout() {
@@ -515,11 +518,11 @@ public class MainActivity extends AppCompatActivity {
             h = mainLayout.getHeight();
             Log.i(TAG, "onGlobalLayout: " + w + "x" + h);
 
-            dh = Math.max(w, h) - Math.min(w, h)*14/15;
-            dh = (int)(dh / 10.7);
+            dh = Math.max(w, h) - Math.min(w, h) * 14 / 15;
+            dh = (int) (dh / 10.7);
 
-            int minDH = (int)(Math.min(w, h) / 14f);
-            int maxDH = (int)(Math.min(w, h) / 13f);
+            int minDH = (int) (Math.min(w, h) / 14f);
+            int maxDH = (int) (Math.min(w, h) / 13f);
             dh = Math.min(maxDH, Math.max(minDH, dh));
 
             model.metricsAndPaints = new MetricsAndPaints(density, dh);
@@ -545,7 +548,7 @@ public class MainActivity extends AppCompatActivity {
         for (com.avaa.surfforecast.data.SurfSpot SurfSpot : surfSpots.getAll()) {
             if (surfSpots.categories.containsKey(i)) {
                 TextView textView = new TextView(this);
-                FrameLayout.LayoutParams lparams = new FrameLayout.LayoutParams(FrameLayout.LayoutParams.MATCH_PARENT, dh*2);
+                FrameLayout.LayoutParams lparams = new FrameLayout.LayoutParams(FrameLayout.LayoutParams.MATCH_PARENT, dh * 2);
                 lparams.setMargins(0, 0, 0, 0);
                 textView.setLayoutParams(lparams);
                 textView.setTextSize(TypedValue.COMPLEX_UNIT_PX, metricsAndPaints.font);
@@ -558,8 +561,8 @@ public class MainActivity extends AppCompatActivity {
             }
 
             TextView textView = new TextView(this);
-            FrameLayout.LayoutParams lparams = new FrameLayout.LayoutParams(FrameLayout.LayoutParams.MATCH_PARENT, dh*2);
-            lparams.setMargins(0,0,0,0);
+            FrameLayout.LayoutParams lparams = new FrameLayout.LayoutParams(FrameLayout.LayoutParams.MATCH_PARENT, dh * 2);
+            lparams.setMargins(0, 0, 0, 0);
             textView.setLayoutParams(lparams);
             textView.setTextSize(TypedValue.COMPLEX_UNIT_PX, metricsAndPaints.fontHeader);
             textView.setTextColor(0xff000000 | colorTextSpotNames);
@@ -594,12 +597,14 @@ public class MainActivity extends AppCompatActivity {
     private int _orientationIndex;
     private int _highestIndex = -1;
     private int _currentOrientation;
+
     //essentially compute the mode of the data. This could be improved
     protected int getOrientation() {
         if (_highestIndex < 0) return 0;
         Arrays.sort(_orientationHistory);
         return _orientationHistory[_highestIndex / 2];
     }
+
     protected void orientationChanged(int lastOrientation, int currentOrientation) {
         forecast.setOrientation(currentOrientation);
     }
@@ -611,6 +616,7 @@ public class MainActivity extends AppCompatActivity {
             smallViews.get(i).setConditions(conditionsProvider.get(i));
         }
     }
+
     private void updateSurfConditionsImages() {
         updateConditionsSmallViews();
         if (dh == 0) return;
@@ -626,8 +632,7 @@ public class MainActivity extends AppCompatActivity {
         if (model.selectedSpotI != spotI) {
             View view = spotsTV.get(spotI);
             listSpots.awake(() -> listSpots.scrollTo(view, () -> listSpots.select(view, after)));
-        }
-        else if (after != null) after.run();
+        } else if (after != null) after.run();
     }
 
     //  &@&

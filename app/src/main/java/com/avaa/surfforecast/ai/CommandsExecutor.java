@@ -58,13 +58,13 @@ public class CommandsExecutor {
     private void initSToTime() {
         sToTime.put(" now ", -1);
 
-        sToTime.put(" sunrise ", 6*60);
-        sToTime.put(" morning ", 9*60);
-        sToTime.put(" noon ", 12*60);
-        sToTime.put(" midday ", 12*60);
-        sToTime.put(" afternoon ", 15*60);
-        sToTime.put(" sunset ",  18*60);
-        sToTime.put(" evening ",  18*60);
+        sToTime.put(" sunrise ", 6 * 60);
+        sToTime.put(" morning ", 9 * 60);
+        sToTime.put(" noon ", 12 * 60);
+        sToTime.put(" midday ", 12 * 60);
+        sToTime.put(" afternoon ", 15 * 60);
+        sToTime.put(" sunset ", 18 * 60);
+        sToTime.put(" evening ", 18 * 60);
     }
 
     private void initSToDay() {
@@ -167,6 +167,7 @@ public class CommandsExecutor {
         }
         return null;
     }
+
     public static String intTimeToNL(int time) {
         for (Map.Entry<String, Integer> e : MainModel.instance.commandsExecutor.sToTime.entrySet()) {
             if (time == e.getValue()) {
@@ -186,7 +187,7 @@ public class CommandsExecutor {
         String name = selectedSpot.getShortName();
 
         int nowTimeInt = Common.getNowTimeInt(Common.TIME_ZONE);
-        if (nowTimeInt > 18*60) ;
+        if (nowTimeInt > 18 * 60) ;
 
         String day = nowTimeInt > 18 * 60 ? "tomorrow" : "today";
 
@@ -213,6 +214,7 @@ public class CommandsExecutor {
         Log.i(TAG, "performCommand(String '" + s + "')");
         return performCommand(toCommand(s), s);
     }
+
     public Answer performCommand(Command c, String sc) {
         Log.i(TAG, "performCommand(" + c + ")");
 
@@ -246,19 +248,16 @@ public class CommandsExecutor {
 
             if (keywords.contains("where to surf") || keywords.contains("best spot")) {
                 lastAnswer = commandWhereToSurf(c);
-            }
-            else if (keywords.contains("camera")) {
+            } else if (keywords.contains("camera")) {
                 lastAnswer = commandCamera(c);
-            }
-            else if (keywords.contains("conditions")
+            } else if (keywords.contains("conditions")
                     || keywords.contains("waves")
                     || keywords.contains("swell")
                     || keywords.contains("wind")
                     || keywords.contains("tide")) { //&& c.time != null) {
                 lastAnswer = commandConditions(c);
             }
-        }
-        else if (c.spot != null && c.time != null) {
+        } else if (c.spot != null && c.time != null) {
             lastAnswer = commandConditions(c);
         }
 
@@ -298,10 +297,9 @@ public class CommandsExecutor {
         int plusDays;
 
         if (c.day == null) {
-            if (nowTimeInt > 18*60) plusDays = 1;
+            if (nowTimeInt > 18 * 60) plusDays = 1;
             else plusDays = 0;
-        }
-        else plusDays = c.day;
+        } else plusDays = c.day;
 
         if (c.time == null) {       //      unspecified time
             for (SurfSpot surfSpot : mainModel.surfSpots.getFavoriteSurfSpotsList()) {
@@ -335,7 +333,7 @@ public class CommandsExecutor {
                         s
                 );
 //                lastAnswer.waitForReply = true;
-                lastAnswer.replyVariants = new String[] {
+                lastAnswer.replyVariants = new String[]{
                         "[spot]" + bestSpot.getShortName() + " " + intDayToNL,
                         //"[cond]" + bestSpot.getShortName() + " " + intDayToNL + " " + timeToNL,
                         "[cond]Conditions will be?",
@@ -343,10 +341,10 @@ public class CommandsExecutor {
                         "[q]Now?", //"[q]Where to surf now?",
                         //plusDays == 0 ? "[q]Where to surf tomorrow?" : "[q]Where to surf today?",
                         plusDays == 0 ? "[q]Tomorrow?" : "[q]Today?",
-                        bestTime > 12*60 ? "[q]At sunrise?" : "[q]At sunset?",
+                        bestTime > 12 * 60 ? "[q]At sunrise?" : "[q]At sunset?",
                         "-[ok]Ok, thanks"
                 };
-                lastAnswer.replyInterpreters = new String[] {
+                lastAnswer.replyInterpreters = new String[]{
                         "kw:conditions - Conditions in " + bestSpot.getShortName() + " " + intDayToNL + " " + timeToNL,
                         "kw:waves - Waves in " + bestSpot.getShortName() + " " + timeToNL,
                         "kw:swell - Swell in " + bestSpot.getShortName() + " " + timeToNL,
@@ -362,8 +360,7 @@ public class CommandsExecutor {
             }
 
             if (c.day == null) lastAnswer.addClarification(intDayToNL(plusDays));
-        }
-        else if ((c.day != null && c.day == 0) && c.time == -1) {      //      time now
+        } else if ((c.day != null && c.day == 0) && c.time == -1) {      //      time now
             METAR currentMETAR = mainModel.surfSpots.currentMETAR;
 
             for (SurfSpot surfSpot : mainModel.surfSpots.getFavoriteSurfSpotsList()) {
@@ -391,7 +388,7 @@ public class CommandsExecutor {
                         "[q]Tomorrow?",
                         "-[ok]Ok, thanks"
                 };
-                lastAnswer.replyInterpreters = new String[] {
+                lastAnswer.replyInterpreters = new String[]{
                         "kw:conditions - Conditions in " + bestSpot.getShortName() + " now",
                         "kw:waves - Waves in " + bestSpot.getShortName() + " now",
                         "kw:swell - Swell in " + bestSpot.getShortName() + " now",
@@ -403,10 +400,9 @@ public class CommandsExecutor {
                         "time,day - Where to surf [day] [time]?"
                 };
             }
-        }
-        else {  // day and time - specified. time - not now
+        } else {  // day and time - specified. time - not now
             for (SurfSpot surfSpot : mainModel.surfSpots.getFavoriteSurfSpotsList()) {
-                SurfConditions surfConditions = surfSpot.conditionsProvider.get(plusDays).get((int)(c.time));
+                SurfConditions surfConditions = surfSpot.conditionsProvider.get(plusDays).get((int) (c.time));
                 if (surfConditions == null) continue;
                 float rate = surfConditions.rate(surfSpot, mainModel.tideDataProvider.getTideData(surfSpot.tidePortID), plusDays, c.time);
                 if (rate > best) {
@@ -427,10 +423,10 @@ public class CommandsExecutor {
                         "[cond]Conditions will be?",
                         "[q]Where to surf now?",
                         plusDays == 0 ? "[q]Tomorrow?" : "[q]Today?",
-                        c.time > 12*60 ? "[q]At sunrise?" : "[q]At sunset?",
+                        c.time > 12 * 60 ? "[q]At sunrise?" : "[q]At sunset?",
                         "-[ok]Ok, thanks"
                 };
-                lastAnswer.replyInterpreters = new String[] {
+                lastAnswer.replyInterpreters = new String[]{
                         "kw:conditions - Conditions in " + bestSpot.getShortName() + " " + intDayToNL(plusDays) + " " + intTimeToNL(c.time),
                         "time - Where to surf " + intDayToNL(plusDays) + " [time]?",
                         "day - Where to surf [day]?",
@@ -466,8 +462,7 @@ public class CommandsExecutor {
             if (c.spot.urlCam != null && !c.spot.urlCam.isEmpty()) {
                 Intent browserIntent = new Intent(Intent.ACTION_VIEW, Uri.parse(c.spot.urlCam));
                 mainModel.mainActivity.startActivity(browserIntent);
-            }
-            else {
+            } else {
                 lastAnswer = new Answer(
                         "No camera for " + c.spot.name + ". Choose spot:",
                         "For what spot?",
@@ -476,8 +471,7 @@ public class CommandsExecutor {
                         new String[]{"spot - Camera for [spot]", " - Camera"}
                 );
             }
-        }
-        else {
+        } else {
             lastAnswer = new Answer(
                     "Choose spot:",
                     "For what spot?",
@@ -502,6 +496,7 @@ public class CommandsExecutor {
         );
         return lastAnswer;
     }
+
     private Answer askForModifyFavoriteSpots() {
         lastAnswer = new Answer(
                 "May I mark with a star some spots, that fits for you?",
@@ -570,15 +565,14 @@ public class CommandsExecutor {
                 lastAnswer.add(forNowTime ? answers.windNow() : answers.wind(plusDays, time));
 
             if (!lastAnswer.isEmpty() && lastAnswer.toSay != null) {
-                if (nowTimeInt > 18*60) {
+                if (nowTimeInt > 18 * 60) {
                     lastAnswer.replyVariants = new String[]{
                             "[spot]" + surfSpot.getShortName() + " " + intDayToNL(plusDays),
                             "[q]Where to surf tomorrow?",
                             "[q]Where to surf tomorrow at sunrise?",
                             "[q]Where to surf tomorrow at sunset?",
                             "-[ok]Ok, thanks"};
-                }
-                else {
+                } else {
                     lastAnswer.replyVariants = new String[]{
                             "[spot]" + surfSpot.getShortName() + " " + intDayToNL(plusDays),
                             "[q]Where to surf now?",
@@ -597,8 +591,7 @@ public class CommandsExecutor {
                         "kw:wind - Wind in " + surfSpot.getShortName() + " " + intTimeToNL(time) + " " + intDayToNL(plusDays)
                 };
             }
-        }
-        else {
+        } else {
             // TODO ans for unspecified time
             lastAnswer = new Answer();
         }
