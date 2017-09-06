@@ -36,40 +36,12 @@ public class SurfSpot {
 
     public String tidePortID = Common.BENOA_PORT_ID;
 
-//    public
-
 
     public String getSFURL() {
         return conditionsProvider.getURL();
     }
 
 
-    //    public SurfSpot(String name, SurfConditionsProvider conditionsProvider, PointF pointOnSVG, PointF pointEarth, Direction waveDirection) {
-//        this.name = name;
-//        this.conditionsProvider = conditionsProvider;
-//        this.pointOnSVG = pointOnSVG;
-//        this.pointEarth = pointEarth;
-//        this.waveDirection = waveDirection;
-//    }
-//    public SurfSpot(String name, SurfConditionsProvider conditionsProvider, PointF pointOnSVG, PointF pointEarth, Direction waveDirection, int leftright) {
-//        this.name = name;
-//        this.conditionsProvider = conditionsProvider;
-//        this.pointOnSVG = pointOnSVG;
-//        this.pointEarth = pointEarth;
-//        this.waveDirection = waveDirection;
-//        this.leftright = leftright;
-//    }
-//    public SurfSpot(String name, SurfConditionsProvider conditionsProvider, PointF pointOnSVG, PointF pointEarth, Direction waveDirection, int leftright, int tides, int minSwell, int maxSwell) {
-//        this.name = name;
-//        this.conditionsProvider = conditionsProvider;
-//        this.pointOnSVG = pointOnSVG;
-//        this.pointEarth = pointEarth;
-//        this.waveDirection = waveDirection;
-//        this.leftright = leftright;
-//        this.tides = tides;
-//        this.minSwell = minSwell;
-//        this.maxSwell = maxSwell;
-//    }
     public SurfSpot(String name, String conditionsProvider, PointF pointOnSVG, PointF pointEarth, Direction waveDirection, int leftright, int tides, int minSwell, int maxSwell, String urlMSW, String urlCam, double la, double lo) {
         this.name = name;
         this.conditionsProvider = SurfConditionsProviders.get(conditionsProvider);

@@ -61,7 +61,7 @@ public class BaliMap extends View {
 
     private static final android.view.animation.Interpolator FAST_OUT_SLOW_IN_INTERPOLATOR = new android.support.v4.view.animation.FastOutSlowInInterpolator();
 
-    private static final String STR_DASH = "-";
+    public static final String STR_DASH = "-";
 
     private static final int colorSwellBG = 0xffffffff;
     private static final int colorWindBG = 0xffffffff;
@@ -83,7 +83,6 @@ public class BaliMap extends View {
     private SurfConditions currentConditions = null;
     private METAR currentMETAR = null;
 
-    private String strWindSpeed = STR_DASH;
     private String strWaveHeight = STR_DASH;
     private String strWavePeriod = STR_DASH;
 
@@ -205,15 +204,12 @@ public class BaliMap extends View {
     }
 
     private void init(Context context) {
+        windCircle = new WindCircle(getContext());
+
         model = MainModel.instance;
         model.addChangeListener(changes -> {
             currentConditions = model.selectedConditions;
             currentMETAR = model.selectedMETAR;
-
-            if (currentMETAR != null) strWindSpeed = String.valueOf(currentMETAR.windSpeed);
-            else if (currentConditions != null)
-                strWindSpeed = String.valueOf(currentConditions.windSpeed);
-            else strWindSpeed = STR_DASH;
 
             if (currentConditions != null) {
                 strWaveHeight = String.valueOf(currentConditions.getWaveHeightInFt());
@@ -227,32 +223,32 @@ public class BaliMap extends View {
         powerManager = (PowerManager) getContext().getSystemService(Context.POWER_SERVICE);
 
         surfSpots = MainModel.instance.surfSpots;
-        surfSpots.addChangeListener(c -> {
-            Log.i(TAG, "surfSpots ChangeListener | metar: " + surfSpots.currentMETAR);
-            currentConditions = surfSpots.currentConditions;
-            currentMETAR = surfSpots.currentMETAR;
-
-            if (currentMETAR != null) strWindSpeed = String.valueOf(currentMETAR.windSpeed);
-            else if (currentConditions != null)
-                strWindSpeed = String.valueOf(currentConditions.windSpeed);
-            else strWindSpeed = STR_DASH;
-
-            if (currentConditions != null) {
-                strWaveHeight = String.valueOf(currentConditions.getWaveHeightInFt());
-                strWavePeriod = String.valueOf(currentConditions.wavePeriod);
-            } else {
-                strWaveHeight = STR_DASH;
-                strWavePeriod = STR_DASH;
-            }
-
-            if (c.contains(SurfSpots.Change.SELECTED_DAY) || c.contains(SurfSpots.Change.SELECTED_TIME)) {
-                Log.i(TAG, "selected day changed");
-                nowTideUpdatedTime = -1;
-            }
-
-            updateTideData();
-            repaint();
-        });
+//        surfSpots.addChangeListener(c -> {
+//            Log.i(TAG, "surfSpots ChangeListener | metar: " + surfSpots.currentMETAR);
+//            currentConditions = surfSpots.currentConditions;
+//            currentMETAR = surfSpots.currentMETAR;
+//
+//            if (currentMETAR != null) strWindSpeed = String.valueOf(currentMETAR.windSpeed);
+//            else if (currentConditions != null)
+//                strWindSpeed = String.valueOf(currentConditions.windSpeed);
+//            else strWindSpeed = STR_DASH;
+//
+//            if (currentConditions != null) {
+//                strWaveHeight = String.valueOf(currentConditions.getWaveHeightInFt());
+//                strWavePeriod = String.valueOf(currentConditions.wavePeriod);
+//            } else {
+//                strWaveHeight = STR_DASH;
+//                strWavePeriod = STR_DASH;
+//            }
+//
+//            if (c.contains(SurfSpots.Change.SELECTED_DAY) || c.contains(SurfSpots.Change.SELECTED_TIME)) {
+//                Log.i(TAG, "selected day changed");
+//                nowTideUpdatedTime = -1;
+//            }
+//
+//            updateTideData();
+//            repaint();
+//        });
         surfSpotsList = surfSpots.getAll();
 
         MainModel.instance.tideDataProvider.addListener(new TideDataProvider.TideDataProviderListener() {
@@ -352,6 +348,9 @@ public class BaliMap extends View {
                 }
             }
             rescheduleHintsHide();
+            if (windCircle.setHintsVisible(true, !isPowerSavingMode())) {
+                repaint();
+            }
         }
 
         return super.onTouchEvent(ev);
@@ -360,14 +359,9 @@ public class BaliMap extends View {
 
     @Override
     public void computeScroll() {
-        //Log.i("BM", "computeScroll()");
+        //Log.i(TAG, "computeScroll()");
         super.computeScroll();
-        if (scrollerHints.computeScrollOffset()) {
-            float newHV = scrollerHints.getCurrX() / 1000f;
-            //if (hintsVisible == newHV)
-            hintsVisible = newHV;
-            repaint();
-        }
+        if (windCircle.computeScroll()) repaint();
     }
 
 
@@ -380,12 +374,12 @@ public class BaliMap extends View {
     }
 
     private void rescheduleHintsHide() {
-        //Log.i("BM", "rescheduleHintsHide()");
+        //Log.i(TAG, "rescheduleHintsHide()");
         cancelScheduledHintsHide();
         timerHintsHide = new Timer();
         timerHintsHide.schedule(new TimerTask() {
             synchronized public void run() {
-                //Log.i("BM", "start hiding");
+                //Log.i(TAG, "start hiding");
                 if (isPowerSavingMode()) {
                     if (hintsVisible != 0) {
                         hintsVisible = 0;
@@ -393,6 +387,9 @@ public class BaliMap extends View {
                     }
                 } else {
                     scrollerHints.startScroll(1000, 0, -1000, 0, 666);
+                    repaint();
+                }
+                if (windCircle.setHintsVisible(false, !isPowerSavingMode())) {
                     repaint();
                 }
             }
@@ -417,7 +414,7 @@ public class BaliMap extends View {
     }
 
     public void show(float shownI, float firstI, float lastI, float awakenedState) {
-        //Log.i("BM", shownI +" "+ firstI +" "+ lastI);
+        //Log.i(TAG, shownI +" "+ firstI +" "+ lastI);
 
         if (this.shownI == shownI && this.firstI == firstI && this.lastI == lastI && this.awakenedState == awakenedState)
             return;
@@ -463,7 +460,7 @@ public class BaliMap extends View {
             i++;
         }
 
-        //Log.i("BM", "updateShownSpotsBoundRect"+avex+" "+avey+" "+sum);
+        //Log.i(TAG, "updateShownSpotsBoundRect"+avex+" "+avey+" "+sum);
 
         if (sum == 0) {
             avex = 0;
@@ -500,9 +497,9 @@ public class BaliMap extends View {
 
 
     private final static float SQRT_2 = (float) Math.sqrt(2);
-    private final Path pathArrow = new Path();
+    private final static Path pathArrow = new Path();
 
-    private Path getArrow(float x, float y, float a, float arrowSize) {
+    public static Path getArrow(float x, float y, float a, float arrowSize) {
         pathArrow.reset();
         pathArrow.moveTo(x - (float) Math.cos(a) * arrowSize * SQRT_2, y + (float) Math.sin(a) * arrowSize * SQRT_2);
         pathArrow.arcTo(new RectF(x - arrowSize, y - arrowSize, x + arrowSize, y + arrowSize), -a * 180 / (float) Math.PI + 45 + 180, 360 - 2 * 45, false);
@@ -577,74 +574,11 @@ public class BaliMap extends View {
 
         if (currentConditions == null && currentMETAR == null) return;
 
-        a = windArrowAngle;
-        boolean vbr = windArrowVbr > 0.5;
-
-        double cosA = Math.cos(a);
-        double sinA = Math.sin(a);
-
-        float windArrowVisibleFinal = windArrowVisible * awakenedState;
-
-        float windR = r * (1 + (1 - windArrowVbr) * (2 - awakenedState * 2)) - awakenedState * hintsVisible * dh / 4;
-        float windArrowR = windArrowVisibleFinal * (dh * 0.7f + hintsVisible * dh / 4);
-        float ax = ox + (float) (cosA * windR);
-        float ay = oy - (float) (sinA * windR);
-
-        pp = parallaxHelper.applyParallax(ax, ay, dh * circlesH);
-        ax = pp.x;
-        ay = pp.y;
-
-        paintBG.setColor(colorWindBG);
-
-        if (vbr) c.drawCircle(ax, ay, windArrowR, paintBG);
-        else c.drawPath(getArrow(ax, ay, a, windArrowR), paintBG);
-
-        paintFont.setColor((int) (j * 0xff) * 0x1000000 + 0x00ffffff & MetricsAndPaints.colorWindText);
-
-//        ay = ay + fontH/2;
-//        if (hintsVisible > 0) {
-//            ay -= dh/3/2 * hintsVisible;
-//            c.drawText("km/h", ax, ay + dh / 3, paintAdditionalText);
-//        }
-
-        if (hintsVisible > 0) {
-            paintAdditionalText.setColor((int) (j * hintsVisible * hintsVisible * 0xff) << 24 | 0x000000);
-            paintAdditionalText.setTextAlign(Paint.Align.CENTER);
-
-            if (!vbr) {
-                float additionalArrowSize = windArrowVisibleFinal * dh / 4; //r*(SQRT_2-1)/SQRT_2/2;
-                windArrowR = windArrowR * SQRT_2 - additionalArrowSize * SQRT_2;
-                //windArrowR = r/2 + hintsVisible*dh/4;
-                float bx = ax - (float) Math.cos(a) * windArrowR;
-                float by = ay + (float) Math.sin(a) * windArrowR;
-
-                //float additionalArrowSize = windArrowR*(SQRT_2-1)/SQRT_2; //hintsVisible*dh/4*SQRT_2;
-                float cx = bx - (float) Math.cos(a - Math.PI * 3 / 4) * additionalArrowSize;
-                float cy = by + (float) Math.sin(a - Math.PI * 3 / 4) * additionalArrowSize;
-                float dx = bx - (float) Math.sin(a - Math.PI * 3 / 4) * additionalArrowSize;
-                float dy = by - (float) Math.cos(a - Math.PI * 3 / 4) * additionalArrowSize;
-
-                paintAdditionalArrow.setColor(paintAdditionalText.getColor());
-
-                pathLinedArrow.reset();
-                pathLinedArrow.moveTo(cx, cy);
-                pathLinedArrow.lineTo(bx, by);
-                pathLinedArrow.lineTo(dx, dy);
-
-                c.drawPath(pathLinedArrow, paintAdditionalArrow);
-            }
-
-            ay -= metricsAndPaints.fontSmallH / 16 * hintsVisible * windArrowVisibleFinal;
-            c.drawText(STR_WIND, ax, ay - fontH / 2 - windArrowVisibleFinal * metricsAndPaints.fontSmallSpacing * hintsVisible, paintAdditionalText);
-            c.drawText(STR_KMH, ax, ay + fontH / 2 + metricsAndPaints.fontSmallH + windArrowVisibleFinal * metricsAndPaints.fontSmallSpacing * hintsVisible, paintAdditionalText);
-            ay += metricsAndPaints.fontSmallH / 12 * hintsVisible * windArrowVisibleFinal;
-        }
-
-        //paintFont.setColor(currentMETAR != null ? 0xff000000 : 0x88000000);
-        c.drawText(strWindSpeed, ax, ay + fontH / 2, paintFont);
-
-        //c.drawCircle(ax - dh*4/10, ay - fontH/2, fontH/6, paintFont);
+        windCircle.paint(c, ox, oy, awakenedState, parallaxHelper, r);
     }
+
+
+    private WindCircle windCircle;
 
 
     private void paintSwellCircle(Canvas c, float ox, float oy, float r, float j) {
@@ -841,54 +775,7 @@ public class BaliMap extends View {
     private boolean computeArrowsAnimation() {
         boolean needRepaint = false;
 
-        float windArrowVisibleDest = (currentConditions != null || currentMETAR != null) ? 1 : 0;
-        if (isPowerSavingMode()) {
-            if (windArrowVisible != windArrowVisibleDest) {
-                windArrowVisible = windArrowVisibleDest;
-                needRepaint = true;
-            }
-        } else {
-            windArrowVisible += (windArrowVisibleDest - windArrowVisible) * 0.22;
-            if (!needRepaint)
-                if (windArrowVisible >= 0.01 || windArrowVisible <= 0.99) needRepaint = true;
-        }
-
-        if (currentConditions != null || currentMETAR != null) {
-            float a = currentMETAR != null ? currentMETAR.windAngle : currentConditions.windAngle;
-            boolean vbr = a < 0 || (currentMETAR != null ? currentMETAR.windSpeed : currentConditions.windSpeed) <= 0;
-
-            if (a < 0) a = (float) (Math.PI * 2 - Math.PI * 1 / 4);
-
-            if (windArrowVisible == 0) {
-                windArrowAngle = a;
-                windArrowVbr = vbr ? 1 : 0;
-            } else {
-                if (isPowerSavingMode() && windArrowAngle != a) {
-                    windArrowAngle = a;
-                    needRepaint = true;
-                } else {
-                    double dA = (a - windArrowAngle);
-                    if (dA > Math.PI) {
-                        windArrowAngle += Math.PI * 2;
-                        dA -= Math.PI * 2;
-                    } else if (dA < -Math.PI) {
-                        windArrowAngle -= Math.PI * 2;
-                        dA += Math.PI * 2;
-                    }
-                    windArrowAngle += dA * 0.05;
-                    if (dA > 0.01) needRepaint = true;
-                }
-
-                if (isPowerSavingMode() && windArrowVbr != (vbr ? 1 : 0)) {
-                    windArrowVbr = vbr ? 1 : 0;
-                    needRepaint = true;
-                } else {
-                    double dVbr = ((vbr ? 1 : 0) - windArrowVbr) * 0.05;
-                    windArrowVbr += dVbr;
-                    if (dVbr > 0.01) needRepaint = true;
-                }
-            }
-        }
+//        needRepaint |= windCircle.computeAnimation(!isPowerSavingMode());
 
         float swellArrowVisibleDest = (currentConditions != null ? 1 : 0);
         if (isPowerSavingMode()) {

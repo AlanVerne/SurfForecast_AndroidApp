@@ -109,21 +109,21 @@ public class SurfSpots {
 //    }
 
 
-    public interface ChangeListener {
-        void onChange(Set<Change> changes);
-    }
+//    public interface ChangeListener {
+//        void onChange(Set<Change> changes);
+//    }
 
-    public enum Change {SELECTED_SPOT, CONDITIONS, CURRENT_CONDITIONS, SELECTED_DAY, SELECTED_TIME}
+//    public enum Change {SELECTED_SPOT, CONDITIONS, CURRENT_CONDITIONS, SELECTED_DAY, SELECTED_TIME}
 
-    private Map<ChangeListener, Set<Change>> cls = new HashMap<>();
+//    private Map<ChangeListener, Set<Change>> cls = new HashMap<>();
 
-    public void addChangeListener(ChangeListener l) {
-        cls.put(l, null);
-    }
+//    public void addChangeListener(ChangeListener l) {
+//        cls.put(l, null);
+//    }
 
-    public void addChangeListener(ChangeListener l, Set<Change> changes) {
-        cls.put(l, changes);
-    }
+//    public void addChangeListener(ChangeListener l, Set<Change> changes) {
+//        cls.put(l, changes);
+//    }
 
 
     public Set<String> getFavorite() {

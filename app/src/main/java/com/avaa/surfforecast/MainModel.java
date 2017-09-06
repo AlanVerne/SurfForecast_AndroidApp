@@ -26,6 +26,7 @@ import java.util.Map;
 import java.util.Set;
 
 import static com.avaa.surfforecast.data.Common.TIME_ZONE;
+import static com.avaa.surfforecast.views.BaliMap.STR_DASH;
 
 
 /**
@@ -154,6 +155,18 @@ public class MainModel {
     public int selectedTime = -1;
 
 
+    public int getSelectedWindSpeed() {
+        if (selectedMETAR != null) return selectedMETAR.windSpeed;
+        else if (selectedConditions != null) return selectedConditions.windSpeed;
+        else return -1;
+    }
+
+    public float getSelectedWindAngle() {
+        if (selectedConditions == null) return -1;
+        return selectedMETAR != null ? selectedMETAR.windAngle : selectedConditions.windAngle;
+    }
+
+
     public int getDayInt() {
         return Math.round(day);
     }
@@ -192,7 +205,7 @@ public class MainModel {
 
             for (int time = 6; time < 18; time++) {
                 SurfConditions conditions = conditionsOneDay.get(time * 60);
-                if ((day == 0 && time * 60 < nowTimeInt - 120 && nowTimeInt < 18) || time < 5 || time > 19)
+                if ((day == 0 && time * 60 < nowTimeInt - 120 && nowTimeInt < 18) || time < 5 || time > 19 || conditions == null)
                     continue;
                 float rate = conditions.rate(spot, MainModel.instance.tideDataProvider.getTideData(spot.tidePortID), Math.round(day), time * 60);
                 if (rate > selectedRating) {

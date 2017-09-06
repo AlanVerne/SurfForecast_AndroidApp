@@ -125,11 +125,11 @@ public class MainActivity extends AppCompatActivity {
             }
         });
 
-        model.surfSpots.addChangeListener(changes -> {
-            if (changes.contains(SurfSpots.Change.SELECTED_SPOT)) {
+        model.addChangeListener(changes -> {
+            if (changes.contains(MainModel.Change.SELECTED_SPOT)) {
                 listSpots.select(spotsTV.get(model.selectedSpotI));
             }
-            if (changes.contains(SurfSpots.Change.CONDITIONS)) {
+            if (changes.contains(MainModel.Change.CONDITIONS)) {
                 updateSurfConditionsImages();
             }
 

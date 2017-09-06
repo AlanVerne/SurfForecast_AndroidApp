@@ -49,6 +49,7 @@ import static com.avaa.surfforecast.data.Common.STR_WIND_U;
  * Created by Alan on 1 Aug 2016.
  */
 
+
 @TargetApi(Build.VERSION_CODES.JELLY_BEAN_MR2)
 public class SurfConditionsForecastView extends HorizontalScrollView { //extends View {
     private static final String TAG = "SCForecastView";
