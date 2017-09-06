@@ -1,17 +1,23 @@
 package com.avaa.surfforecast;
 
-import android.content.Context;
 import android.content.SharedPreferences;
 import android.util.Log;
 
+import com.avaa.surfforecast.ai.CommandsExecutor;
+import com.avaa.surfforecast.ai.VoiceRecognitionHelper;
 import com.avaa.surfforecast.data.BusyStateListener;
 import com.avaa.surfforecast.data.Common;
 import com.avaa.surfforecast.data.METAR;
+import com.avaa.surfforecast.data.METARProvider;
 import com.avaa.surfforecast.data.SurfConditions;
 import com.avaa.surfforecast.data.SurfConditionsOneDay;
 import com.avaa.surfforecast.data.SurfConditionsProvider;
 import com.avaa.surfforecast.data.SurfSpot;
+import com.avaa.surfforecast.data.SurfSpots;
 import com.avaa.surfforecast.data.TideData;
+import com.avaa.surfforecast.data.TideDataProvider;
+import com.avaa.surfforecast.data.UserStat;
+import com.avaa.surfforecast.drawers.MetricsAndPaints;
 
 import java.util.HashMap;
 import java.util.HashSet;
@@ -23,27 +29,57 @@ import static com.avaa.surfforecast.data.Common.TIME_ZONE;
 
 
 /**
- * Created by Alan on 30 May 2017.
+ * Created by Alan on 7 Oct 2016.
  */
 
 
 public class MainModel {
     private static final String TAG = "MainModel";
-
-    private static final String SPKEY_FAV_SPOTS = "favSpots";
     private static final String SPKEY_SELECTED_SPOT = "selectedSpot";
 
-    public final int willBeSelectedSpotI = 3; //TODO
+    private final int willBeSelectedSpotI = 3; //TODO
     public int selectedSpotI = -1;
 
+    public final SharedPreferences sharedPreferences;
 
-    public MainModel(Context context, BusyStateListener bsl) {
-        for (SurfSpot surfSpot : AppContext.instance.surfSpots.getAll()) {
+    public final MainActivity mainActivity;
+
+    public final UserStat userStat;
+
+    public final METARProvider metarProvider;
+    public final SurfSpots surfSpots;
+    public final TideDataProvider tideDataProvider;
+
+    public VoiceRecognitionHelper voiceRecognitionHelper;
+    public CommandsExecutor commandsExecutor;
+
+    public MetricsAndPaints metricsAndPaints;
+
+
+    public static MainModel instance = null;
+
+    public static MainModel getInstance(MainActivity ma, SharedPreferences sharedPreferences, BusyStateListener bsl) {
+        if (instance == null) instance = new MainModel(ma, sharedPreferences, bsl);
+        return instance;
+    }
+
+
+    private MainModel(MainActivity ma, SharedPreferences sharedPreferences, BusyStateListener bsl) {
+        mainActivity = ma;
+
+        this.sharedPreferences = sharedPreferences;
+
+        userStat = new UserStat(sharedPreferences);
+        metarProvider = new METARProvider(bsl);
+        surfSpots = new SurfSpots(sharedPreferences);
+        tideDataProvider = new TideDataProvider();
+
+        for (SurfSpot surfSpot : surfSpots.getAll()) {
             surfSpot.conditionsProvider.setBsl(bsl);
             surfSpot.conditionsProvider.addUpdateListener(scpul);
         }
 
-        AppContext.instance.metarProvider.addUpdateListener((name, metar) -> {
+        metarProvider.addUpdateListener((name, metar) -> {
             SurfSpot selectedSpot = getSelectedSpot();
             if (selectedSpot == null) return;
             if (name.equals(selectedSpot.metarName) && selectedMETAR != metar) {
@@ -53,6 +89,16 @@ public class MainModel {
         });
     }
 
+    public void init() {
+        tideDataProvider.init();
+        metarProvider.init();
+
+        surfSpots.init();
+    }
+
+
+    // --
+
 
     public void setSelectedSpotI(int i) {
         if (selectedSpotI == i) return;
@@ -60,20 +106,20 @@ public class MainModel {
         selectedSpotI = i;
         updateCurrentConditions(false);
         //Log.i("SurfSpots", "setSelectedSpotI() 2");
-        AppContext.instance.userStat.incrementSpotsShownCount();
+        MainModel.instance.userStat.incrementSpotsShownCount();
         fireChanged(new HashSet<Change>() {{
             add(Change.SELECTED_SPOT);
             add(Change.CONDITIONS);
             add(Change.CURRENT_CONDITIONS);
         }});
 
-        SharedPreferences sp = AppContext.instance.sharedPreferences;
+        SharedPreferences sp = MainModel.instance.sharedPreferences;
         sp.edit().putInt(SPKEY_SELECTED_SPOT, selectedSpotI).apply();
     }
 
     public SurfSpot getSelectedSpot() {
-        List<SurfSpot> list = AppContext.instance.surfSpots.getAll();
-//        selectedSpotI = AppContext.instance.surfSpots.selectedSpotI;
+        List<SurfSpot> list = MainModel.instance.surfSpots.getAll();
+//        selectedSpotI = MainModel.instance.surfSpots.selectedSpotI;
         if (selectedSpotI == -1) return list.get(willBeSelectedSpotI);
         if (selectedSpotI >= list.size()) selectedSpotI = list.size() - 1;
         return list.get(selectedSpotI);
@@ -148,7 +194,7 @@ public class MainModel {
                 SurfConditions conditions = conditionsOneDay.get(time * 60);
                 if ((day == 0 && time * 60 < nowTimeInt - 120 && nowTimeInt < 18) || time < 5 || time > 19)
                     continue;
-                float rate = conditions.rate(spot, AppContext.instance.tideDataProvider.getTideData(spot.tidePortID), Math.round(day), time * 60);
+                float rate = conditions.rate(spot, MainModel.instance.tideDataProvider.getTideData(spot.tidePortID), Math.round(day), time * 60);
                 if (rate > selectedRating) {
                     selectedRating = rate;
                     selectedTime = time * 60;
@@ -158,7 +204,7 @@ public class MainModel {
 //            for (Map.Entry<Integer, SurfConditions> entry : conditionsOneDay.entrySet()) {
 //                Integer time = entry.getKey();
 //                if ((day == 0 && time < nowTimeInt - 120 && nowTimeInt < 18*60) || time < 5 * 60 || time > 19 * 60) continue;
-//                float rate = entry.getValue().rate(spot, AppContext.instance.tideDataProvider.getTideData(spot.tidePortID), Math.round(day), time);
+//                float rate = entry.getValue().rate(spot, MainModel.instance.tideDataProvider.getTideData(spot.tidePortID), Math.round(day), time);
 //                if (rate > selectedRating) {
 //                    selectedRating = rate;
 //                    selectedTime = time;
@@ -190,7 +236,7 @@ public class MainModel {
         spot.conditionsProvider.updateIfNeed();
 
         SurfConditions newCC = spot.conditionsProvider.getNow();
-        METAR newMETAR = AppContext.instance.metarProvider.get(spot.metarName);
+        METAR newMETAR = MainModel.instance.metarProvider.get(spot.metarName);
 
         if (newCC == nowConditions && newMETAR == nowMETAR) return;
 

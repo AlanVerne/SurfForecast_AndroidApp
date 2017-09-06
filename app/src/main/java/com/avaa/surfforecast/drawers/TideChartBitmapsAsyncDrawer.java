@@ -5,7 +5,7 @@ import android.graphics.Canvas;
 import android.os.AsyncTask;
 import android.util.Log;
 
-import com.avaa.surfforecast.AppContext;
+import com.avaa.surfforecast.MainModel;
 import com.avaa.surfforecast.MainActivity;
 import com.avaa.surfforecast.data.SurfSpot;
 import com.avaa.surfforecast.data.TideData;
@@ -37,13 +37,13 @@ public class TideChartBitmapsAsyncDrawer extends AsyncTask<Void, Void, List<Bitm
 
         this.startFromDay = startFromDay;
 
-        this.tideData = AppContext.instance.tideDataProvider.getTideData(surfSpot.tidePortID);
-        this.drawer = new TideChartBitmapsDrawer(AppContext.instance.metricsAndPaints);
+        this.tideData = MainModel.instance.tideDataProvider.getTideData(surfSpot.tidePortID);
+        this.drawer = new TideChartBitmapsDrawer(MainModel.instance.metricsAndPaints);
 
         this.la = surfSpot.la;
         this.lo = surfSpot.lo;
 
-        this.dh = AppContext.instance.metricsAndPaints.dh;
+        this.dh = MainModel.instance.metricsAndPaints.dh;
     }
 
     @Override

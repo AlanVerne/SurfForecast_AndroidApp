@@ -2,7 +2,7 @@ package com.avaa.surfforecast.data;
 
 import android.content.SharedPreferences;
 
-import com.avaa.surfforecast.AppContext;
+import com.avaa.surfforecast.MainModel;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -109,7 +109,7 @@ public class METARProvider {
 
 
     private void load() {
-        SharedPreferences sp = AppContext.instance.sharedPreferences;
+        SharedPreferences sp = MainModel.instance.sharedPreferences;
 
         String s = sp.getString(SPKEY_METARS, null);
         if (s == null) return;
@@ -138,7 +138,7 @@ public class METARProvider {
         String s = null;
         if (sb.length() > 0) s = sb.substring(1);
 
-        SharedPreferences sp = AppContext.instance.sharedPreferences;
+        SharedPreferences sp = MainModel.instance.sharedPreferences;
         sp.edit().putString(SPKEY_METARS, s).apply();
     }
 }

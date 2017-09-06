@@ -5,7 +5,7 @@ import android.graphics.Canvas;
 import android.os.AsyncTask;
 import android.util.Log;
 
-import com.avaa.surfforecast.AppContext;
+import com.avaa.surfforecast.MainModel;
 import com.avaa.surfforecast.data.SurfConditionsOneDay;
 import com.avaa.surfforecast.data.SurfSpot;
 import com.avaa.surfforecast.views.SurfConditionsForecastView;
@@ -47,7 +47,7 @@ public class SurfConditionsOneDayBitmapsAsyncDrawer extends AsyncTask<Void, Void
             //Log.i(TAG, "SurfConditionsOneDayBitmapsAsyncDrawer() | day = " + day + (sc == null ? ", sc null" : ", sc ok"));
         }
 
-        drawer = new SurfConditionsOneDayBitmapsDrawer(AppContext.instance.metricsAndPaints);
+        drawer = new SurfConditionsOneDayBitmapsDrawer(MainModel.instance.metricsAndPaints);
     }
 
 

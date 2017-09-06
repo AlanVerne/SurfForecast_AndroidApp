@@ -19,7 +19,6 @@ import android.view.MotionEvent;
 import android.view.View;
 import android.widget.Scroller;
 
-import com.avaa.surfforecast.AppContext;
 import com.avaa.surfforecast.MainModel;
 import com.avaa.surfforecast.R;
 import com.avaa.surfforecast.data.Common;
@@ -165,7 +164,7 @@ public class BaliMap extends View {
         if (this.dh != 0) bmpMapZoomedOut.eraseColor(0x00000000);
 
         this.dh = dh;
-        metricsAndPaints = AppContext.instance.metricsAndPaints;
+        metricsAndPaints = MainModel.instance.metricsAndPaints;
 
         this.densityDHDep = metricsAndPaints.densityDHDependent;
 
@@ -205,9 +204,8 @@ public class BaliMap extends View {
         init(context);
     }
 
-
-    public void setModel(MainModel model) {
-        this.model = model;
+    private void init(Context context) {
+        model = MainModel.instance;
         model.addChangeListener(changes -> {
             currentConditions = model.selectedConditions;
             currentMETAR = model.selectedMETAR;
@@ -225,13 +223,10 @@ public class BaliMap extends View {
                 strWavePeriod = STR_DASH;
             }
         });
-    }
 
-
-    private void init(Context context) {
         powerManager = (PowerManager) getContext().getSystemService(Context.POWER_SERVICE);
 
-        surfSpots = AppContext.instance.surfSpots;
+        surfSpots = MainModel.instance.surfSpots;
         surfSpots.addChangeListener(c -> {
             Log.i(TAG, "surfSpots ChangeListener | metar: " + surfSpots.currentMETAR);
             currentConditions = surfSpots.currentConditions;
@@ -259,7 +254,7 @@ public class BaliMap extends View {
         });
         surfSpotsList = surfSpots.getAll();
 
-        AppContext.instance.tideDataProvider.addListener(new TideDataProvider.TideDataProviderListener() {
+        MainModel.instance.tideDataProvider.addListener(new TideDataProvider.TideDataProviderListener() {
             @Override
             public void updated(String portID) {
                 if (portID == model.getSelectedSpot().tidePortID) {
@@ -280,7 +275,7 @@ public class BaliMap extends View {
 
         densityDHDep = getResources().getDisplayMetrics().density;
 
-        AppContext.instance.userStat.addUserLevelListener(this::setHintsVisiblePolicy);
+        MainModel.instance.userStat.addUserLevelListener(this::setHintsVisiblePolicy);
 
         setAwakenedState(1);
 
@@ -759,12 +754,12 @@ public class BaliMap extends View {
         }
 
         if (nowTide == null) {
-            AppContext.instance.tideDataProvider.fetch(model.getSelectedSpot().tidePortID);
+            MainModel.instance.tideDataProvider.fetch(model.getSelectedSpot().tidePortID);
         }
     }
 
     private void updateTideData() {
-        tideData = AppContext.instance.tideDataProvider.getTideData(model.getSelectedSpot().tidePortID);
+        tideData = MainModel.instance.tideDataProvider.getTideData(model.getSelectedSpot().tidePortID);
         updateNowTide();
     }
 
@@ -1048,7 +1043,7 @@ public class BaliMap extends View {
                     Integer time = entry.getKey();
                     if ((plusDays == 0 && time < nowTimeInt - 120) || time < 5 * 60 || time > 19 * 60)
                         continue;
-                    rate = entry.getValue().rate(spot, AppContext.instance.tideDataProvider.getTideData(spot.tidePortID), plusDays, time);
+                    rate = entry.getValue().rate(spot, MainModel.instance.tideDataProvider.getTideData(spot.tidePortID), plusDays, time);
                     if (rate > bestForThisSpot) {
 //                            best = rate;
                         surfConditions = entry.getValue(); //spot.conditionsProvider.get(plusDays);
@@ -1063,7 +1058,7 @@ public class BaliMap extends View {
 //                }
 
                 if (surfConditions != null) {
-//                    TideData tideData = AppContext.instance.tideDataProvider.getTideData(spot.tidePortID);
+//                    TideData tideData = MainModel.instance.tideDataProvider.getTideData(spot.tidePortID);
 //                    if (tideData != null) {
 //                        float rate = surfConditions.rate(spot, tideData, 0, Common.getNowTimeInt(Common.TIME_ZONE));
                     RatingView.drawStatic(canvas, (int) x - dh, (int) y, dh / 4, rate, surfConditions.waveRating * surfConditions.tideRating, (int) (t * 255));

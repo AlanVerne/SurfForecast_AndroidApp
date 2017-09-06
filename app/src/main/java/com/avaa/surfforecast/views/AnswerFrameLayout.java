@@ -16,7 +16,7 @@ import android.widget.RelativeLayout;
 import android.widget.ScrollView;
 import android.widget.TextView;
 
-import com.avaa.surfforecast.AppContext;
+import com.avaa.surfforecast.MainModel;
 import com.avaa.surfforecast.R;
 import com.avaa.surfforecast.ai.Answer;
 import com.avaa.surfforecast.drawers.MetricsAndPaints;
@@ -44,7 +44,7 @@ public class AnswerFrameLayout extends FrameLayout {
     public AnswerFrameLayout(Context context, AttributeSet attrs) {
         super(context, attrs);
 
-        metricsAndPaints = AppContext.instance.metricsAndPaints;
+        metricsAndPaints = MainModel.instance.metricsAndPaints;
 
         setLayoutParams(new LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT));
 

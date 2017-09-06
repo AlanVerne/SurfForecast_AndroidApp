@@ -18,9 +18,8 @@ import android.widget.HorizontalScrollView;
 import android.widget.LinearLayout;
 import android.widget.OverScroller;
 
-import com.avaa.surfforecast.AppContext;
-import com.avaa.surfforecast.MainActivity;
 import com.avaa.surfforecast.MainModel;
+import com.avaa.surfforecast.MainActivity;
 import com.avaa.surfforecast.data.SurfConditionsProvider;
 import com.avaa.surfforecast.drawers.SurfConditionsOneDayBitmapsAsyncDrawer;
 import com.avaa.surfforecast.drawers.TideChartDrawer;
@@ -72,11 +71,6 @@ public class SurfConditionsForecastView extends HorizontalScrollView { //extends
         //public SurfConditionsOneDay forSurfConditionsOneDay = null; TODO useless now, uncomment when will preorganize data by days in SurfConditionsProvider
         public Bitmap wave;
         public Bitmap wind;
-    }
-
-
-    public void setModel(MainModel model) {
-        this.model = model;
     }
 
 
@@ -208,7 +202,9 @@ public class SurfConditionsForecastView extends HorizontalScrollView { //extends
         init();
     }
     private void init() {
-        AppContext.instance.tideDataProvider.addListener(new TideDataProvider.TideDataProviderListener() {
+        model = MainModel.instance;
+
+        MainModel.instance.tideDataProvider.addListener(new TideDataProvider.TideDataProviderListener() {
             @Override
             public void updated(String portID) {
                 redrawTide();
@@ -296,7 +292,7 @@ public class SurfConditionsForecastView extends HorizontalScrollView { //extends
         labelsY = (dh - textH)/2;
         paintHours = new Paint() {{
             setAntiAlias(true);
-            setTextSize(AppContext.instance.metricsAndPaints.font);
+            setTextSize(MainModel.instance.metricsAndPaints.font);
             setColor(0x66ffffff);
             setTextAlign(Align.RIGHT);
         }};
@@ -462,7 +458,7 @@ public class SurfConditionsForecastView extends HorizontalScrollView { //extends
             calendar.set(calendar.get(Calendar.YEAR), calendar.get(Calendar.MONTH), calendar.get(Calendar.DAY_OF_MONTH), 0, 0, 0);
             calendar.set(Calendar.MILLISECOND, 0);
             calendar.add(Calendar.MINUTE, (getScrollX() + dh / 2) * 60 * 24 / (dh * 16));
-            TideData tideData = tideChartDrawer.tideData; //AppContext.instance.tideDataProvider.getTideData(Common.BENOA_PORT_ID);
+            TideData tideData = tideChartDrawer.tideData; //MainModel.instance.tideDataProvider.getTideData(Common.BENOA_PORT_ID);
 
             if (tideData != null) {
                 Integer sh = tideData.getTide(calendar.getTime().getTime() / 1000);
@@ -505,7 +501,7 @@ public class SurfConditionsForecastView extends HorizontalScrollView { //extends
             for (int hour = 3; hour < 24 * 7; hour += 3) {
                 hx = hour * dh * 16 / 24;
                 String strH = String.valueOf(hour % 24);
-                if (AppContext.instance.userStat.userLevel == 2) strH += ":00";
+                if (MainModel.instance.userStat.userLevel == 2) strH += ":00";
                 canvas.drawText(strH, hx, hy, paintHours);
             }
         }

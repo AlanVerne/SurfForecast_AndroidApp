@@ -6,9 +6,8 @@ import android.graphics.Paint;
 import android.os.AsyncTask;
 import android.util.Log;
 
-import com.avaa.surfforecast.AppContext;
-import com.avaa.surfforecast.MainActivity;
 import com.avaa.surfforecast.MainModel;
+import com.avaa.surfforecast.MainActivity;
 import com.avaa.surfforecast.data.Common;
 import com.avaa.surfforecast.data.DateTimeHelper;
 import com.avaa.surfforecast.data.SurfSpot;
@@ -80,7 +79,7 @@ public class TideChartDrawer {
 
     public TideChartDrawer(SurfConditionsForecastView view, MainModel mainModel) {
         this.view = view;
-        this.tideDataProvider = AppContext.instance.tideDataProvider;
+        this.tideDataProvider = MainModel.instance.tideDataProvider;
         this.model = mainModel;
 
         updateDrawer();
@@ -92,7 +91,7 @@ public class TideChartDrawer {
 
 
     public void updateDrawer() {
-        this.metricsAndPaints = AppContext.instance.metricsAndPaints;
+        this.metricsAndPaints = MainModel.instance.metricsAndPaints;
 
         this.dh = metricsAndPaints.dh;
 
@@ -145,7 +144,7 @@ public class TideChartDrawer {
         if (now != null && bitmaps[0] != null) {
             String tide = String.valueOf(Math.round(now / 10f) / 10f);
 
-            if (AppContext.instance.userStat.getSpotsShownCount() > 2 || orientation == 1) {
+            if (MainModel.instance.userStat.getSpotsShownCount() > 2 || orientation == 1) {
                 c.drawCircle(nowx, nowy, dh * 0.6f, paintCircle);
                 if (orientation == 1) {
                     c.rotate(-90);
@@ -214,7 +213,7 @@ public class TideChartDrawer {
 //                if (bitmaps[i-offset] != null) si = i-offset+1;
 //            }
 //            tideChartBitmapsAsyncDrawer = new TideChartBitmapsAsyncDrawer(si, this); //MainActivity.NDAYS - offset);
-//            tideChartBitmapsAsyncDrawer = new TideChartBitmapsAsyncDrawer(0, AppContext.instance.surfSpots.getSelectedSpot(), this);
+//            tideChartBitmapsAsyncDrawer = new TideChartBitmapsAsyncDrawer(0, MainModel.instance.surfSpots.getSelectedSpot(), this);
 //        }
         tideChartBitmapsAsyncDrawer.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
 

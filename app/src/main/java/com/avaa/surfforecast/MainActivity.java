@@ -62,9 +62,7 @@ public class MainActivity extends AppCompatActivity {
     int colorTextSpotNames = 0xffffff;
     int colorConditionsPreviews = 0xffffff;
 
-    AppContext appContext;
-
-    MainModel mainModel;
+    MainModel model;
 //    TidesProvider tidesProvider;
 //    SurfSpots surfSpots;
 //    UserStat userStat;
@@ -112,26 +110,24 @@ public class MainActivity extends AppCompatActivity {
         };
 
 
-        appContext = AppContext.getInstance(this, sharedPreferences, bsl);
+        model = MainModel.getInstance(this, sharedPreferences, bsl);
 
-        mainModel = new MainModel(this, bsl);
-
-        mainModel.addChangeListener(changes -> {
-            if (mainModel.selectedConditions==null) {
-                int day = Math.round(mainModel.getDay());
+        model.addChangeListener(changes -> {
+            if (model.selectedConditions==null) {
+                int day = Math.round(model.getDay());
                 tvRating.setText(capitalize(CommandsExecutor.intDayToNL(day)));
                 rv.setRating(0, 0);
             }
             else {
-                int day = Math.round(mainModel.getDay());
-                tvRating.setText(capitalize(CommandsExecutor.intDayToNL(day)) + " " + CommandsExecutor.intTimeToNL(mainModel.selectedTime));
-                rv.setRating(mainModel.selectedRating, mainModel.selectedConditions.waveRating);
+                int day = Math.round(model.getDay());
+                tvRating.setText(capitalize(CommandsExecutor.intDayToNL(day)) + " " + CommandsExecutor.intTimeToNL(model.selectedTime));
+                rv.setRating(model.selectedRating, model.selectedConditions.waveRating);
             }
         });
 
-        appContext.surfSpots.addChangeListener(changes -> {
+        model.surfSpots.addChangeListener(changes -> {
             if (changes.contains(SurfSpots.Change.SELECTED_SPOT)) {
-                listSpots.select(spotsTV.get(mainModel.selectedSpotI));
+                listSpots.select(spotsTV.get(model.selectedSpotI));
             }
             if (changes.contains(SurfSpots.Change.CONDITIONS)) {
                 updateSurfConditionsImages();
@@ -139,13 +135,13 @@ public class MainActivity extends AppCompatActivity {
 
             //rating
 
-            SurfSpot surfSpot = mainModel.getSelectedSpot();
+            SurfSpot surfSpot = model.getSelectedSpot();
             SurfConditions now = surfSpot.conditionsProvider.getNow();
 
             if (now != null) {
-                now.addMETAR(appContext.surfSpots.currentMETAR);
+                now.addMETAR(model.surfSpots.currentMETAR);
 
-                TideData tideData = appContext.tideDataProvider.getTideData(surfSpot.tidePortID);
+                TideData tideData = model.tideDataProvider.getTideData(surfSpot.tidePortID);
                 if (tideData != null) {
                     float rate = now.rate(surfSpot, tideData, 0, Common.getNowTimeInt(Common.TIME_ZONE));
                     //((TextView)findViewById(R.id.tvRating)).setText("Rating: " + rate + "\nWave: " + now.waveRating + "\nWind: " + now.windRating + "\nTide: " + now.tideRating);
@@ -162,6 +158,7 @@ public class MainActivity extends AppCompatActivity {
 //            Window w = getWindow(); // in Activity's onCreate() for instance
 //            w.setFlags(WindowManager.LayoutParams.FLAG_LAYOUT_NO_LIMITS, WindowManager.LayoutParams.FLAG_LAYOUT_NO_LIMITS);
 //        }
+
         setContentView(R.layout.activity_main);
 
         vif = (VoiceInterfaceFragment)getSupportFragmentManager().findFragmentById(R.id.vif);
@@ -178,13 +175,13 @@ public class MainActivity extends AppCompatActivity {
         tvRating = ((TextView) findViewById(R.id.tvRating));
         rv = ((RatingView) findViewById(R.id.ratingView));
 
-        vif.commandsExecutor = new CommandsExecutor(appContext, mainModel);
+        vif.commandsExecutor = new CommandsExecutor(model);
 
         progressBar.getIndeterminateDrawable().setColorFilter(0xffffffff, PorterDuff.Mode.SRC_IN );
         progressBar.setVisibility(busyCount > 0 ? View.VISIBLE : View.INVISIBLE);
 
         btnMenu.setOnClickListener(v2 -> {
-            SurfSpot spot = mainModel.getSelectedSpot();
+            SurfSpot spot = model.getSelectedSpot();
 
             PopupMenu menu = new PopupMenu(this, btnMenu);
 
@@ -192,12 +189,12 @@ public class MainActivity extends AppCompatActivity {
                 switch (item.getItemId()) {
                 case 0:
                     spot.conditionsProvider.update();
-                    appContext.metarProvider.update(spot.metarName);
-                    appContext.tideDataProvider.fetchIfNeed(spot.tidePortID);
+                    model.metarProvider.update(spot.metarName);
+                    model.tideDataProvider.fetchIfNeed(spot.tidePortID);
                     return true;
                 case 1:
-                    appContext.surfSpots.swapFavorite(spot);
-                    listSpots.getView(mainModel.selectedSpotI).setText(spot.name + (spot.favorite ? "   " + "\u2605" : ""));
+                    model.surfSpots.swapFavorite(spot);
+                    listSpots.getView(model.selectedSpotI).setText(spot.name + (spot.favorite ? "   " + "\u2605" : ""));
                     return true;
                 case 2: {
                     Intent geoIntent = new Intent(Intent.ACTION_VIEW, Uri.parse("geo:" + spot.la + "," + spot.lo + "?q=" + spot.la + "," + spot.lo + "(" + spot.name + ")"));
@@ -239,9 +236,6 @@ public class MainActivity extends AppCompatActivity {
         mainLayout.setBackgroundColor(colorBG);
         baliMap.setAccentColor(colorAccent);
 
-        baliMap.setModel(mainModel);
-        forecast.setModel(mainModel);
-
         //baliMap.surfSpotsList = surfSpots.getAll();
 
         daysScroller.setLayoutParams(new RelativeLayout.LayoutParams(0, (int) (density * 2)));
@@ -255,7 +249,7 @@ public class MainActivity extends AppCompatActivity {
             int w = (int) (smallView.getWidth() * scale);
             float x = smallView.getX() + smallView.getWidth() / 2;
 
-            mainModel.setDay(j);
+            model.setDay(j);
 
             if (offset > 0) {
                 j++;
@@ -308,7 +302,7 @@ public class MainActivity extends AppCompatActivity {
             }
         };
 
-        appContext.init();
+        model.init();
 
         resetDates();
 
@@ -369,13 +363,13 @@ public class MainActivity extends AppCompatActivity {
     protected void onResume() {
         super.onResume();
         resetDates();
-        mainModel.updateCurrentConditions();
+        model.updateCurrentConditions();
         baliMap.resume();
     }
     @Override
     protected void onStop() {
-        appContext.userStat.save();
-        appContext.metarProvider.save();
+        model.userStat.save();
+        model.metarProvider.save();
         super.onStop();
         baliMap.stop();
     }
@@ -491,7 +485,7 @@ public class MainActivity extends AppCompatActivity {
             else params.setMargins(0, 0, 0, daysBottom+dh/2);
 
             scv.setLayoutParams(params);
-            scv.setMetrics(appContext.metricsAndPaints);
+            scv.setMetrics(model.metricsAndPaints);
             i--;
         }
         baliMap.setDh(dh);
@@ -528,9 +522,9 @@ public class MainActivity extends AppCompatActivity {
             int maxDH = (int)(Math.min(w, h) / 13f);
             dh = Math.min(maxDH, Math.max(minDH, dh));
 
-            appContext.metricsAndPaints = new MetricsAndPaints(density, dh);
+            model.metricsAndPaints = new MetricsAndPaints(density, dh);
 
-            setMetrics(appContext.metricsAndPaints);
+            setMetrics(model.metricsAndPaints);
 
 //            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN) {
 //                mainLayout.getViewTreeObserver().removeOnGlobalLayoutListener(this);
@@ -543,10 +537,10 @@ public class MainActivity extends AppCompatActivity {
         List<View> views = new ArrayList<>();
         View selected = null;
         int i = 0;
-        SurfSpots surfSpots = appContext.surfSpots;
-        int ssi = mainModel.selectedSpotI;
+        SurfSpots surfSpots = model.surfSpots;
+        int ssi = model.selectedSpotI;
 
-        MetricsAndPaints metricsAndPaints = appContext.metricsAndPaints;
+        MetricsAndPaints metricsAndPaints = model.metricsAndPaints;
 
         for (com.avaa.surfforecast.data.SurfSpot SurfSpot : surfSpots.getAll()) {
             if (surfSpots.categories.containsKey(i)) {
@@ -584,7 +578,7 @@ public class MainActivity extends AppCompatActivity {
 
         listSpots.setDH(dh);
         listSpots.setViews(views);
-        listSpots.onSelected = mainModel::setSelectedSpotI;
+        listSpots.onSelected = model::setSelectedSpotI;
 
         final View finalSelected = selected;
         listSpots.post(() -> listSpots.select(finalSelected));
@@ -612,7 +606,7 @@ public class MainActivity extends AppCompatActivity {
 
 
     private void updateConditionsSmallViews() {
-        SurfConditionsProvider conditionsProvider = mainModel.getSelectedSpot().conditionsProvider;
+        SurfConditionsProvider conditionsProvider = model.getSelectedSpot().conditionsProvider;
         for (int i = 0; i < smallViews.size(); i++) {
             smallViews.get(i).setConditions(conditionsProvider.get(i));
         }
@@ -627,9 +621,9 @@ public class MainActivity extends AppCompatActivity {
     public void performSelectSpot(SurfSpot spot, Runnable after) {
         Log.i(TAG, "performSelectSpot(" + spot.name + ")");
 
-        int spotI = appContext.surfSpots.indexOf(spot);
+        int spotI = model.surfSpots.indexOf(spot);
 
-        if (mainModel.selectedSpotI != spotI) {
+        if (model.selectedSpotI != spotI) {
             View view = spotsTV.get(spotI);
             listSpots.awake(() -> listSpots.scrollTo(view, () -> listSpots.select(view, after)));
         }

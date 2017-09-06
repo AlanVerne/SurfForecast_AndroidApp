@@ -2,9 +2,8 @@ package com.avaa.surfforecast.data;
 
 import android.content.SharedPreferences;
 import android.os.AsyncTask;
-import android.util.Log;
 
-import com.avaa.surfforecast.AppContext;
+import com.avaa.surfforecast.MainModel;
 
 import java.util.ArrayList;
 import java.util.Calendar;
@@ -19,7 +18,6 @@ import java.util.SortedMap;
 import java.util.TreeMap;
 
 import static com.avaa.surfforecast.data.Common.TIME_ZONE;
-import static com.avaa.surfforecast.data.Common.getDay;
 
 /**
  * Created by Alan on 2 Jul 2016.
@@ -181,7 +179,7 @@ public class SurfConditionsProvider {
 
 
     private boolean load() {
-        SharedPreferences sp = AppContext.instance.sharedPreferences;
+        SharedPreferences sp = MainModel.instance.sharedPreferences;
 
         lastUpdate = sp.getLong(SPKEY_SF_LAST_UPDATE + url, 0);
 
@@ -200,7 +198,7 @@ public class SurfConditionsProvider {
         return needUpdate();
     }
     public void save() {
-        SharedPreferences sp = AppContext.instance.sharedPreferences;
+        SharedPreferences sp = MainModel.instance.sharedPreferences;
 
         Set<String> tidesStringSet = new HashSet<>();
         for (Map.Entry<Long, SurfConditions> i : conditions.entrySet()) {

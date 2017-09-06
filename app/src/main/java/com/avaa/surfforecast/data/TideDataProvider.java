@@ -4,7 +4,7 @@ import android.content.SharedPreferences;
 import android.support.annotation.NonNull;
 import android.util.Log;
 
-import com.avaa.surfforecast.AppContext;
+import com.avaa.surfforecast.MainModel;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -108,7 +108,7 @@ public class TideDataProvider {
 
 
     private void load() {
-        SharedPreferences sp = AppContext.instance.sharedPreferences;
+        SharedPreferences sp = MainModel.instance.sharedPreferences;
 
         Set<String> portIDs = sp.getStringSet(SPKEY_SAVED_PORT_IDS, null);
         if (portIDs == null) return;
@@ -125,7 +125,7 @@ public class TideDataProvider {
 
 
     private void save(String id) {
-        SharedPreferences sp = AppContext.instance.sharedPreferences;
+        SharedPreferences sp = MainModel.instance.sharedPreferences;
 
         SharedPreferences.Editor edit = sp.edit();
 

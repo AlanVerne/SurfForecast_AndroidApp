@@ -1,10 +1,8 @@
 package com.avaa.surfforecast.data;
 
 import android.content.SharedPreferences;
-import android.util.Log;
 
-import com.avaa.surfforecast.AppContext;
-import com.avaa.surfforecast.data.BusyStateListener;
+import com.avaa.surfforecast.MainModel;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -73,7 +71,7 @@ public class UserStat {
         surfingExperience = sharedPreferences.getInt(SPKEY_SURFING_EXPERIENCE, -1);
     }
     public void save() {
-        SharedPreferences.Editor spe = AppContext.instance.sharedPreferences.edit();
+        SharedPreferences.Editor spe = MainModel.instance.sharedPreferences.edit();
         spe.putInt(SPKEY_SPOTS_SHOWN_COUNT, spotsShownCount);
         spe.putInt(SPKEY_SURFING_EXPERIENCE, surfingExperience);
         spe.apply();

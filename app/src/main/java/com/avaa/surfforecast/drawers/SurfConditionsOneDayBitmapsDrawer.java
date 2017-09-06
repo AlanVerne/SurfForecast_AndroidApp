@@ -7,7 +7,7 @@ import android.graphics.Path;
 import android.graphics.RectF;
 import android.graphics.Typeface;
 
-import com.avaa.surfforecast.AppContext;
+import com.avaa.surfforecast.MainModel;
 import com.avaa.surfforecast.data.Common;
 import com.avaa.surfforecast.data.Direction;
 import com.avaa.surfforecast.data.SurfConditions;
@@ -48,7 +48,7 @@ public class SurfConditionsOneDayBitmapsDrawer {
         this.density = metricsAndPaints.densityDHDependent;
         this.dh = metricsAndPaints.dh;
 
-        drawMeasures = AppContext.instance.userStat.userLevel == 2;
+        drawMeasures = MainModel.instance.userStat.userLevel == 2;
 
         paintDirection = new Paint() {{
             setAntiAlias(true);

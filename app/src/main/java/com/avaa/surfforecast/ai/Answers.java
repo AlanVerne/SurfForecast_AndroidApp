@@ -1,6 +1,5 @@
 package com.avaa.surfforecast.ai;
 
-import com.avaa.surfforecast.AppContext;
 import com.avaa.surfforecast.MainModel;
 import com.avaa.surfforecast.data.Common;
 import com.avaa.surfforecast.data.Direction;
@@ -18,12 +17,10 @@ import static com.avaa.surfforecast.ai.ToNL.*;
 
 public class Answers {
     public static final String TAG = "Answers";
-    
-    public final AppContext appContext;
+
     public final MainModel mainModel;
 
-    public Answers(AppContext appContext, MainModel mainModel) {
-        this.appContext = appContext;
+    public Answers(MainModel mainModel) {
         this.mainModel = mainModel;
     }
 
@@ -31,7 +28,7 @@ public class Answers {
 
 
     public Answer windNow() {
-        SurfSpots surfSpots = appContext.surfSpots;
+        SurfSpots surfSpots = mainModel.surfSpots;
 
         METAR currentMETAR = surfSpots.currentMETAR;
         if (currentMETAR != null) return windAns(currentMETAR.windSpeed, currentMETAR.windAngle, mainModel.getSelectedSpot());
@@ -42,10 +39,10 @@ public class Answers {
         return null;
     }
     public Answer swellNow() {
-        return swellAns(appContext.surfSpots.currentConditions);
+        return swellAns(mainModel.surfSpots.currentConditions);
     }
     public Answer tideNow() {
-        return tideNowAns(appContext.tideDataProvider.getTideData(Common.BENOA_PORT_ID)); // appContext.surfSpots.currentTideData // TODO
+        return tideNowAns(mainModel.tideDataProvider.getTideData(Common.BENOA_PORT_ID)); // mainModel.surfSpots.currentTideData // TODO
     }
 
 
@@ -60,7 +57,7 @@ public class Answers {
     }
     public Answer tide(int plusDays, int time) {
         SurfSpot surfSpot = mainModel.getSelectedSpot();
-        return tideAns(appContext.tideDataProvider.getTideData(surfSpot.tidePortID), plusDays, time); // appContext.surfSpots.currentTideData // TODO
+        return tideAns(mainModel.tideDataProvider.getTideData(surfSpot.tidePortID), plusDays, time); // mainModel.surfSpots.currentTideData // TODO
     }
     public Answer wind(int pd, int time) {
         SurfSpot surfSpot = mainModel.getSelectedSpot();

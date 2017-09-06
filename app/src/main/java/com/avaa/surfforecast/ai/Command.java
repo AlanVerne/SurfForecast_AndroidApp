@@ -1,15 +1,10 @@
 package com.avaa.surfforecast.ai;
 
-import android.util.Log;
-
-import com.avaa.surfforecast.AppContext;
+import com.avaa.surfforecast.MainModel;
 import com.avaa.surfforecast.data.Common;
 import com.avaa.surfforecast.data.SurfSpot;
 
-import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
-import java.util.Objects;
 
 /**
  * Created by Alan on 20 Jan 2017.
@@ -69,11 +64,11 @@ public class Command {
         }
         else {
             if (day != null) {
-                s = s.replace("[day]", AppContext.instance.commandsExecutor.intDayToNL(day));
+                s = s.replace("[day]", MainModel.instance.commandsExecutor.intDayToNL(day));
             }
 //            if (timeOfDay != null) s = s.replace("[time]", timeOfDay.get(0));
             if (time != null) {
-                s = s.replace("[time]", AppContext.instance.commandsExecutor.intTimeToNL(time));
+                s = s.replace("[time]", MainModel.instance.commandsExecutor.intTimeToNL(time));
             }
         }
         return s;

@@ -3,9 +3,8 @@ package com.avaa.surfforecast.data;
 import android.content.SharedPreferences;
 import android.graphics.PointF;
 import android.os.Handler;
-import android.util.Log;
 
-import com.avaa.surfforecast.AppContext;
+import com.avaa.surfforecast.MainModel;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -39,10 +38,10 @@ public class SurfSpots {
 //        selectedSpotI = i;
 //        updateCurrentConditions(false);
 //        //Log.i("SurfSpots", "setSelectedSpotI() 2");
-//        AppContext.instance.userStat.incrementSpotsShownCount();
+//        MainModel.instance.userStat.incrementSpotsShownCount();
 //        fireChanged(new HashSet<Change>(){{add(Change.SELECTED_SPOT);add(Change.CONDITIONS);add(Change.CURRENT_CONDITIONS);}});
 //
-//        SharedPreferences sp = AppContext.instance.sharedPreferences;
+//        SharedPreferences sp = MainModel.instance.sharedPreferences;
 //        sp.edit().putInt(SPKEY_SELECTED_SPOT, selectedSpotI).apply();
 //    }
 //    public SurfSpot getSelectedSpot() {
@@ -96,7 +95,7 @@ public class SurfSpots {
 //        spot.conditionsProvider.updateIfNeed();
 //
 //        SurfConditions newCC = spot.conditionsProvider.getNow();
-//        METAR newMETAR = AppContext.instance.metarProvider.get(spot.metarName);
+//        METAR newMETAR = MainModel.instance.metarProvider.get(spot.metarName);
 //
 //        if (newCC == currentConditions && newMETAR == currentMETAR) return;
 //
@@ -130,12 +129,12 @@ public class SurfSpots {
         return favSpots;
     }
     public void setFavorite(int i, boolean b) {
-        SharedPreferences sp = AppContext.instance.sharedPreferences;
+        SharedPreferences sp = MainModel.instance.sharedPreferences;
         list.get(i).favorite = b;
         sp.edit().putStringSet(SPKEY_FAV_SPOTS, getFavorite()).apply();
     }
     public void setFavorite(SurfSpot surfSpot, boolean b) {
-        SharedPreferences sp = AppContext.instance.sharedPreferences;
+        SharedPreferences sp = MainModel.instance.sharedPreferences;
         surfSpot.favorite = b;
         sp.edit().putStringSet(SPKEY_FAV_SPOTS, getFavorite()).apply();
     }
@@ -258,8 +257,8 @@ public class SurfSpots {
         }
     }
     public void init() {
-        final AppContext appContext = AppContext.instance;
-        final SharedPreferences sp = appContext.sharedPreferences;
+        final MainModel mainModel = MainModel.instance;
+        final SharedPreferences sp = mainModel.sharedPreferences;
 
         Set<String> favSpots = sp.getStringSet(SPKEY_FAV_SPOTS, null);
         if (favSpots != null) {
