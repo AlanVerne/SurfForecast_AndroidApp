@@ -1,4 +1,4 @@
-package com.avaa.surfforecast.views;
+package com.avaa.surfforecast.views.Map;
 
 
 import android.content.Context;
@@ -18,6 +18,9 @@ public class MapCircle {
 
     protected FloatScroller scrollerVisible;
     protected FloatScroller scrollerHints;
+
+    protected static float z = 0.5f;
+    protected static float subZ = 0.2f;
 
 
     protected final Paint paintBG = new Paint() {{

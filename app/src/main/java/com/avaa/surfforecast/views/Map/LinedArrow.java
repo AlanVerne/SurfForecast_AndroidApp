@@ -1,4 +1,4 @@
-package com.avaa.surfforecast.views;
+package com.avaa.surfforecast.views.Map;
 
 import android.graphics.Path;
 

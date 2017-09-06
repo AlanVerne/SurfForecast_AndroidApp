@@ -1,4 +1,4 @@
-package com.avaa.surfforecast.views;
+package com.avaa.surfforecast.views.Map;
 
 import android.content.Context;
 import android.widget.Scroller;
@@ -47,7 +47,7 @@ public class FloatScroller {
             if (!scroller.isFinished()) scroller.abortAnimation();
             if (smooth) {
                 int dx = (int) ((to-value) * 1000f);
-                scroller.startScroll((int)(value*1000f), 0, dx, 0, 333);
+                scroller.startScroll((int)(value*1000f), 0, dx, 0, 1000);
                 return false;
             }
             else {

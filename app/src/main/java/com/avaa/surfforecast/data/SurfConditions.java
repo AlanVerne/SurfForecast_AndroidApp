@@ -110,16 +110,16 @@ public class SurfConditions {
 
 
     private void rateWave(SurfSpot spot) {
-        Log.i(TAG, "wave " + waveHeight);
+//        Log.i(TAG, "wave " + waveHeight);
         if (spot.maxSwell - spot.minSwell != 0) {
             float swellHeightAve = (spot.maxSwell + spot.minSwell) / 2f;
 
             waveRating = (getWaveHeightInFt() - swellHeightAve) / (swellHeightAve - spot.minSwell);
-            Log.i(TAG, "waveRating " + waveRating);
+//            Log.i(TAG, "waveRating " + waveRating);
             waveRating = Math.max(0f, 1f - waveRating * waveRating);
-            Log.i(TAG, "waveRating " + waveRating);
+//            Log.i(TAG, "waveRating " + waveRating);
             waveRating = Math.max(0f, Math.min(1f, waveRating * ((wavePeriod - 7) / 7f)));
-            Log.i(TAG, "waveRating " + waveRating);
+//            Log.i(TAG, "waveRating " + waveRating);
         }
     }
 
@@ -128,7 +128,7 @@ public class SurfConditions {
 
         Integer tide = tideData.getTide(day, time);
 
-        Log.i(TAG, "tide " + tide);
+//        Log.i(TAG, "tide " + tide);
 
         tideRating = 0;
 
@@ -136,7 +136,7 @@ public class SurfConditions {
             int t0 = TideData.tideToHML(tide);
             if ((spot.tides & t0) != 0) tideRating = 0.8f;
 
-            Log.i(TAG, "tideRating " + tideRating);
+//            Log.i(TAG, "tideRating " + tideRating);
 
             time += 60;
             if (time > 24 * 60) {
@@ -144,14 +144,14 @@ public class SurfConditions {
                 time -= 24 * 60;
             }
             tide = tideData.getTide(day, time);
-            Log.i(TAG, "tide " + tide);
+//            Log.i(TAG, "tide " + tide);
             if (tide != null) {
                 int t1 = TideData.tideToHML(tide);
                 if ((spot.tides & t1) != 0) tideRating += 0.2f;
                 else if (tideRating > 0.3f) tideRating -= 0.3f;
             }
 
-            Log.i(TAG, "tideRating " + tideRating);
+//            Log.i(TAG, "tideRating " + tideRating);
         }
     }
 
@@ -176,7 +176,7 @@ public class SurfConditions {
 //        if (windRating == -1)
         rateWind(spot);
 
-        Log.i("SurfConditions", "rate(" + spot.getShortName() + ", " + time / 60 + ":00), rated: " + waveRating + ", " + windRating + ", " + tideRating);
+//        Log.i("SurfConditions", "rate(" + spot.getShortName() + ", " + time / 60 + ":00), rated: " + waveRating + ", " + windRating + ", " + tideRating);
 
         return waveRating * windRating * tideRating;
     }

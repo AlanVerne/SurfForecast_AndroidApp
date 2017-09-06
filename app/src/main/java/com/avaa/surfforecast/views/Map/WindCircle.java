@@ -1,4 +1,4 @@
-package com.avaa.surfforecast.views;
+package com.avaa.surfforecast.views.Map;
 
 
 import android.content.Context;
@@ -8,13 +8,11 @@ import android.graphics.Path;
 import android.graphics.PointF;
 
 import com.avaa.surfforecast.MainModel;
-import com.avaa.surfforecast.data.METAR;
-import com.avaa.surfforecast.data.SurfConditions;
 import com.avaa.surfforecast.drawers.MetricsAndPaints;
+import com.avaa.surfforecast.views.ParallaxHelper;
 
 import static com.avaa.surfforecast.data.Common.STR_KMH;
 import static com.avaa.surfforecast.data.Common.STR_WIND;
-import static com.avaa.surfforecast.views.BaliMap.STR_DASH;
 
 
 /**
@@ -27,13 +25,10 @@ public class WindCircle extends MapCircle {
 
     private static final float DEFAULT_WIND_ANGLE = (float) (Math.PI * 2 - Math.PI * 1 / 4);
 
-    private String strWindSpeed = STR_DASH;
+    private String strWindSpeed = BaliMap.STR_DASH;
 
-    private final FloatScroller angle;
+    protected final FloatScroller angle;
     private final FloatScroller vbr;
-
-
-    private float circlesH = 0.5f;
 
 
     public WindCircle(Context context) {
@@ -47,7 +42,7 @@ public class WindCircle extends MapCircle {
         model.addChangeListener(changes -> {
             int windSpeed = model.getSelectedWindSpeed();
 
-            strWindSpeed = windSpeed == -1 ? STR_DASH : String.valueOf(windSpeed);
+            strWindSpeed = windSpeed == -1 ? BaliMap.STR_DASH : String.valueOf(windSpeed);
 
             if (windSpeed != -1) {
                 setVisible(true, true);
@@ -91,7 +86,7 @@ public class WindCircle extends MapCircle {
         float ax = ox + (float) (cosA * windR);
         float ay = oy - (float) (sinA * windR);
 
-        PointF pp = parallaxHelper.applyParallax(ax, ay, dh * circlesH);
+        PointF pp = parallaxHelper.applyParallax(ax, ay, dh * z);
         ax = pp.x;
         ay = pp.y;
 

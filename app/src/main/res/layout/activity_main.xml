@@ -32,7 +32,7 @@
             app:mpb_useIntrinsicPadding="false"
             style="@style/Widget.MaterialProgressBar.ProgressBar.Horizontal" />
 
-        <com.avaa.surfforecast.views.BaliMap
+        <com.avaa.surfforecast.views.Map.BaliMap
             android:id="@+id/balimap"
             android:layout_width="match_parent"
             android:layout_height="match_parent" />

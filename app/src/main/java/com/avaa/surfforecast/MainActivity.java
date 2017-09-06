@@ -33,7 +33,7 @@ import com.avaa.surfforecast.data.SurfSpot;
 import com.avaa.surfforecast.data.SurfSpots;
 import com.avaa.surfforecast.data.TideData;
 import com.avaa.surfforecast.drawers.MetricsAndPaints;
-import com.avaa.surfforecast.views.BaliMap;
+import com.avaa.surfforecast.views.Map.BaliMap;
 import com.avaa.surfforecast.views.MyList;
 import com.avaa.surfforecast.views.OneDayConditionsSmallView;
 import com.avaa.surfforecast.views.RatingView;

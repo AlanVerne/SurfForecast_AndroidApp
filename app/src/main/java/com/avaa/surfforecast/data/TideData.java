@@ -207,11 +207,11 @@ public class TideData {
     }
 
 
-    public Integer getTide(int plusDays, int time) {
+    public Integer getTide(int plusDays, int time) { // time in 24*60
         return getTide(Common.getDay(plusDays, Common.TIME_ZONE) + time * 60);
     }
 
-    public Integer getTide(long time) {
+    public Integer getTide(long time) { // time with seconds 24*60*60
         float now = time / 60;
 
         int[] values = null;

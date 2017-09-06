@@ -39,7 +39,7 @@ public class SurfSpots {
 //        updateCurrentConditions(false);
 //        //Log.i("SurfSpots", "setSelectedSpotI() 2");
 //        MainModel.instance.userStat.incrementSpotsShownCount();
-//        fireChanged(new HashSet<Change>(){{add(Change.SELECTED_SPOT);add(Change.CONDITIONS);add(Change.CURRENT_CONDITIONS);}});
+//        fireChanged(new HashSet<Change>(){{add(Change.SELECTED_SPOT);add(Change.CONDITIONS);add(Change.SELECTED_CONDITIONS);}});
 //
 //        SharedPreferences sp = MainModel.instance.sharedPreferences;
 //        sp.edit().putInt(SPKEY_SELECTED_SPOT, selectedSpotI).apply();
@@ -105,7 +105,7 @@ public class SurfSpots {
 //
 //        Log.i(TAG, newMETAR == null ? "null" : newMETAR.toString());
 //
-//        if (fire) fireChanged(new HashSet<Change>(){{add(Change.CURRENT_CONDITIONS);}});
+//        if (fire) fireChanged(new HashSet<Change>(){{add(Change.SELECTED_CONDITIONS);}});
 //    }
 
 
@@ -113,7 +113,7 @@ public class SurfSpots {
 //        void onChange(Set<Change> changes);
 //    }
 
-//    public enum Change {SELECTED_SPOT, CONDITIONS, CURRENT_CONDITIONS, SELECTED_DAY, SELECTED_TIME}
+//    public enum Change {SELECTED_SPOT, CONDITIONS, SELECTED_CONDITIONS, SELECTED_DAY, SELECTED_TIME}
 
 //    private Map<ChangeListener, Set<Change>> cls = new HashMap<>();
 

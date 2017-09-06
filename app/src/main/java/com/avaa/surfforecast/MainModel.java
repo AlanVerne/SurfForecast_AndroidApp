@@ -26,7 +26,6 @@ import java.util.Map;
 import java.util.Set;
 
 import static com.avaa.surfforecast.data.Common.TIME_ZONE;
-import static com.avaa.surfforecast.views.BaliMap.STR_DASH;
 
 
 /**
@@ -85,7 +84,7 @@ public class MainModel {
             if (selectedSpot == null) return;
             if (name.equals(selectedSpot.metarName) && selectedMETAR != metar) {
                 selectedMETAR = metar;
-                fireChanged(Change.CURRENT_CONDITIONS);
+                fireChanged(Change.SELECTED_CONDITIONS);
             }
         });
     }
@@ -111,7 +110,7 @@ public class MainModel {
         fireChanged(new HashSet<Change>() {{
             add(Change.SELECTED_SPOT);
             add(Change.CONDITIONS);
-            add(Change.CURRENT_CONDITIONS);
+            add(Change.SELECTED_CONDITIONS);
         }});
 
         SharedPreferences sp = MainModel.instance.sharedPreferences;
@@ -132,7 +131,7 @@ public class MainModel {
             selectedConditions = surfConditionsProvider.getNow();
             fireChanged(new HashSet<Change>() {{
                 add(Change.CONDITIONS);
-                add(Change.CURRENT_CONDITIONS);
+                add(Change.SELECTED_CONDITIONS);
             }});
         }
     };
@@ -151,8 +150,8 @@ public class MainModel {
     private float day = 0;
     public float time = -1;
 
-    public float selectedRating = -1;
-    public int selectedTime = -1;
+    public float selectedRating = 0;
+    public int selectedTime = 0;
 
 
     public int getSelectedWindSpeed() {
@@ -229,7 +228,7 @@ public class MainModel {
         if (selectedConditions != newSC) {
             selectedConditions = newSC;
             fireChanged(new HashSet<Change>() {{
-                add(Change.CURRENT_CONDITIONS);
+                add(Change.SELECTED_CONDITIONS);
             }});
         }
 
@@ -259,7 +258,7 @@ public class MainModel {
         Log.i(TAG, newMETAR == null ? "null" : newMETAR.toString());
 
         if (fire) fireChanged(new HashSet<Change>() {{
-            add(Change.CURRENT_CONDITIONS);
+            add(Change.SELECTED_CONDITIONS);
         }});
     }
 
@@ -268,7 +267,7 @@ public class MainModel {
         void onChange(Set<Change> changes);
     }
 
-    public enum Change {SELECTED_SPOT, CONDITIONS, CURRENT_CONDITIONS, SELECTED_DAY, SELECTED_TIME, TIDE}
+    public enum Change {SELECTED_SPOT, CONDITIONS, SELECTED_CONDITIONS, SELECTED_DAY, SELECTED_TIME, TIDE}
 
     private Map<ChangeListener, Set<Change>> cls = new HashMap<>();
 
