@@ -20,6 +20,7 @@ import android.widget.OverScroller;
 
 import com.avaa.surfforecast.AppContext;
 import com.avaa.surfforecast.MainActivity;
+import com.avaa.surfforecast.MainModel;
 import com.avaa.surfforecast.data.SurfConditionsProvider;
 import com.avaa.surfforecast.drawers.SurfConditionsOneDayBitmapsAsyncDrawer;
 import com.avaa.surfforecast.drawers.TideChartDrawer;
@@ -62,11 +63,22 @@ public class SurfConditionsForecastView extends HorizontalScrollView { //extends
     public final SurfConditionsOneDayBitmaps[] bitmaps = new SurfConditionsOneDayBitmaps[7];
     private int dh = 0;
 
+    private SurfSpot surfSpot = null;
+
+    private MainModel model;
+
+
     public static class SurfConditionsOneDayBitmaps {
         //public SurfConditionsOneDay forSurfConditionsOneDay = null; TODO useless now, uncomment when will preorganize data by days in SurfConditionsProvider
         public Bitmap wave;
         public Bitmap wind;
     }
+
+
+    public void setModel(MainModel model) {
+        this.model = model;
+    }
+
 
     public interface OnScrollChangedListener {
         void onScrollChanged(int i, float offset, float scale);
@@ -102,7 +114,7 @@ public class SurfConditionsForecastView extends HorizontalScrollView { //extends
 //
 //        return super.onTouchEvent(ev);
 //    }
-//
+
 
     float fx, fy;
     boolean isScrollY = false;
@@ -295,7 +307,7 @@ public class SurfConditionsForecastView extends HorizontalScrollView { //extends
         iv.setMinimumHeight(getHeight());
         iv.setLayoutParams(new LayoutParams(dh * 16 * 7, getHeight()));
 
-        if (tideChartDrawer == null) tideChartDrawer = new TideChartDrawer(this);
+        if (tideChartDrawer == null) tideChartDrawer = new TideChartDrawer(this, model);
         else tideChartDrawer.updateDrawer();
 
         redrawSurfConditions();
@@ -376,7 +388,7 @@ public class SurfConditionsForecastView extends HorizontalScrollView { //extends
 
         int w = dh * 16;
         int i = 0;
-        SurfConditionsProvider conditionsProvider = AppContext.instance.surfSpots.getSelectedSpot().conditionsProvider;
+        SurfConditionsProvider conditionsProvider = model.getSelectedSpot().conditionsProvider;
         for (SurfConditionsOneDayBitmaps b : bitmaps) {
             if (x + w > getScrollX()) {
                 if (x > getScrollX() + getWidth()) break;
@@ -560,7 +572,7 @@ public class SurfConditionsForecastView extends HorizontalScrollView { //extends
         Log.i(TAG, "redrawSurfConditions() | 1, dh = " + dh);
         if (dh == 0) return;
 
-        SurfSpot surfSpot = AppContext.instance.surfSpots.getSelectedSpot();
+        SurfSpot surfSpot = model.getSelectedSpot();
 
         if (surfConditionsOneDayBitmapsAsyncDrawer != null && surfConditionsOneDayBitmapsAsyncDrawer.getStatus() != AsyncTask.Status.FINISHED) surfConditionsOneDayBitmapsAsyncDrawer.cancel(true);
 
@@ -598,13 +610,13 @@ public class SurfConditionsForecastView extends HorizontalScrollView { //extends
 
 
     public void redrawCurrentBitmaps() {
-        SurfSpot surfSpot = AppContext.instance.surfSpots.getSelectedSpot();
+        SurfSpot surfSpot = model.getSelectedSpot();
         Integer[] shownDays = getShownDays();
         surfConditionsOneDayBitmapsAsyncDrawer = new SurfConditionsOneDayBitmapsAsyncDrawer(surfSpot, 0, new ArrayList<>(Arrays.asList(shownDays)), this);
         surfConditionsOneDayBitmapsAsyncDrawer.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
     }
     public void redrawOtherBitmaps(ArrayList<Integer> days) {
-        SurfSpot surfSpot = AppContext.instance.surfSpots.getSelectedSpot();
+        SurfSpot surfSpot = model.getSelectedSpot();
         surfConditionsOneDayBitmapsAsyncDrawer = new SurfConditionsOneDayBitmapsAsyncDrawer(surfSpot, 1, days, this);
         surfConditionsOneDayBitmapsAsyncDrawer.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
     }

@@ -57,7 +57,7 @@ public class AppContext {
 
         userStat = new UserStat(sharedPreferences);
         metarProvider = new METARProvider(bsl);
-        surfSpots = new SurfSpots(bsl, sharedPreferences);
+        surfSpots = new SurfSpots(sharedPreferences);
         tideDataProvider = new TideDataProvider();
     }
 }

@@ -110,12 +110,16 @@ public class SurfConditions {
 
 
     private void rateWave(SurfSpot spot) {
+        Log.i(TAG, "wave " + waveHeight);
         if (spot.maxSwell - spot.minSwell != 0) {
             float swellHeightAve = (spot.maxSwell + spot.minSwell) / 2f;
 
             waveRating = (getWaveHeightInFt() - swellHeightAve) / (swellHeightAve - spot.minSwell);
+            Log.i(TAG, "waveRating " + waveRating);
             waveRating = Math.max(0f, 1f - waveRating * waveRating);
+            Log.i(TAG, "waveRating " + waveRating);
             waveRating = Math.max(0f, Math.min(1f, waveRating * ((wavePeriod - 7) / 7f)));
+            Log.i(TAG, "waveRating " + waveRating);
         }
     }
 
@@ -172,7 +176,7 @@ public class SurfConditions {
 //        if (windRating == -1)
         rateWind(spot);
 
-        Log.i("SurfConditions", "rate() | " + spot.getShortName() + ", rated: " + waveRating + ", " + windRating + ", " + tideRating);
+        Log.i("SurfConditions", "rate(" + spot.getShortName() + ", " + time/60 + ":00), rated: " + waveRating + ", " + windRating + ", " + tideRating);
 
         return waveRating * windRating * tideRating;
     }

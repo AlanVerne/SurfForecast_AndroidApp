@@ -6,6 +6,7 @@ import android.text.format.DateUtils;
 import android.util.Log;
 
 import com.avaa.surfforecast.AppContext;
+import com.avaa.surfforecast.MainModel;
 import com.avaa.surfforecast.data.Common;
 import com.avaa.surfforecast.data.METAR;
 import com.avaa.surfforecast.data.SurfConditions;
@@ -38,12 +39,14 @@ public class CommandsExecutor {
     private final Collection<String> timesOfDay;
 
     private final AppContext appContext;
+    private final MainModel mainModel;
     private final Answers answers;
 
 
-    public CommandsExecutor(AppContext c) {
+    public CommandsExecutor(AppContext c, MainModel m) {
         this.appContext = c;
-        answers = new Answers(c);
+        this.mainModel = m;
+        answers = new Answers(c, m);
         initSToDay();
         initSToTime();
         initSToSpot();
@@ -83,18 +86,19 @@ public class CommandsExecutor {
 
         sToDay.put(" " + today + " ", 0);
         sToDay.put(" " + tomorrow + " ", 1);
-        sToDay.put(" " + afterTomorrow + " ", 2);
 
         sToDay.put(" now ", 0);
 
         Calendar c = Common.getCalendarToday(Common.TIME_ZONE);
         for (int i = 0; i < 7; i++) {
             int dayOfWeek = c.get(Calendar.DAY_OF_WEEK);
-            if (i > 1 && dayOfWeek == Calendar.SATURDAY) sToDay.put(" weekend ", i);
             String s = c.getDisplayName(Calendar.DAY_OF_WEEK, Calendar.LONG, Locale.getDefault()).toLowerCase();
             sToDay.put(" " + s + " ", i);
+            if (i > 1 && dayOfWeek == Calendar.SATURDAY) sToDay.put(" weekend ", i);
             c.add(Calendar.DATE, 1);
         }
+
+        sToDay.put(" " + afterTomorrow + " ", 2);
     }
 
     private void initSToSpot() {
@@ -182,7 +186,7 @@ public class CommandsExecutor {
 
 
     public String[] getDefaultOpts() {
-        SurfSpot selectedSpot = appContext.surfSpots.getSelectedSpot();
+        SurfSpot selectedSpot = mainModel.getSelectedSpot();
         String name = selectedSpot.getShortName();
 
         int nowTimeInt = Common.getNowTimeInt(Common.TIME_ZONE);
@@ -546,7 +550,7 @@ public class CommandsExecutor {
         SurfSpot surfSpot = c.spot;
 
         if (surfSpot == null) {
-            surfSpot = appContext.surfSpots.getSelectedSpot();
+            surfSpot = mainModel.getSelectedSpot();
 
             String shortName = surfSpot.getShortName();
             lastAnswer.addClarification("in " + shortName);

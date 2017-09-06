@@ -28,9 +28,9 @@ public class Common {
     public static final String STR_SWELL    = "swell";
     public static final String STR_TIDE     = "tide";
 
-    public static final String STR_WIND_U   = "WIND";
-    public static final String STR_SWELL_U  = "SWELL";
-    public static final String STR_TIDE_U   = "TIDE";
+    public static final String STR_WIND_U   = "Wind";
+    public static final String STR_SWELL_U  = "Swell";
+    public static final String STR_TIDE_U   = "Tide";
 
     public static final String STR_NO_WIND_DATA     = "No wind data";
     public static final String STR_NO_SWELL_DATA    = "No swell data";
