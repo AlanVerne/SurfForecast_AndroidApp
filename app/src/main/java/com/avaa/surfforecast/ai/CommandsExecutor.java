@@ -8,6 +8,8 @@ import android.util.Log;
 import com.avaa.surfforecast.MainModel;
 import com.avaa.surfforecast.data.Common;
 import com.avaa.surfforecast.data.METAR;
+import com.avaa.surfforecast.data.RatedConditions;
+import com.avaa.surfforecast.data.Rater;
 import com.avaa.surfforecast.data.SurfConditions;
 import com.avaa.surfforecast.data.SurfConditionsOneDay;
 import com.avaa.surfforecast.data.SurfSpot;
@@ -168,6 +170,7 @@ public class CommandsExecutor {
         return null;
     }
 
+
     public static String intTimeToNL(int time) {
         for (Map.Entry<String, Integer> e : MainModel.instance.commandsExecutor.sToTime.entrySet()) {
             if (time == e.getValue()) {
@@ -176,6 +179,17 @@ public class CommandsExecutor {
             }
         }
         return "at " + (time / 60) + " o'clock";
+    }
+
+    public static String intTimeToNL(int time, boolean at) {
+        if (at) return intTimeToNL(time);
+        for (Map.Entry<String, Integer> e : MainModel.instance.commandsExecutor.sToTime.entrySet()) {
+            if (time == e.getValue()) {
+                if (time == -1) return e.getKey().trim();
+                else return e.getKey().trim();
+            }
+        }
+        return (time / 60) + " o'clock";
     }
 
 
@@ -290,7 +304,7 @@ public class CommandsExecutor {
 
         lastAnswer = new Answer();
 
-        float best = -1000;
+        float bestRate = -1000;
         Integer bestTime = 0;
         SurfSpot bestSpot = null;
 
@@ -302,20 +316,26 @@ public class CommandsExecutor {
         } else plusDays = c.day;
 
         if (c.time == null) {       //      unspecified time
-            for (SurfSpot surfSpot : mainModel.surfSpots.getFavoriteSurfSpotsList()) {
-                SurfConditionsOneDay surfConditionsOneDay = surfSpot.conditionsProvider.get(plusDays);
-                if (surfConditionsOneDay == null) continue;
-                for (Map.Entry<Integer, SurfConditions> entry : surfConditionsOneDay.entrySet()) {
-                    Integer time = entry.getKey();
-                    if ((plusDays == 0 && time < nowTimeInt - 120) || time < 5 * 60 || time > 19 * 60)
-                        continue;
-                    float rate = entry.getValue().rate(surfSpot, mainModel.tideDataProvider.getTideData(surfSpot.tidePortID), plusDays, time);
-                    if (rate > best) {
-                        best = rate;
-                        bestTime = time;
-                        bestSpot = surfSpot;
-                    }
-                }
+//            for (SurfSpot surfSpot : mainModel.surfSpots.getFavoriteSurfSpotsList()) {
+//                SurfConditionsOneDay surfConditionsOneDay = surfSpot.conditionsProvider.get(plusDays);
+//                if (surfConditionsOneDay == null) continue;
+//                for (Map.Entry<Integer, SurfConditions> entry : surfConditionsOneDay.entrySet()) {
+//                    Integer time = entry.getKey();
+//                    if ((plusDays == 0 && time < nowTimeInt - 120) || time < 5 * 60 || time > 19 * 60)
+//                        continue;
+//                    float rate = entry.getValue().rate(surfSpot, mainModel.tideDataProvider.getTideData(surfSpot.tidePortID), plusDays, time);
+//                    if (rate > bestRate) {
+//                        bestRate = rate;
+//                        bestTime = time;
+//                        bestSpot = surfSpot;
+//                    }
+//                }
+//            }
+            RatedConditions best = MainModel.instance.rater.getBest(plusDays);
+            if (best != null) {
+                bestTime = best.time;
+                bestRate = best.rating;
+                bestSpot = best.surfSpot;
             }
 
             if (bestSpot == null) lastAnswer = new Answer("IDKN");
@@ -367,9 +387,9 @@ public class CommandsExecutor {
                 SurfConditions surfConditions = surfSpot.conditionsProvider.getNow();
                 if (surfConditions == null) continue;
                 surfConditions.addMETAR(currentMETAR);
-                float rate = surfConditions.rate(surfSpot, mainModel.tideDataProvider.getTideData(surfSpot.tidePortID), 0, nowTimeInt);
-                if (rate > best) {
-                    best = rate;
+                float rate = 0;//surfConditions.rate(surfSpot, mainModel.tideDataProvider.getTideData(surfSpot.tidePortID), 0, nowTimeInt);
+                if (rate > bestRate) {
+                    bestRate = rate;
                     bestSpot = surfSpot;
                 }
             }
@@ -404,9 +424,9 @@ public class CommandsExecutor {
             for (SurfSpot surfSpot : mainModel.surfSpots.getFavoriteSurfSpotsList()) {
                 SurfConditions surfConditions = surfSpot.conditionsProvider.get(plusDays).get((int) (c.time));
                 if (surfConditions == null) continue;
-                float rate = surfConditions.rate(surfSpot, mainModel.tideDataProvider.getTideData(surfSpot.tidePortID), plusDays, c.time);
-                if (rate > best) {
-                    best = rate;
+                float rate = 0;//surfConditions.rate(surfSpot, mainModel.tideDataProvider.getTideData(surfSpot.tidePortID), plusDays, c.time);
+                if (rate > bestRate) {
+                    bestRate = rate;
                     bestSpot = surfSpot;
                 }
             }

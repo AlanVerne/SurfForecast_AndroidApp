@@ -19,9 +19,11 @@ import java.util.TreeMap;
 
 import static com.avaa.surfforecast.data.Common.TIME_ZONE;
 
+
 /**
  * Created by Alan on 2 Jul 2016.
  */
+
 
 public class SurfConditionsProvider {
     private static final String TAG = "SurfConditionsProvider";

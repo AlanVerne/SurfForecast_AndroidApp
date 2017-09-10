@@ -44,8 +44,8 @@ public class MapCircle {
 
 
     public MapCircle(Context context) {
-        this.scrollerVisible = new FloatScroller(context, 0);
-        this.scrollerHints = new FloatScroller(context, 1);
+        this.scrollerVisible = new LogicalScroller(context, 0);
+        this.scrollerHints = new LogicalScroller(context, 1);
     }
 
 

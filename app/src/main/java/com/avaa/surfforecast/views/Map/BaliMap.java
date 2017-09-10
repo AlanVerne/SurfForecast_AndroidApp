@@ -10,7 +10,6 @@ import android.graphics.Point;
 import android.graphics.PointF;
 import android.graphics.RectF;
 import android.graphics.Region;
-import android.graphics.Typeface;
 import android.os.Build;
 import android.os.PowerManager;
 import android.util.AttributeSet;
@@ -21,14 +20,12 @@ import android.widget.Scroller;
 
 import com.avaa.surfforecast.MainModel;
 import com.avaa.surfforecast.R;
-import com.avaa.surfforecast.data.Common;
 import com.avaa.surfforecast.data.METAR;
+import com.avaa.surfforecast.data.RatedConditions;
+import com.avaa.surfforecast.data.Rater;
 import com.avaa.surfforecast.data.SurfConditions;
-import com.avaa.surfforecast.data.SurfConditionsOneDay;
 import com.avaa.surfforecast.data.SurfSpot;
 import com.avaa.surfforecast.data.SurfSpots;
-import com.avaa.surfforecast.data.TideData;
-import com.avaa.surfforecast.data.TideDataProvider;
 import com.avaa.surfforecast.drawers.MetricsAndPaints;
 import com.avaa.surfforecast.drawers.SVGPathToAndroidPath;
 import com.avaa.surfforecast.views.ParallaxHelper;
@@ -39,13 +36,8 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 import java.util.Timer;
 import java.util.TimerTask;
-
-import static com.avaa.surfforecast.data.Common.STR_M;
-import static com.avaa.surfforecast.data.Common.STR_TIDE;
-import static com.avaa.surfforecast.data.Common.TIME_ZONE;
 
 
 /**
@@ -580,7 +572,7 @@ public class BaliMap extends View {
         dy += pp.y;
 
         int i = 0;
-        float best = -1000;
+        float bestRate = -1000;
         Integer bestTime = 0;
         SurfSpot bestSpot = null;
         for (SurfSpot spot : surfSpotsList) {
@@ -614,41 +606,9 @@ public class BaliMap extends View {
                 if (model != null) {
                     plusDays = Math.round(model.getDay());
                 }
-                SurfConditions surfConditions = null;
-                int nowTimeInt = Common.getNowTimeInt(Common.TIME_ZONE);
-                float rate = 0;
-//                if (plusDays == 0) {
-//                    surfConditions = spot.conditionsProvider.getNow();
-//                }
-//                else {
-                SurfConditionsOneDay surfConditionsOneDay = spot.conditionsProvider.get(plusDays);
-                if (surfConditionsOneDay == null) continue;
-                int bestForThisSpot = -1;
-                for (Map.Entry<Integer, SurfConditions> entry : surfConditionsOneDay.entrySet()) {
-                    Integer time = entry.getKey();
-                    if ((plusDays == 0 && time < nowTimeInt - 120) || time < 5 * 60 || time > 19 * 60)
-                        continue;
-                    rate = entry.getValue().rate(spot, MainModel.instance.tideDataProvider.getTideData(spot.tidePortID), plusDays, time);
-                    if (rate > bestForThisSpot) {
-//                            best = rate;
-                        surfConditions = entry.getValue(); //spot.conditionsProvider.get(plusDays);
-                    }
-                    if (rate > best) {
-                        best = rate;
-                        bestTime = time;
-                        bestSpot = spot;
-//                            surfConditions = entry.getValue(); //spot.conditionsProvider.get(plusDays);
-                    }
-                }
-//                }
 
-                if (surfConditions != null) {
-//                    TideData tideData = MainModel.instance.tideDataProvider.getTideData(spot.tidePortID);
-//                    if (tideData != null) {
-//                        float rate = surfConditions.rate(spot, tideData, 0, Common.getNowTimeInt(Common.TIME_ZONE));
-                    RatingView.drawStatic(canvas, (int) x - dh, (int) y, dh / 4, rate, surfConditions.waveRating * surfConditions.tideRating, (int) (t * 255));
-//                    }
-                }
+                RatedConditions best = MainModel.instance.rater.getBest(spot, plusDays);
+                if (best != null) RatingView.drawStatic(canvas, (int) x - dh, (int) y, dh / 4, best.rating, best.waveRating * best.tideRating, (int) (t * 255));
             }
             i++;
         }

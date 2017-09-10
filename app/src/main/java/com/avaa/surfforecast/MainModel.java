@@ -9,6 +9,8 @@ import com.avaa.surfforecast.data.BusyStateListener;
 import com.avaa.surfforecast.data.Common;
 import com.avaa.surfforecast.data.METAR;
 import com.avaa.surfforecast.data.METARProvider;
+import com.avaa.surfforecast.data.RatedConditions;
+import com.avaa.surfforecast.data.Rater;
 import com.avaa.surfforecast.data.SurfConditions;
 import com.avaa.surfforecast.data.SurfConditionsOneDay;
 import com.avaa.surfforecast.data.SurfConditionsProvider;
@@ -50,6 +52,8 @@ public class MainModel {
     public final SurfSpots surfSpots;
     public final TideDataProvider tideDataProvider;
 
+    public final Rater rater;
+
     public VoiceRecognitionHelper voiceRecognitionHelper;
     public CommandsExecutor commandsExecutor;
 
@@ -73,6 +77,8 @@ public class MainModel {
         metarProvider = new METARProvider(bsl);
         surfSpots = new SurfSpots(sharedPreferences);
         tideDataProvider = new TideDataProvider();
+
+        rater = new Rater();
 
         for (SurfSpot surfSpot : surfSpots.getAll()) {
             surfSpot.conditionsProvider.setBsl(bsl);
@@ -152,6 +158,7 @@ public class MainModel {
 
     public float selectedRating = 0;
     public int selectedTime = 0;
+    public RatedConditions selectedRatedConditions = null;
 
 
     public int getSelectedWindSpeed() {
@@ -202,27 +209,13 @@ public class MainModel {
 
             selectedRating = -1;
 
-            for (int time = 6; time < 18; time++) {
-                SurfConditions conditions = conditionsOneDay.get(time * 60);
-                if ((day == 0 && time * 60 < nowTimeInt - 120 && nowTimeInt < 18) || time < 5 || time > 19 || conditions == null)
-                    continue;
-                float rate = conditions.rate(spot, MainModel.instance.tideDataProvider.getTideData(spot.tidePortID), Math.round(day), time * 60);
-                if (rate > selectedRating) {
-                    selectedRating = rate;
-                    selectedTime = time * 60;
-                    newSC = conditions;
-                }
+            RatedConditions best = MainModel.instance.rater.getBest(spot, Math.round(day));
+            if (best != null) {
+                selectedTime = best.time;
+                selectedRating = best.rating;
+                newSC = best.surfConditions;
+                selectedRatedConditions = best;
             }
-//            for (Map.Entry<Integer, SurfConditions> entry : conditionsOneDay.entrySet()) {
-//                Integer time = entry.getKey();
-//                if ((day == 0 && time < nowTimeInt - 120 && nowTimeInt < 18*60) || time < 5 * 60 || time > 19 * 60) continue;
-//                float rate = entry.getValue().rate(spot, MainModel.instance.tideDataProvider.getTideData(spot.tidePortID), Math.round(day), time);
-//                if (rate > selectedRating) {
-//                    selectedRating = rate;
-//                    selectedTime = time;
-//                    newSC = entry.getValue();
-//                }
-//            }
         }
 
         if (selectedConditions != newSC) {

@@ -51,14 +51,16 @@ public class TideCircle extends MapCircle {
     public void paint(Canvas c, float ox, float oy, float awakenedState, ParallaxHelper parallaxHelper) {
         MetricsAndPaints metricsAndPaints = MainModel.instance.metricsAndPaints;
 
+        float visible = scrollerVisible.getValue();
+        float hintsVisible = scrollerHints.getValue();
+
+        awakenedState *= visible;
+
         int dh = metricsAndPaints.dh;
         paintFont.setTextSize(awakenedState * metricsAndPaints.font);
         paintHintsFont.setTextSize(awakenedState * metricsAndPaints.fontSmall);
 
         float fontH = awakenedState * metricsAndPaints.fontH;
-
-        float visible = scrollerVisible.getValue();
-        float hintsVisible = scrollerHints.getValue();
 
         if (tide == null) return;
 
@@ -94,7 +96,7 @@ public class TideCircle extends MapCircle {
         paintFont.setColor(MetricsAndPaints.colorTideBG);
         c.drawCircle(x, y, dotR, paintFont);
 
-        paintFont.setColor((int) (j * 0xff) * 0x1000000 + 0x00ffffff);
+        paintFont.setColor((int) (visible * 0xff) * 0x1000000 + 0x00ffffff);
 
         String strTide = tide == null ? "-" : String.valueOf(Math.round(tide / 10f) / 10f);
 

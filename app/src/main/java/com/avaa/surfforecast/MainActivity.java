@@ -87,6 +87,7 @@ public class MainActivity extends AppCompatActivity {
 
     LinearLayout llRating;
     TextView tvRating;
+    TextView tvRatingTime;
     RatingView rv;
 
     SharedPreferences sharedPreferences;
@@ -110,18 +111,19 @@ public class MainActivity extends AppCompatActivity {
             //Log.i(TAG, "busyCount: " + busyCount);
         };
 
-
         model = MainModel.getInstance(this, sharedPreferences, bsl);
 
         model.addChangeListener(changes -> {
             if (model.selectedConditions == null) {
                 int day = Math.round(model.getDay());
                 tvRating.setText(capitalize(CommandsExecutor.intDayToNL(day)));
+                ((TextView) findViewById(R.id.tvRatingTime)).setText("");
                 rv.setRating(0, 0);
             } else {
                 int day = Math.round(model.getDay());
-                tvRating.setText(capitalize(CommandsExecutor.intDayToNL(day)) + " " + CommandsExecutor.intTimeToNL(model.selectedTime));
-                rv.setRating(model.selectedRating, model.selectedConditions.waveRating);
+                tvRating.setText(capitalize(CommandsExecutor.intDayToNL(day)));
+                ((TextView) findViewById(R.id.tvRatingTime)).setText(capitalize(CommandsExecutor.intTimeToNL(model.selectedTime, false)));
+                rv.setRating(model.selectedRating, model.selectedRatedConditions.waveRating);
             }
         });
 
@@ -142,10 +144,10 @@ public class MainActivity extends AppCompatActivity {
                 now.addMETAR(model.surfSpots.currentMETAR);
 
                 TideData tideData = model.tideDataProvider.getTideData(surfSpot.tidePortID);
-                if (tideData != null) {
-                    float rate = now.rate(surfSpot, tideData, 0, Common.getNowTimeInt(Common.TIME_ZONE));
+                if (tideData != null) { //!!!!!!!!!!!!!!!!!!
+//                    float rate = now.rate(surfSpot, tideData, 0, Common.getNowTimeInt(Common.TIME_ZONE));
                     //((TextView)findViewById(R.id.tvRating)).setText("Rating: " + rate + "\nWave: " + now.waveRating + "\nWind: " + now.windRating + "\nTide: " + now.tideRating);
-                    rv.setRating(rate, now.waveRating * now.tideRating);
+//                    rv.setRating(rate, now.waveRating * now.tideRating);
                 }
             }
         });
@@ -173,6 +175,7 @@ public class MainActivity extends AppCompatActivity {
 
         llRating = (LinearLayout) findViewById(R.id.llRating);
         tvRating = ((TextView) findViewById(R.id.tvRating));
+        tvRatingTime = ((TextView) findViewById(R.id.tvRatingTime));
         rv = ((RatingView) findViewById(R.id.ratingView));
 
         vif.commandsExecutor = new CommandsExecutor(model);
@@ -412,14 +415,15 @@ public class MainActivity extends AppCompatActivity {
         forecast.setDH(dh);
 
         float fontRating = metrics.font;
-        int starH = (int) (fontRating * 1.2);
+        int starH = (int) (fontRating * 1.1);
         LinearLayout.LayoutParams rvlp = new LinearLayout.LayoutParams(starH * 10, starH);
         rvlp.gravity = Gravity.CENTER_VERTICAL;
         rvlp.topMargin = dh / 8;
+        rvlp.bottomMargin = dh / 8;
         //rvlp.leftMargin = (int)fontRating/2;
         rv.setLayoutParams(rvlp);
 
-        RelativeLayout.LayoutParams llRatingLP = new RelativeLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, (int) (dh * 1.5f));
+        RelativeLayout.LayoutParams llRatingLP = new RelativeLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, (int) (dh * 2.5f));
         llRatingLP.topMargin = (int) (dh * 2.5);
         llRatingLP.leftMargin = (int) (dh);
         llRating.setLayoutParams(llRatingLP);
@@ -430,7 +434,8 @@ public class MainActivity extends AppCompatActivity {
         layoutParams.height = (int) metrics.fontHeader;
         ivBtnMenu.setLayoutParams(layoutParams);
 
-        ((TextView) findViewById(R.id.tvRating)).setTextSize(TypedValue.COMPLEX_UNIT_PX, fontRating);
+        tvRating.setTextSize(TypedValue.COMPLEX_UNIT_PX, fontRating);
+        tvRatingTime.setTextSize(TypedValue.COMPLEX_UNIT_PX, fontRating);
 
         final RelativeLayout spotsRL = (RelativeLayout) findViewById(R.id.top);
 
@@ -444,12 +449,9 @@ public class MainActivity extends AppCompatActivity {
 //        mParams.height = h;
 //        forecast.setLayoutParams(mParams);
 
-        forecast.onScrollY = new Runnable() {
-            @Override
-            public void run() {
-                baliMap.insetY = (int) (forecast.getHeight() - forecast.getContentTop());
-                rlDays.setY(forecast.getContentTop() - rlDays.getHeight());
-            }
+        forecast.onScrollY = () -> {
+            baliMap.insetY = (int) (forecast.getHeight() - forecast.getContentTop());
+            rlDays.setY(forecast.getContentTop() - rlDays.getHeight());
         };
 
         spotsRL.invalidate();

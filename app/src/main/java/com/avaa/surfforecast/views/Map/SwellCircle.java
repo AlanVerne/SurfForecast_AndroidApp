@@ -69,6 +69,9 @@ public class SwellCircle extends MapCircle {
 
         MetricsAndPaints metricsAndPaints = MainModel.instance.metricsAndPaints;
 
+        float visible = scrollerVisible.getValue();
+        float hintsVisible = scrollerHints.getValue();
+
         int dh = metricsAndPaints.dh;
         paintFontBig.setTextSize(awakenedState * metricsAndPaints.fontBig);
         paintFont.setTextSize(awakenedState * metricsAndPaints.font);
@@ -76,9 +79,6 @@ public class SwellCircle extends MapCircle {
 
         float fontH = awakenedState * metricsAndPaints.fontH;
         float fontBigH = awakenedState * metricsAndPaints.fontBigH;
-
-        float visible = scrollerVisible.getValue();
-        float hintsVisible = scrollerHints.getValue();
 
         strFtWidth = paintHintsFont.measureText(STR_FT);
         strSWidth = paintHintsFont.measureText(STR_S);
@@ -137,7 +137,7 @@ public class SwellCircle extends MapCircle {
 
             paintHintsFont.setTextAlign(Paint.Align.CENTER);
             c.drawText(STR_SWELL, x, y - (fontBigH + finalVisibility * dh / 6 + fontH) / 2 - finalVisibility * dh / 6 * hintsVisible, paintHintsFont);
-            c.drawText(conditions.waveAngleAbbr(), x, y + (fontBigH + finalVisibility * dh / 6 + fontH) / 2 + finalVisibility * (dh / 6 + dh / 12 + dh / 6 * hintsVisible), paintHintsFont);
+            c.drawText(conditions.getWaveAngleAbbr(), x, y + (fontBigH + finalVisibility * dh / 6 + fontH) / 2 + finalVisibility * (dh / 6 + dh / 12 + dh / 6 * hintsVisible), paintHintsFont);
             //c.drawText(conditions.waveEnergy+"kJ", x, y + (fontBigH + finalVisibility*dh/6 + fontH)/2 + finalVisibility*(dh / 6 + dh / 12 + dh / 6 * hintsVisible), paintAdditionalText);
         }
 

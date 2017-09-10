@@ -10,19 +10,22 @@ import android.view.View;
 
 import com.avaa.surfforecast.R;
 
+
 /**
  * Created by Alan on 28 Jan 2017.
  */
+
 
 public class RatingView extends View {
     private static Drawable d = null;
     private static Drawable dTr;
     private static Drawable dB;
 
-    private final static int N = 10;
+    private final static int N = 7;
 
     private float rating;       // final
     private float minorRating;  // wave rating
+
 
     public RatingView(Context context, AttributeSet attrs) {
         super(context, attrs);
@@ -33,6 +36,7 @@ public class RatingView extends View {
         this.minorRating = minorRating * N;
         repaint();
     }
+
 
     @Override
     public void draw(Canvas canvas) {

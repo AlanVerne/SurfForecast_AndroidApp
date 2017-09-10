@@ -9,13 +9,15 @@ import android.content.Context;
  */
 
 
-public class DirectionScroller extends FloatScroller {
-    public DirectionScroller(Context context) {
+public class LogicalScroller extends FloatScroller {
+    public LogicalScroller(Context context) {
         super(context);
     }
-    public DirectionScroller(Context context, float value) {
+
+    public LogicalScroller(Context context, float value) {
         super(context, value);
     }
+
 
     @Override
     public boolean to(float to, boolean smooth) {
@@ -24,10 +26,8 @@ public class DirectionScroller extends FloatScroller {
         } else {
             if (!scroller.isFinished()) scroller.abortAnimation();
             if (smooth) {
-                if (to - value > Math.PI) value += Math.PI * 2;
-                if (to - value < -Math.PI) value -= Math.PI * 2;
                 int dx = (int) ((to - value) * 1000f);
-                scroller.startScroll((int) (value * 1000f), 0, dx, 0, 1000);
+                scroller.startScroll((int) (value * 1000f), 0, dx, 0, to == 1 ? 500 : 1000);
                 return false;
             } else {
                 value = to;
