@@ -88,7 +88,10 @@ public class TideChartDrawer {
         updateDrawer();
 
         mainModel.addChangeListener(changes -> {
-            if (tidePortID != mainModel.getSelectedSpot().tidePortID) updateBitmaps();
+            if (tidePortID != mainModel.getSelectedSpot().tidePortID) {
+                tideData = tideDataProvider.getTideData(tidePortID);
+                updateBitmaps();
+            }
         }, MainModel.Change.SELECTED_SPOT);
     }
 
@@ -123,7 +126,6 @@ public class TideChartDrawer {
 
         if (tidePortID == null) return;
 
-        tideData = tideDataProvider.getTideData(tidePortID); // TODO вынести это нахер отсюда, добавить листенер на TideProvider
         Integer now = tideData == null ? null : tideData.getNow();
 
         if (now != null) {

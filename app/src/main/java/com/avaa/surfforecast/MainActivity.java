@@ -114,7 +114,7 @@ public class MainActivity extends AppCompatActivity {
         model = MainModel.getInstance(this, sharedPreferences, bsl);
 
         model.addChangeListener(changes -> {
-            if (model.selectedConditions == null) {
+            if (model.selectedRatedConditions == null) {
                 int day = Math.round(model.getDay());
                 tvRating.setText(capitalize(CommandsExecutor.intDayToNL(day)));
                 ((TextView) findViewById(R.id.tvRatingTime)).setText("");

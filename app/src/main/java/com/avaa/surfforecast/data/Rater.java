@@ -1,14 +1,14 @@
 package com.avaa.surfforecast.data;
 
 
-import android.support.annotation.NonNull;
-
 import com.avaa.surfforecast.MainModel;
 
 import java.util.HashMap;
 import java.util.Map;
-import java.util.SortedMap;
+import java.util.SortedSet;
 import java.util.TreeMap;
+import java.util.TreeSet;
+
 
 /**
  * Created by Alan on 10 Sep 2017.
@@ -18,10 +18,11 @@ import java.util.TreeMap;
 public class Rater {
     public long lastUpdate = 0;
     public final Map<SurfSpot, TreeMap<Long, RatedConditions>> bestBySpot = new HashMap<>();
-    public final Map<Long, RatedConditions> bestByDay = new HashMap<>();
-
-
-
+    public final Map<Long, SortedSet<RatedConditions>> bestByDay = new HashMap<Long, SortedSet<RatedConditions>>(){{
+        for (int plusDays = 0; plusDays < 6; plusDays++) {
+            put(Common.getDay(plusDays, Common.TIME_ZONE), new TreeSet<>());
+        }
+    }};
 
 
     public RatedConditions getBest(SurfSpot surfSpot, int plusDays) {
@@ -32,19 +33,20 @@ public class Rater {
 
 
     public RatedConditions getBest(int plusDays) {
-        return bestByDay.get(Common.getDay(plusDays, Common.TIME_ZONE));
+        return bestByDay.get(Common.getDay(plusDays, Common.TIME_ZONE)).first();
     }
 
 
     public void updateBest() {
         for (SurfSpot surfSpot : MainModel.instance.surfSpots.getAll()) {
             TreeMap<Long, RatedConditions> map = updateBest(surfSpot);
-            for (int plusDays = 0; plusDays < 6; plusDays++) {
-                bestByDay.put(Common.getDay(plusDays, Common.TIME_ZONE), map.get(Common.getDay(plusDays, Common.TIME_ZONE)));
+            for (Map.Entry<Long, RatedConditions> entry : map.entrySet()) {
+                bestByDay.get(entry.getKey()).add(entry.getValue());
             }
         }
         lastUpdate = System.currentTimeMillis();
     }
+
 
     public TreeMap<Long, RatedConditions> updateBest(SurfSpot surfSpot) {
         TreeMap<Long, RatedConditions> map = bestBySpot.get(surfSpot);

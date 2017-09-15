@@ -129,7 +129,7 @@ public class SurfConditionsProvider {
 
 
     public int hoursFromLastUpdate() {
-        return (int) ((new Date().getTime() - lastUpdate) / 1000 / 60 / 60);
+        return (int) ((System.currentTimeMillis() - lastUpdate) / 1000 / 60 / 60);
     }
 
     public boolean needUpdate() {
@@ -168,7 +168,7 @@ public class SurfConditionsProvider {
             long startFrom = singaporeCalendar.getTime().getTime();
 
             conditions = new TreeMap<>(conditions.subMap(startFrom, conditions.lastKey() + 1));
-            lastUpdate = new Date().getTime();
+            lastUpdate = System.currentTimeMillis();
 
             save();
             fireUpdated();

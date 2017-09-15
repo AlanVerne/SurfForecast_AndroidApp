@@ -6,6 +6,7 @@ import android.graphics.Bitmap;
 import android.graphics.Canvas;
 import android.graphics.Paint;
 import android.graphics.Rect;
+import android.graphics.RectF;
 import android.os.AsyncTask;
 import android.os.Build;
 import android.os.Trace;
@@ -25,6 +26,7 @@ import com.avaa.surfforecast.data.SurfConditionsProvider;
 import com.avaa.surfforecast.data.SurfSpot;
 import com.avaa.surfforecast.data.TideData;
 import com.avaa.surfforecast.data.TideDataProvider;
+import com.avaa.surfforecast.drawers.MetricsAndPaints;
 import com.avaa.surfforecast.drawers.SurfConditionsOneDayBitmapsAsyncDrawer;
 import com.avaa.surfforecast.drawers.TideChartDrawer;
 
@@ -51,7 +53,7 @@ import static com.avaa.surfforecast.data.Common.STR_WIND_U;
 
 
 @TargetApi(Build.VERSION_CODES.JELLY_BEAN_MR2)
-public class SurfConditionsForecastView extends HorizontalScrollView { //extends View {
+public class SurfConditionsForecastView extends HorizontalScrollView {
     private static final String TAG = "SCForecastView";
 
     public int orientation = 0;
@@ -70,8 +72,6 @@ public class SurfConditionsForecastView extends HorizontalScrollView { //extends
 
     public final SurfConditionsOneDayBitmaps[] bitmaps = new SurfConditionsOneDayBitmaps[7];
     private int dh = 0;
-
-    private SurfSpot surfSpot = null;
 
     private MainModel model;
 
@@ -215,16 +215,17 @@ public class SurfConditionsForecastView extends HorizontalScrollView { //extends
     private void init() {
         model = MainModel.instance;
 
-        MainModel.instance.tideDataProvider.addListener(new TideDataProvider.TideDataProviderListener() {
-                                                            @Override
-                                                            public void updated(String portID) {
-                                                                redrawTide();
-                                                            }
+        MainModel.instance.tideDataProvider.addListener(
+                new TideDataProvider.TideDataProviderListener() {
+                    @Override
+                    public void updated(String portID) {
+                        redrawTide();
+                    }
 
-                                                            @Override
-                                                            public void loadingStateChanged(String portID, boolean loading) {
-                                                            }
-                                                        }
+                    @Override
+                    public void loadingStateChanged(String portID, boolean loading) {
+                    }
+                }
         );
 
         for (int i = 0; i < bitmaps.length; i++) {
@@ -347,7 +348,7 @@ public class SurfConditionsForecastView extends HorizontalScrollView { //extends
     private void drawWindSwell(Canvas canvas) {
         int sx = getScrollX();
 
-        float recty = 0;//getHeight() - dh*10f;
+        float recty = 0; //getHeight() - dh*10f;
 
         float windy = recty + dh * 0.5f;
         float swelly = recty + dh * 3f;
@@ -497,6 +498,9 @@ public class SurfConditionsForecastView extends HorizontalScrollView { //extends
 
         canvas.save();
         canvas.clipRect(getScrollX() + dh * 1.5f, 0, getScrollX() + getWidth() - dh * 1.5f, getHeight());
+
+        int selhour = model.selectedTime / 60 + model.getDayInt() * 24;
+
         if (orientation == 1) {
             paintHours.setTextAlign(Paint.Align.RIGHT);
             canvas.rotate(-90);
@@ -515,8 +519,31 @@ public class SurfConditionsForecastView extends HorizontalScrollView { //extends
                 hx = hour * dh * 16 / 24;
                 String strH = String.valueOf(hour % 24);
                 if (MainModel.instance.userStat.userLevel == 2) strH += ":00";
+                if (hour == selhour) {
+                    paintHours.setColor(MetricsAndPaints.WHITE);
+                }
                 canvas.drawText(strH, hx, hy, paintHours);
+                if (hour == selhour) {
+                    paintHours.setColor(0x66ffffff);
+                }
             }
+            if (selhour % 3 != 0 && MainModel.instance.userStat.userLevel != 2) {
+                hx = selhour * dh * 16 / 24;
+                String strH = String.valueOf(selhour % 24);
+                paintHours.setColor(MetricsAndPaints.WHITE);
+                canvas.drawText(strH, hx, hy, paintHours);
+                paintHours.setColor(0x66ffffff);
+            }
+        }
+        if (model.selectedTime > 0) {
+            paintHours.setColor(MetricsAndPaints.WHITE);
+            int hx, hy;
+            hy = (int) (getHeight() - model.metricsAndPaints.density);
+            int hour = model.selectedTime / 60 + model.getDayInt() * 24;
+            hx = hour * dh * 16 / 24;
+            RectF r = new RectF(hx - dh * 16 / 24 / 2, hy, hx - dh * 16 / 24 / 2 + dh * 16 / 24, hy + model.metricsAndPaints.density);
+            canvas.drawRect(r, paintHours);
+            paintHours.setColor(0x66ffffff);
         }
         canvas.restore();
 

@@ -22,7 +22,6 @@ import com.avaa.surfforecast.MainModel;
 import com.avaa.surfforecast.R;
 import com.avaa.surfforecast.data.METAR;
 import com.avaa.surfforecast.data.RatedConditions;
-import com.avaa.surfforecast.data.Rater;
 import com.avaa.surfforecast.data.SurfConditions;
 import com.avaa.surfforecast.data.SurfSpot;
 import com.avaa.surfforecast.data.SurfSpots;
@@ -107,7 +106,6 @@ public class BaliMap extends View {
     private int dh = 0;
 
     private MetricsAndPaints metricsAndPaints;
-
 
 
     private MainModel model = null;
@@ -477,6 +475,7 @@ public class BaliMap extends View {
     private void paintSwellCircle(Canvas c, float ox, float oy, float r) {
         swellCircle.paint(c, ox, oy, awakenedState, parallaxHelper, r);
     }
+
     private void paintTideCircle(Canvas c, float ox, float oy) {
         tideCircle.paint(c, ox, oy, awakenedState, parallaxHelper);
     }
@@ -572,9 +571,17 @@ public class BaliMap extends View {
         dy += pp.y;
 
         int i = 0;
-        float bestRate = -1000;
-        Integer bestTime = 0;
-        SurfSpot bestSpot = null;
+
+        int plusDays = 0;
+        if (model != null) {
+            plusDays = Math.round(model.getDay());
+        }
+        if (awakenedState == 1 && insetY < dh * 4) {
+            float t = Math.max(0, 1f - (float) insetY / (dh * 4));
+            paintFont.setColor((int) (t * 0xff) * 0x1000000 + colorSpotDot);
+            paintFont.setTextAlign(Paint.Align.LEFT);
+        }
+
         for (SurfSpot spot : surfSpotsList) {
             float highlighted = isHighlighted(i);
             if (highlighted > 0 && i != selectedSpotI) {
@@ -590,25 +597,21 @@ public class BaliMap extends View {
                 float t = Math.max(0, 1f - (float) insetY / (dh * 4)); //(1f - awakenedState);
                 float x = spot.pointOnSVG.x * scale + dx;
                 float y = spot.pointOnSVG.y * scale + dy;
-                float r = densityDHDep * 1.5f;
+                if (x > 0 && y > paddingTop*dh && x < getWidth() && y < getHeight()-paddingBottom*dh) {
+                    float r = densityDHDep * 1.5f;
 
-                paintBG.setColor((int) (t * 0xff) * 0x1000000 + colorSpotDot);
-                canvas.drawCircle(x, y, r, paintBG);
+                    paintBG.setColor((int) (t * 0xff) * 0x1000000 + colorSpotDot);
+                    canvas.drawCircle(x, y, r, paintBG);
 
-                x += dh / 5;
-                y += dh / 5;
+                    x += dh / 5;
+                    y += dh / 5;
 
-                paintFont.setColor((int) (t * 0xff) * 0x1000000 + colorSpotDot); //MetricsAndPaints.colorWhite);
-                paintFont.setTextAlign(Paint.Align.LEFT);
-                canvas.drawText(spot.name.substring(0, 3), x, y, paintFont);
+                    canvas.drawText(spot.name.substring(0, 3), x, y, paintFont);
 
-                int plusDays = 0;
-                if (model != null) {
-                    plusDays = Math.round(model.getDay());
+                    RatedConditions best = MainModel.instance.rater.getBest(spot, plusDays);
+                    if (best != null)
+                        RatingView.drawStatic(canvas, (int) x - dh, (int) y, dh / 4, best.rating, best.waveRating * best.tideRating, (int) (t * 255));
                 }
-
-                RatedConditions best = MainModel.instance.rater.getBest(spot, plusDays);
-                if (best != null) RatingView.drawStatic(canvas, (int) x - dh, (int) y, dh / 4, best.rating, best.waveRating * best.tideRating, (int) (t * 255));
             }
             i++;
         }
