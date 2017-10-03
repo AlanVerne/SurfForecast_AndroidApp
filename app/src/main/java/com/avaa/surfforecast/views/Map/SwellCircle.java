@@ -53,16 +53,16 @@ public class SwellCircle extends MapCircle {
             conditions = model.selectedConditions;
 
             if (conditions != null) {
-                setVisible(true, true);
                 strWaveHeight = String.valueOf(conditions.getWaveHeightInFt());
                 strWavePeriod = String.valueOf(conditions.wavePeriod);
                 strWaveAngleAbbr = conditions.getWaveAngleAbbr();
-                angle.to(conditions.waveAngle, true);
+                angle.to(conditions.waveAngle, scrollerVisible.getValue() != 0);
+                setVisible(true, true);
             } else {
-                setVisible(false, true);
                 strWaveHeight = STR_DASH;
                 strWavePeriod = STR_DASH;
                 strWaveAngleAbbr = STR_DASH;
+                setVisible(false, true);
             }
         });
     }
@@ -99,12 +99,10 @@ public class SwellCircle extends MapCircle {
         float strFtWidth = 0;
         float strSWidth = 0;
 
-        float j = visible;
-
         float yDelta = (fontBigH + dh / 6 * visible + fontH) / 2;
 
         if (hintsVisible > 0) {
-            paintHintsFont.setColor(alpha(j * hintsVisible * hintsVisible, 0x000000));
+            paintHintsFont.setColor(alpha(visible * hintsVisible * hintsVisible, 0x000000));
 
             float additionalArrowSize = visible * dh / 4; //r*(SQRT_2-1)/SQRT_2/2;
             float windArrowR = r * SQRT_2 - additionalArrowSize * SQRT_2;
@@ -131,23 +129,22 @@ public class SwellCircle extends MapCircle {
             strFtWidth = this.ftWidth * hintsVisible; //paintAdditionalText.measureText(STR_FT) * hintsVisible;
             strSWidth = this.sWidth * hintsVisible; //paintAdditionalText.measureText(STR_S) * hintsVisible;
 
-            float finalVisibility = visible;
-            y += dh / 24 * hintsVisible * finalVisibility;
+            y += dh / 24 * hintsVisible * visible;
 
             paintHintsFont.setTextAlign(Paint.Align.LEFT);
             c.drawText(STR_FT, x - strFtWidth / 3 + strWaveHeightWidth / 2, y - yDelta + fontBigH, paintHintsFont);
             c.drawText(STR_S, x - strSWidth / 3 + strWavePeriodWidth / 2, y + yDelta, paintHintsFont);
 
             paintHintsFont.setTextAlign(Paint.Align.CENTER);
-            c.drawText(STR_SWELL, x, y - (fontBigH + finalVisibility * dh / 6 + fontH) / 2 - finalVisibility * dh / 6 * hintsVisible, paintHintsFont);
-            c.drawText(strWaveAngleAbbr, x, y + (fontBigH + finalVisibility * dh / 6 + fontH) / 2 + finalVisibility * (dh / 6 + dh / 12 + dh / 6 * hintsVisible), paintHintsFont);
-            //c.drawText(conditions.waveEnergy+"kJ", x, y + (fontBigH + finalVisibility*dh/6 + fontH)/2 + finalVisibility*(dh / 6 + dh / 12 + dh / 6 * hintsVisible), paintAdditionalText);
+            c.drawText(STR_SWELL, x, y - (fontBigH + visible * dh / 6 + fontH) / 2 - visible * dh / 6 * hintsVisible, paintHintsFont);
+            c.drawText(strWaveAngleAbbr, x, y + (fontBigH + visible * dh / 6 + fontH) / 2 + visible * (dh / 6 + dh / 12 + dh / 6 * hintsVisible), paintHintsFont);
+            //c.drawText(conditions.waveEnergy+"kJ", x, y + (fontBigH + visible*dh/6 + fontH)/2 + visible*(dh / 6 + dh / 12 + dh / 6 * hintsVisible), paintAdditionalText);
         }
 
-        paintFontBig.setColor(alpha(j, MetricsAndPaints.colorWaveText));
+        paintFontBig.setColor(alpha(visible, MetricsAndPaints.colorWaveText));
         c.drawText(strWaveHeight, x - strFtWidth / 3, y - yDelta + fontBigH, paintFontBig);
 
-        paintFont.setColor(alpha(j, MetricsAndPaints.colorWaveText));
+        paintFont.setColor(alpha(visible, MetricsAndPaints.colorWaveText));
         c.drawText(strWavePeriod, x - strSWidth / 3, y + yDelta, paintFont);
     }
 

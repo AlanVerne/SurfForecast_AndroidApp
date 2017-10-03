@@ -13,13 +13,13 @@ import com.avaa.surfforecast.MainModel;
 import com.avaa.surfforecast.data.Common;
 import com.avaa.surfforecast.data.TideData;
 import com.avaa.surfforecast.drawers.MetricsAndPaints;
-import com.avaa.surfforecast.views.ColorUtils;
 import com.avaa.surfforecast.views.ParallaxHelper;
 
 import static com.avaa.surfforecast.data.Common.STR_M;
 import static com.avaa.surfforecast.data.Common.STR_TIDE;
 import static com.avaa.surfforecast.data.Common.TIME_ZONE;
 import static com.avaa.surfforecast.views.ColorUtils.alpha;
+import static com.avaa.surfforecast.views.Map.BaliMap.STR_DASH;
 
 /**
  * Created by Alan on 6 Sep 2017.
@@ -64,8 +64,6 @@ public class TideCircle extends MapCircle {
 
         if (tide == null) return;
 
-        float j = visible;
-
         checkNowTide();
 
         float r = (dh - DENSITY_DH_DEP) * visible + DENSITY_DH_DEP;
@@ -97,7 +95,7 @@ public class TideCircle extends MapCircle {
 
         paintFont.setColor(alpha(visible, 0xffffffff));
 
-        String strTide = tide == null ? "-" : String.valueOf(Math.round(tide / 10f) / 10f);
+        String strTide = tide == null ? STR_DASH : String.valueOf(Math.round(tide / 10f) / 10f);
 
 //        float strTideWidth = paintFont.measureText(strTide);
 //        if (hintsVisible > 0) {
@@ -109,12 +107,17 @@ public class TideCircle extends MapCircle {
 //        }
 
         if (hintsVisible > 0) {
-            y += metricsAndPaints.fontSmallH / 12 * hintsVisible * visible;
-            paintHintsFont.setColor(alpha(j * hintsVisible * hintsVisible, 0xffffff));
+            paintHintsFont.setColor(alpha(visible * hintsVisible * hintsVisible, 0xffffff));
             paintHintsFont.setTextAlign(Paint.Align.CENTER);
-            c.drawText(STR_TIDE, x, y - fontH / 2 - metricsAndPaints.fontSmallSpacing * hintsVisible * visible, paintHintsFont);
-            c.drawText(STR_M, x, y + fontH / 2 + metricsAndPaints.fontSmallH * hintsVisible * visible + metricsAndPaints.fontSmallSpacing * hintsVisible * visible, paintHintsFont);
-            y += metricsAndPaints.fontSmallH / 8 * hintsVisible * visible;
+
+            hintsVisible *= visible;
+
+            y += metricsAndPaints.fontSmallH / 12 * hintsVisible;
+
+            c.drawText(STR_TIDE, x, y - fontH / 2 - metricsAndPaints.fontSmallSpacing * hintsVisible, paintHintsFont);
+            c.drawText(STR_M, x, y + fontH / 2 + metricsAndPaints.fontSmallH * visible + metricsAndPaints.fontSmallSpacing * hintsVisible, paintHintsFont);
+
+            y += metricsAndPaints.fontSmallH / 8 * hintsVisible;
         }
 
         c.drawText(strTide, x, y + fontH / 2, paintFont);

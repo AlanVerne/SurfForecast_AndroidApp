@@ -62,9 +62,6 @@ public class BaliMap extends View {
     private Point pathTerrainSize = new Point();
     private Path pathTerrain = null;
 
-    private SurfConditions currentConditions = null;
-    private METAR currentMETAR = null;
-
     private float shownI = 0;
     private float firstI = 0;
     private float lastI = 0;
@@ -161,18 +158,11 @@ public class BaliMap extends View {
         tideCircle = new TideCircle(getContext());
 
         model = MainModel.instance;
-        model.addChangeListener(changes -> {
-            currentConditions = model.selectedConditions;
-            currentMETAR = model.selectedMETAR;
-        });
 
         powerManager = (PowerManager) getContext().getSystemService(Context.POWER_SERVICE);
 
         SurfSpots surfSpots = MainModel.instance.surfSpots;
         surfSpotsList = surfSpots.getAll();
-
-        currentConditions = surfSpots.currentConditions;
-        currentMETAR = surfSpots.currentMETAR;
 
         scrollerHints = new Scroller(getContext());
 
@@ -213,7 +203,7 @@ public class BaliMap extends View {
             bmpMapZoomedInForSpotI = -1;
             pathCropMap = new Region(0, 0, getWidth() + 4 * dh, getHeight() + 4 * dh).getBoundaryPath();
         }
-        Log.i(TAG, "onSizeChanged() | " + bmpMapZoomedIn == null ? "null" : "ok");
+//        Log.i(TAG, "onSizeChanged() | " + bmpMapZoomedIn == null ? "null" : "ok");
     }
 
 
@@ -261,7 +251,6 @@ public class BaliMap extends View {
         if (tideCircle.computeScroll()) repaint();
     }
 
-
     private void cancelScheduledHintsHide() {
         if (timerHintsHide != null) {
             timerHintsHide.cancel();
@@ -287,7 +276,7 @@ public class BaliMap extends View {
                     repaint();
                 }
             }
-        }, 10000);
+        }, 7500);
     }
 
     public void setAwakenedState(float awakenedState) {
@@ -461,7 +450,7 @@ public class BaliMap extends View {
         }
 
         c.restore();
-        
+
         windCircle.paint(c, ox, oy, awakenedState, parallaxHelper, r);
     }
 
@@ -483,19 +472,16 @@ public class BaliMap extends View {
     private static final float rOut = 200;
     private static final float rIn = 25;
 
-    private final RectF rectfTemp = new RectF();
+    private final RectF rectFTemp = new RectF();
 
 
     public int insetY = 0;
 
     @Override
     protected void onDraw(Canvas canvas) {
-        //if (true) return;
         //Log.i("BaliMap", "onDraw" + hintsVisible);
 
         super.onDraw(canvas);
-
-//        boolean needRepaint = false;
 
         int height = getHeight() - insetY;
 
@@ -505,7 +491,6 @@ public class BaliMap extends View {
 
         if (shownSpotsBoundRect == null) return;
 
-//        float scale = (1 - awakenedState) * dh*2 / rOut + awakenedState * h / rIn;
         float scale = (1 - awakenedState) * dh * 2 / rOut + awakenedState * dh * 2 / rIn;
 
         float dx, dy;
@@ -513,24 +498,34 @@ public class BaliMap extends View {
         dy = -shownSpotsBoundRect.top * scale;
 
         dx += awakenedState * (getWidth() - (3 * dh));
-//        dy += awakenedState * (paddingTop*dh + h/2);
         dy += awakenedState * (paddingTop * dh + h / 2);
+
         dx += (1 - awakenedState) * (getWidth() - (3 * dh));
         dy += (1 - awakenedState) * (height - 2 * dh) / 2;
 
         int mapCenterY = getHeight() / 2 - insetY / 2;
 
         PointF pp = parallaxHelper.applyParallax(getWidth() / 2, mapCenterY, -dh * 1.0f);
-        pp.offset(-getWidth() / 2, -getHeight() / 2);
+        pp.offset(-getWidth() / 2, -mapCenterY);
 
         if (awakenedState == 0) {
             canvas.drawBitmap(bmpMapZoomedOut, dx + pp.x, dy + pp.y, null);
         } else if (awakenedState == 1 && bmpMapZoomedIn != null) {
             if (bmpMapZoomedInForSpotI != model.selectedSpotI) {
+                int h2 = getHeight() - (int) ((paddingTop + paddingBottom) * dh);
+
+                updateShownSpotsBoundRect();
+
+                float dx2 = -shownSpotsBoundRect.left * scale;
+                float dy2 = -shownSpotsBoundRect.top * scale;
+
+                dx2 += getWidth() - (3 * dh);
+                dy2 += paddingTop * dh + h2 / 2;
+
                 bmpMapZoomedIn.eraseColor(0x00000000);
                 Canvas c = new Canvas(bmpMapZoomedIn);
 
-                matrix.setTranslate(dx + 2 * dh, dy + 2 * dh);
+                matrix.setTranslate(dx2 + 2 * dh, dy2 + 2 * dh);
                 matrix.preScale(scale, scale);
                 pathTerrain.transform(matrix, pathTemp);
 
@@ -542,12 +537,11 @@ public class BaliMap extends View {
 
                 bmpMapZoomedInForSpotI = model.selectedSpotI;
             }
-            canvas.drawBitmap(bmpMapZoomedIn, pp.x - 2 * dh, pp.y - 2 * dh, null);
+            canvas.drawBitmap(bmpMapZoomedIn, pp.x - 2 * dh, -insetY/2+pp.y - 2 * dh, null);
         } else {
             float s = scale / (dh * 2f / rOut);
-//            float s = scale/(h/rOut);
-            rectfTemp.set(dx + pp.x, dy + pp.y, dx + pp.x + bmpMapZoomedOut.getWidth() * s, dy + pp.y + bmpMapZoomedOut.getHeight() * s);
-            canvas.drawBitmap(bmpMapZoomedOut, null, rectfTemp, null);
+            rectFTemp.set(dx + pp.x, dy + pp.y, dx + pp.x + bmpMapZoomedOut.getWidth() * s, dy + pp.y + bmpMapZoomedOut.getHeight() * s);
+            canvas.drawBitmap(bmpMapZoomedOut, null, rectFTemp, null);
         }
 
         if (awakenedState != awakenedStatePrev) {
@@ -556,8 +550,8 @@ public class BaliMap extends View {
 
         int selectedSpotI = model.selectedSpotI;
 
-        pp = parallaxHelper.applyParallax(getWidth() / 2, height / 2, -dh * 0.9f * (1 - awakenedState));
-        pp.offset(-getWidth() / 2, -height / 2);
+        pp = parallaxHelper.applyParallax(getWidth() / 2, mapCenterY, -dh * 0.9f * (1 - awakenedState));
+        pp.offset(-getWidth() / 2, -mapCenterY);
         dx += pp.x;
         dy += pp.y;
 
