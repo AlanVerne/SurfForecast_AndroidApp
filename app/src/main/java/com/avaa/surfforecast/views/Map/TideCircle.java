@@ -13,11 +13,13 @@ import com.avaa.surfforecast.MainModel;
 import com.avaa.surfforecast.data.Common;
 import com.avaa.surfforecast.data.TideData;
 import com.avaa.surfforecast.drawers.MetricsAndPaints;
+import com.avaa.surfforecast.views.ColorUtils;
 import com.avaa.surfforecast.views.ParallaxHelper;
 
 import static com.avaa.surfforecast.data.Common.STR_M;
 import static com.avaa.surfforecast.data.Common.STR_TIDE;
 import static com.avaa.surfforecast.data.Common.TIME_ZONE;
+import static com.avaa.surfforecast.views.ColorUtils.alpha;
 
 /**
  * Created by Alan on 6 Sep 2017.
@@ -48,28 +50,25 @@ public class TideCircle extends MapCircle {
     }
 
 
-    public void paint(Canvas c, float ox, float oy, float awakenedState, ParallaxHelper parallaxHelper) {
+    public void paint(Canvas c, float ox, float oy, float visible, ParallaxHelper parallaxHelper) {
         MetricsAndPaints metricsAndPaints = MainModel.instance.metricsAndPaints;
 
-        float visible = scrollerVisible.getValue();
+        visible *= scrollerVisible.getValue();
         float hintsVisible = scrollerHints.getValue();
 
-        awakenedState *= visible;
-
         int dh = metricsAndPaints.dh;
-        paintFont.setTextSize(awakenedState * metricsAndPaints.font);
-        paintHintsFont.setTextSize(awakenedState * metricsAndPaints.fontSmall);
+        paintFont.setTextSize(visible * metricsAndPaints.font);
+        paintHintsFont.setTextSize(visible * metricsAndPaints.fontSmall);
 
-        float fontH = awakenedState * metricsAndPaints.fontH;
+        float fontH = visible * metricsAndPaints.fontH;
 
         if (tide == null) return;
 
-        float j = 1;
+        float j = visible;
 
         checkNowTide();
 
-        float finalVisibility = awakenedState * visible;
-        float r = (dh - DENSITY_DH_DEP) * finalVisibility + DENSITY_DH_DEP;
+        float r = (dh - DENSITY_DH_DEP) * visible + DENSITY_DH_DEP;
 
         PointF pp = parallaxHelper.applyParallax(ox, oy, dh * subZ);
         float x = pp.x, y = pp.y;
@@ -81,7 +80,7 @@ public class TideCircle extends MapCircle {
         if (pathTide != null) {
             c.save();
             c.translate(x, y);
-            c.scale(finalVisibility, finalVisibility);
+            c.scale(visible, visible);
             c.drawPath(pathTide, paintPathTide);
             c.restore();
         }
@@ -92,11 +91,11 @@ public class TideCircle extends MapCircle {
         x = pp.x;
         y = pp.y;
 
-        float dotR = finalVisibility * (dh * 0.7f + hintsVisible * dh / 4);
+        float dotR = visible * (dh * 0.7f + hintsVisible * dh / 4);
         paintFont.setColor(MetricsAndPaints.colorTideBG);
         c.drawCircle(x, y, dotR, paintFont);
 
-        paintFont.setColor((int) (visible * 0xff) * 0x1000000 + 0x00ffffff);
+        paintFont.setColor(alpha(visible, 0xffffffff));
 
         String strTide = tide == null ? "-" : String.valueOf(Math.round(tide / 10f) / 10f);
 
@@ -110,17 +109,16 @@ public class TideCircle extends MapCircle {
 //        }
 
         if (hintsVisible > 0) {
-            y += metricsAndPaints.fontSmallH / 12 * hintsVisible * finalVisibility;
-            paintHintsFont.setColor((int) (j * hintsVisible * 0xff) << 24 | 0xffffff);
+            y += metricsAndPaints.fontSmallH / 12 * hintsVisible * visible;
+            paintHintsFont.setColor(alpha(j * hintsVisible * hintsVisible, 0xffffff));
             paintHintsFont.setTextAlign(Paint.Align.CENTER);
-            c.drawText(STR_TIDE, x, y - fontH / 2 - finalVisibility * metricsAndPaints.fontSmallSpacing * hintsVisible, paintHintsFont);
-            c.drawText(STR_M, x, y + fontH / 2 + metricsAndPaints.fontSmallH + finalVisibility * metricsAndPaints.fontSmallSpacing * hintsVisible, paintHintsFont);
-            y += metricsAndPaints.fontSmallH / 8 * hintsVisible * finalVisibility;
+            c.drawText(STR_TIDE, x, y - fontH / 2 - metricsAndPaints.fontSmallSpacing * hintsVisible * visible, paintHintsFont);
+            c.drawText(STR_M, x, y + fontH / 2 + metricsAndPaints.fontSmallH * hintsVisible * visible + metricsAndPaints.fontSmallSpacing * hintsVisible * visible, paintHintsFont);
+            y += metricsAndPaints.fontSmallH / 8 * hintsVisible * visible;
         }
 
         c.drawText(strTide, x, y + fontH / 2, paintFont);
     }
-
 
 
     private long nowTideUpdatedTime = -1;
@@ -150,7 +148,7 @@ public class TideCircle extends MapCircle {
         }
 //        if (model != null) Log.i(TAG, "updateNowTide " + model.selectedTime);
 
-        if (tideData != null && tide != null && model.metricsAndPaints!=null) {
+        if (tideData != null && tide != null && model.metricsAndPaints != null) {
             setVisible(true, true);
             int nowTimeInt = model.selectedTime; //Common.getNowTimeInt(TIME_ZONE);
             float r = model.metricsAndPaints.dh;

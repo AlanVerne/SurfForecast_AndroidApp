@@ -548,14 +548,14 @@ public class MainActivity extends AppCompatActivity {
         MetricsAndPaints metricsAndPaints = model.metricsAndPaints;
 
         for (com.avaa.surfforecast.data.SurfSpot SurfSpot : surfSpots.getAll()) {
-            if (surfSpots.categories.containsKey(i)) {
+            if (surfSpots.areas.containsKey(i)) {
                 TextView textView = new TextView(this);
                 FrameLayout.LayoutParams lparams = new FrameLayout.LayoutParams(FrameLayout.LayoutParams.MATCH_PARENT, dh * 2);
                 lparams.setMargins(0, 0, 0, 0);
                 textView.setLayoutParams(lparams);
                 textView.setTextSize(TypedValue.COMPLEX_UNIT_PX, metricsAndPaints.font);
                 textView.setTextColor(0x99000000 | colorTextSpotNames);
-                textView.setText(surfSpots.categories.get(i));
+                textView.setText(surfSpots.areas.get(i).name);
                 textView.setAlpha(0);
                 textView.setVisibility(View.INVISIBLE);
                 textView.setGravity(Gravity.CENTER_VERTICAL);

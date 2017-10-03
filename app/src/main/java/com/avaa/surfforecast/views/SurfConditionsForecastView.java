@@ -129,7 +129,10 @@ public class SurfConditionsForecastView extends HorizontalScrollView {
     OnTouchListener tl = new View.OnTouchListener() {
         @Override
         public boolean onTouch(View v, MotionEvent event) {
-//            if (event.getY() < getContentTop()) return false;
+            if (event.getAction() == MotionEvent.ACTION_DOWN && event.getY() < getContentTop()) {
+            //    Log.i(TAG, "event.getY() scrollY " +event.getY() +" "+ scrollY +" "+(getHeight()-scrollY));
+                return false;
+            }
 
             if (event.getAction() == MotionEvent.ACTION_DOWN && onTouchActionDown != null) {
                 onTouchActionDown.run();

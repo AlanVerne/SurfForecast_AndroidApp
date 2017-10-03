@@ -13,6 +13,7 @@ import com.avaa.surfforecast.views.ParallaxHelper;
 
 import static com.avaa.surfforecast.data.Common.STR_KMH;
 import static com.avaa.surfforecast.data.Common.STR_WIND;
+import static com.avaa.surfforecast.views.ColorUtils.alpha;
 
 
 /**
@@ -61,17 +62,17 @@ public class WindCircle extends MapCircle {
     }
 
 
-    public void paint(Canvas c, float ox, float oy, float awakenedState, ParallaxHelper parallaxHelper, float r) {
+    public void paint(Canvas c, float ox, float oy, float visible, ParallaxHelper parallaxHelper, float r) {
         MetricsAndPaints metricsAndPaints = MainModel.instance.metricsAndPaints;
 
-        int dh = metricsAndPaints.dh;
-        paintFont.setTextSize(awakenedState * metricsAndPaints.font);
-        paintHintsFont.setTextSize(awakenedState * metricsAndPaints.fontSmall);
-
-        float fontH = awakenedState * metricsAndPaints.fontH;
-
-        float visible = scrollerVisible.getValue();
+        visible *= scrollerVisible.getValue();
         float hintsVisible = scrollerHints.getValue();
+
+        int dh = metricsAndPaints.dh;
+        paintFont.setTextSize(visible * metricsAndPaints.font);
+        paintHintsFont.setTextSize(visible * metricsAndPaints.fontSmall);
+
+        float fontH = visible * metricsAndPaints.fontH;
 
         float a = angle.getValue();
         boolean vbr = this.vbr.getValue() > 0.5;
@@ -79,10 +80,8 @@ public class WindCircle extends MapCircle {
         double cosA = Math.cos(a);
         double sinA = Math.sin(a);
 
-        float windArrowVisibleFinal = visible * awakenedState;
-
-        float windR = r * (1 + (1 - this.vbr.getValue()) * (2 - awakenedState * 2)) - awakenedState * hintsVisible * dh / 4;
-        float windArrowR = windArrowVisibleFinal * (dh * 0.7f + hintsVisible * dh / 4);
+        float windR = r * (1 + (1 - this.vbr.getValue()) * (2 - visible * 2)) - visible * hintsVisible * dh / 4;
+        float windArrowR = visible * (dh * 0.7f + hintsVisible * dh / 4);
         float ax = ox + (float) (cosA * windR);
         float ay = oy - (float) (sinA * windR);
 
@@ -95,16 +94,16 @@ public class WindCircle extends MapCircle {
         if (vbr) c.drawCircle(ax, ay, windArrowR, paintBG);
         else c.drawPath(BaliMap.getArrow(ax, ay, a, windArrowR), paintBG);
 
-        float j = 1f;
+        float j = visible;
 
-        paintFont.setColor((int) (j * 0xff) * 0x1000000 + 0x00ffffff & MetricsAndPaints.colorWindText);
+        paintFont.setColor(alpha(j, MetricsAndPaints.colorWindText));
 
         if (hintsVisible > 0) {
-            paintHintsFont.setColor((int) (j * hintsVisible * hintsVisible * 0xff) << 24 | 0x000000);
+            paintHintsFont.setColor(alpha(j * hintsVisible * hintsVisible, 0x000000));
             paintHintsFont.setTextAlign(Paint.Align.CENTER);
 
             if (!vbr) {
-                float additionalArrowSize = windArrowVisibleFinal * dh / 4; //r*(SQRT_2-1)/SQRT_2/2;
+                float additionalArrowSize = visible * dh / 4; //r*(SQRT_2-1)/SQRT_2/2;
                 windArrowR = windArrowR * SQRT_2 - additionalArrowSize * SQRT_2;
                 //windArrowR = r/2 + hintsVisible*dh/4;
                 float bx = ax - (float) Math.cos(a) * windArrowR;
@@ -117,10 +116,10 @@ public class WindCircle extends MapCircle {
                 c.drawPath(pathLinedArrow, paintArrow);
             }
 
-            ay -= metricsAndPaints.fontSmallH / 16 * hintsVisible * windArrowVisibleFinal;
-            c.drawText(STR_WIND, ax, ay - fontH / 2 - windArrowVisibleFinal * metricsAndPaints.fontSmallSpacing * hintsVisible, paintHintsFont);
-            c.drawText(STR_KMH, ax, ay + fontH / 2 + metricsAndPaints.fontSmallH + windArrowVisibleFinal * metricsAndPaints.fontSmallSpacing * hintsVisible, paintHintsFont);
-            ay += metricsAndPaints.fontSmallH / 12 * hintsVisible * windArrowVisibleFinal;
+            ay -= metricsAndPaints.fontSmallH / 16 * hintsVisible * visible;
+            c.drawText(STR_WIND, ax, ay - fontH / 2 - visible * metricsAndPaints.fontSmallSpacing * hintsVisible, paintHintsFont);
+            c.drawText(STR_KMH, ax, ay + fontH / 2 + metricsAndPaints.fontSmallH * hintsVisible * visible + visible * metricsAndPaints.fontSmallSpacing * hintsVisible, paintHintsFont);
+            ay += metricsAndPaints.fontSmallH / 12 * hintsVisible * visible;
         }
 
         //paintFont.setColor(currentMETAR != null ? 0xff000000 : 0x88000000);

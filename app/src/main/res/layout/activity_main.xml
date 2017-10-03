@@ -1,153 +1,167 @@
 <?xml version="1.0" encoding="utf-8"?>
 
-<RelativeLayout
-    xmlns:android="http://schemas.android.com/apk/res/android"
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
-    android:fitsSystemWindows="true"
-    tools:context="com.avaa.surfforecast.MainActivity"
-    android:background="#FFFFFFFF"
-    android:layout_width="match_parent"
-    android:layout_height="match_parent">
-
-<LinearLayout
-    android:id="@+id/mainlayout"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:orientation="vertical">
+    android:background="#FFFFFFFF"
+    android:fitsSystemWindows="true"
+    tools:context="com.avaa.surfforecast.MainActivity">
 
-    <RelativeLayout
-        android:id="@+id/top"
+    <LinearLayout
+        android:id="@+id/mainlayout"
         android:layout_width="match_parent"
-        android:layout_height="0px"
-        android:layout_weight="1">
+        android:layout_height="match_parent"
+        android:orientation="vertical">
 
-        <me.zhanghai.android.materialprogressbar.MaterialProgressBar
-            android:id="@+id/progressBar"
+        <RelativeLayout
+            android:id="@+id/top"
             android:layout_width="match_parent"
-            android:layout_height="2dp"
-            android:indeterminate="true"
-            android:visibility="invisible"
-            app:mpb_progressStyle="horizontal"
-            app:mpb_useIntrinsicPadding="false"
-            style="@style/Widget.MaterialProgressBar.ProgressBar.Horizontal" />
+            android:layout_height="0px"
+            android:layout_weight="1">
 
-        <com.avaa.surfforecast.views.Map.BaliMap
-            android:id="@+id/balimap"
-            android:layout_width="match_parent"
-            android:layout_height="match_parent" />
+            <me.zhanghai.android.materialprogressbar.MaterialProgressBar
+                android:id="@+id/progressBar"
+                style="@style/Widget.MaterialProgressBar.ProgressBar.Horizontal"
+                android:layout_width="match_parent"
+                android:layout_height="2dp"
+                android:indeterminate="true"
+                android:visibility="invisible"
+                app:mpb_progressStyle="horizontal"
+                app:mpb_useIntrinsicPadding="false" />
 
-        <com.avaa.surfforecast.views.MyList
-            android:id="@+id/svSpots"
-            android:layout_width="match_parent"
-            android:layout_height="match_parent" />
+            <com.avaa.surfforecast.views.Map.BaliMap
+                android:id="@+id/balimap"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent" />
 
-        <LinearLayout
-            android:id="@+id/llRating"
-            android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:orientation="vertical">
-            <TextView
-                android:id="@+id/tvRating"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:textColor="#ddffffff"
-                android:gravity="left|center_vertical"
-                android:text="Today "/>
-            <TextView
-                android:id="@+id/tvRatingTime"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:textColor="#ddffffff"
-                android:gravity="left|center_vertical"
-                android:text="Now "/>
-            <com.avaa.surfforecast.views.RatingView
-                android:id="@+id/ratingView"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_gravity="center_vertical"/>
-        </LinearLayout>
+            <com.avaa.surfforecast.views.MyList
+                android:id="@+id/svSpots"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent" />
 
-        <FrameLayout
-            android:id="@+id/flBtnMenu"
-            android:layout_width="50dp"
-            android:layout_height="100dp"
-            android:paddingTop="4dp"
-            android:text="&#8926;"
-            android:layout_alignParentRight="true"
-            android:background="?android:attr/selectableItemBackground"
-            android:textColor="#ffffff"
-            android:layout_alignParentEnd="true">
-            <ImageView
-                android:id="@+id/ivBtnMenu"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_gravity="center"
-                android:src="@drawable/ic_more_vert_black_24dp"/>
-        </FrameLayout>
+            <LinearLayout
+                android:id="@+id/llRating"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:orientation="vertical">
 
-        <!--<HorizontalScrollView-->
+                <TextView
+                    android:id="@+id/tvRating"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:gravity="left|center_vertical"
+                    android:text="Today "
+                    android:textColor="#ddffffff" />
+
+                <TextView
+                    android:id="@+id/tvRatingTime"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:gravity="left|center_vertical"
+                    android:text="Now "
+                    android:textColor="#ddffffff" />
+
+                <com.avaa.surfforecast.views.RatingView
+                    android:id="@+id/ratingView"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="center_vertical" />
+            </LinearLayout>
+
+            <FrameLayout
+                android:id="@+id/flBtnMenu"
+                android:layout_width="50dp"
+                android:layout_height="100dp"
+                android:layout_alignParentEnd="true"
+                android:layout_alignParentRight="true"
+                android:background="?android:attr/selectableItemBackground"
+                android:paddingTop="4dp"
+                android:text="&#8926;"
+                android:textColor="#ffffff">
+
+                <ImageView
+                    android:id="@+id/ivBtnMenu"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="center"
+                    android:src="@drawable/ic_more_vert_black_24dp" />
+            </FrameLayout>
+
+            <!--<HorizontalScrollView-->
             <!--android:id="@+id/hsvDays"-->
             <!--android:layout_width="match_parent"-->
             <!--android:layout_height="wrap_content"-->
             <!--android:layout_alignParentBottom="true"-->
             <!--android:scrollbars="none">-->
-        <RelativeLayout
-            android:id="@+id/vllDays"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:orientation="vertical"
-            android:padding="0dp"
-            android:layout_alignParentBottom="true">
-            <LinearLayout
-                android:id="@+id/hllDays"
-                android:layout_width="match_parent"
-                android:layout_height="match_parent"
-                android:orientation="horizontal">
-            <com.avaa.surfforecast.views.OneDayConditionsSmallView
-                android:id="@+id/odcs0"
-                android:layout_width="wrap_content"
-                android:layout_height="match_parent"/>
-            <com.avaa.surfforecast.views.OneDayConditionsSmallView
-                android:id="@+id/odcs1"
-                android:layout_width="wrap_content"
-                android:layout_height="match_parent"/>
-            <com.avaa.surfforecast.views.OneDayConditionsSmallView
-                android:id="@+id/odcs2"
-                android:layout_width="wrap_content"
-                android:layout_height="match_parent"/>
-            <com.avaa.surfforecast.views.OneDayConditionsSmallView
-                android:id="@+id/odcs3"
-                android:layout_width="wrap_content"
-                android:layout_height="match_parent"/>
-            <com.avaa.surfforecast.views.OneDayConditionsSmallView
-                android:id="@+id/odcs4"
-                android:layout_width="wrap_content"
-                android:layout_height="match_parent"/>
-            <com.avaa.surfforecast.views.OneDayConditionsSmallView
-                android:id="@+id/odcs5"
-                android:layout_width="wrap_content"
-                android:layout_height="match_parent"/>
-            <com.avaa.surfforecast.views.OneDayConditionsSmallView
-                android:id="@+id/odcs6"
-                android:layout_width="wrap_content"
-                android:layout_height="match_parent"/>
-            </LinearLayout>
             <RelativeLayout
-                android:id="@+id/rlDaysScroller"
+                android:id="@+id/vllDays"
                 android:layout_width="match_parent"
+                android:layout_height="wrap_content"
                 android:layout_alignParentBottom="true"
-                android:layout_height="4dp">
-                <ImageView
-                    android:id="@+id/ivDaysScroller"
-                    android:layout_width="0dp"
+                android:orientation="vertical"
+                android:padding="0dp">
+
+                <LinearLayout
+                    android:id="@+id/hllDays"
+                    android:layout_width="match_parent"
                     android:layout_height="match_parent"
-                    android:background="#ffffff"/>
+                    android:orientation="horizontal">
+
+                    <com.avaa.surfforecast.views.OneDayConditionsSmallView
+                        android:id="@+id/odcs0"
+                        android:layout_width="wrap_content"
+                        android:layout_height="match_parent" />
+
+                    <com.avaa.surfforecast.views.OneDayConditionsSmallView
+                        android:id="@+id/odcs1"
+                        android:layout_width="wrap_content"
+                        android:layout_height="match_parent" />
+
+                    <com.avaa.surfforecast.views.OneDayConditionsSmallView
+                        android:id="@+id/odcs2"
+                        android:layout_width="wrap_content"
+                        android:layout_height="match_parent" />
+
+                    <com.avaa.surfforecast.views.OneDayConditionsSmallView
+                        android:id="@+id/odcs3"
+                        android:layout_width="wrap_content"
+                        android:layout_height="match_parent" />
+
+                    <com.avaa.surfforecast.views.OneDayConditionsSmallView
+                        android:id="@+id/odcs4"
+                        android:layout_width="wrap_content"
+                        android:layout_height="match_parent" />
+
+                    <com.avaa.surfforecast.views.OneDayConditionsSmallView
+                        android:id="@+id/odcs5"
+                        android:layout_width="wrap_content"
+                        android:layout_height="match_parent" />
+
+                    <com.avaa.surfforecast.views.OneDayConditionsSmallView
+                        android:id="@+id/odcs6"
+                        android:layout_width="wrap_content"
+                        android:layout_height="match_parent" />
+                </LinearLayout>
+
+                <RelativeLayout
+                    android:id="@+id/rlDaysScroller"
+                    android:layout_width="match_parent"
+                    android:layout_height="4dp"
+                    android:layout_alignParentBottom="true">
+
+                    <ImageView
+                        android:id="@+id/ivDaysScroller"
+                        android:layout_width="0dp"
+                        android:layout_height="match_parent"
+                        android:background="#ffffff" />
+                </RelativeLayout>
             </RelativeLayout>
+            <!--</HorizontalScrollView>-->
         </RelativeLayout>
-        <!--</HorizontalScrollView>-->
-    </RelativeLayout>
-</LinearLayout>
+    </LinearLayout>
+
     <com.avaa.surfforecast.views.SurfConditionsForecastView
         android:id="@+id/scfv"
         android:layout_width="match_parent"
@@ -156,15 +170,17 @@
         android:background="#00ffffff">
         <!--android:elevation="4dp"-->
     </com.avaa.surfforecast.views.SurfConditionsForecastView>
-<FrameLayout
-    android:id="@+id/flVoiceInterface"
-    android:layout_width="match_parent"
-    android:layout_height="match_parent">
-    <fragment
-        android:name="com.avaa.surfforecast.ai.VoiceInterfaceFragment"
-        android:id="@+id/vif"
+
+    <FrameLayout
+        android:id="@+id/flVoiceInterface"
         android:layout_width="match_parent"
-        android:layout_height="match_parent" />
-</FrameLayout>
+        android:layout_height="match_parent">
+
+        <fragment
+            android:id="@+id/vif"
+            android:name="com.avaa.surfforecast.ai.VoiceInterfaceFragment"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent" />
+    </FrameLayout>
 
 </RelativeLayout>

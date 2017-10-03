@@ -39,7 +39,7 @@ public class MainModel {
     private static final String TAG = "MainModel";
     private static final String SPKEY_SELECTED_SPOT = "selectedSpot";
 
-    private final int willBeSelectedSpotI = 3; //TODO
+    private final int willBeSelectedSpotI; //TODO
     public int selectedSpotI = -1;
 
     public final SharedPreferences sharedPreferences;
@@ -93,6 +93,8 @@ public class MainModel {
                 fireChanged(Change.SELECTED_CONDITIONS);
             }
         });
+
+        willBeSelectedSpotI = getLastSelectedSpotI(sharedPreferences);
     }
 
     public void init() {
@@ -100,6 +102,8 @@ public class MainModel {
         metarProvider.init();
 
         surfSpots.init();
+
+        setSelectedSpotI(willBeSelectedSpotI);
     }
 
 
@@ -129,6 +133,10 @@ public class MainModel {
         if (selectedSpotI == -1) return list.get(willBeSelectedSpotI);
         if (selectedSpotI >= list.size()) selectedSpotI = list.size() - 1;
         return list.get(selectedSpotI);
+    }
+
+    private static int getLastSelectedSpotI(SharedPreferences sp) {
+        return sp.getInt(SPKEY_SELECTED_SPOT, 3);
     }
 
 

@@ -7,7 +7,6 @@ import android.os.Handler;
 import com.avaa.surfforecast.MainModel;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -24,14 +23,12 @@ public class SurfSpots {
     private static final String TAG = "SurfSpots";
 
     private static final String SPKEY_FAV_SPOTS = "favSpots";
-    private static final String SPKEY_SELECTED_SPOT = "selectedSpot";
 
     public static final String WADD = "WADD";
 
-    public final int willBeSelectedSpotI;
 //    public int selectedSpotI = -1;
 
-//
+
 //    public void setSelectedSpotI(int i) {
 //        if (selectedSpotI == i) return;
 //        //Log.i("SurfSpots", "setSelectedSpotI() 1");
@@ -156,24 +153,23 @@ public class SurfSpots {
 
 
     private List<SurfSpot> list = new ArrayList<>();
-    public Map<Integer, String> categories = new TreeMap<>();
+    public Map<Integer, SpotsArea> areas = new TreeMap<>();
 
 //    private BusyStateListener bsl;
 
     public SurfSpots(SharedPreferences sp) {
 //        this.bsl = bsl;
-        this.willBeSelectedSpotI = getLastSelectedSpotI(sp);
         initSpots();
     }
 
     public void initSpots() {
-        categories.put(list.size(), "Miles and miles north-west");
+        areas.put(list.size(), new SpotsArea("Miles and miles north-west", new PointF(577, 510)));
         addSpot("Medewi", "Medewi", new PointF(484, 460), new PointF(0, 0),
                 Direction.NNE, 1, 1 + 2 + 4, 2, 7, "http://magicseaweed.com/Medewi-Surf-Report/1135/", "", -8.421528, 114.805771);
         addSpot("Balian", "Balian", new PointF(677, 568), new PointF(0, 0),
                 Direction.NE, 0, 1 + 2 + 4, 2, 7, "http://magicseaweed.com/Balian-Surf-Report/4009/", "", -8.503239, 114.965390);
 
-        categories.put(list.size(), "Canggu");
+        areas.put(list.size(), new SpotsArea("Canggu", new PointF(843, 730)));
         //addSpot("Pererenan", "Pererenan"), new PointF(833, 722), new PointF(0, 0), Direction.NE);
         addSpot("Echo / Pererenan", new String[]{"Canggu", "Echo", "Pererenan"}, "Canggu", new PointF(840, 726), new PointF(0, 0),
                 Direction.NE, 0, 1 + 2 + 4, 3, 8, "http://magicseaweed.com/Canggu-Surf-Report/935/", "http://balibelly.com/canggu", -8.654989, 115.125030);
@@ -182,7 +178,7 @@ public class SurfSpots {
         addSpot("Berawa", new String[]{"Brava"}, "Canggu", new PointF(845, 734), new PointF(0, 0),
                 Direction.NE, 2, 1 + 2 + 4, 2, 6, "http://magicseaweed.com/Berawa-Beach-Surf-Report/1293/", "", -8.667381, 115.139262);
 
-        categories.put(list.size(), "Seminyak - Kuta");
+        areas.put(list.size(), new SpotsArea("Seminyak - Kuta", new PointF(870, 800)));
         //addSpot("Blue Ocean", "Blue-Ocean"), new PointF(856, 742), new PointF(0, 0), Direction.ENE);
         addSpot("Padma", "Padma", new PointF(867, 758), new PointF(0, 0),
                 Direction.NE, 0, 1 + 2 + 4, 1, 6, "http://magicseaweed.com/Padma-Surf-Report/4005/", "", -8.705259, 115.165101);
@@ -198,7 +194,7 @@ public class SurfSpots {
         addSpot("Airport right", new String[]{"Airport right's"}, "Airport-Rights_2", new PointF(878, 849), new PointF(0, 0),
                 Direction.E, -1, 2 + 4, 3, 7, "http://magicseaweed.com/Airport-Reef-Surf-Report/2309/", "", -8.757235, 115.154246);
 
-        categories.put(list.size(), "Bukit west");
+        areas.put(list.size(), new SpotsArea("Bukit west", new PointF(820, 930)));
         addSpot("Balangan", "Balangan", new PointF(840, 894), new PointF(0, 0),
                 Direction.SE, 1, 1 + 2 + 4, 4, 8, "http://magicseaweed.com/Balangan-Surf-Report/2304/", "", -8.792450, 115.120989);
         addSpot("Dreamland", new String[]{"Dream Land"}, "Dreamland", new PointF(830, 901), new PointF(0, 0),
@@ -214,7 +210,7 @@ public class SurfSpots {
         addSpot("Nyang-Nyang", new String[]{"Nyang Nyang", "Nyang"}, "Uluwatu", new PointF(802, 952), new PointF(0, 0),
                 Direction.NE, -1, 2 + 4, 2, 6, "http://magicseaweed.com/Nyang-Nyang-Surf-Report/2315/", "", -8.841612, 115.094292);
 
-        categories.put(list.size(), "Bukit east");
+        areas.put(list.size(), new SpotsArea("Bukit east", new PointF(920, 915)));
         addSpot("Green Ball", new String[]{"Green bowl"}, "Green-Ball", new PointF(898, 962), new PointF(0, 0),
                 Direction.N, -1, 2 + 4, 2, 6, "http://magicseaweed.com/Green-Ball-Surf-Report/2320/", "", -8.849996, 115.171464);
         addSpot("Nusa Dua", "Nusadua", new PointF(981, 911), new PointF(0, 0),
@@ -222,7 +218,7 @@ public class SurfSpots {
         addSpot("Sri Lanka", new String[]{"Sri Lanka", "lanka"}, "Sri-Lanka", new PointF(965, 881), new PointF(0, 0),
                 Direction.SW, -1, 2 + 4, 4, 8, "http://magicseaweed.com/Sri-Lanka-Surf-Report/2312/", "", -8.788045, 115.233243);
 
-        categories.put(list.size(), "Sanur");
+        areas.put(list.size(), new SpotsArea("Sanur", new PointF(995, 790)));
         addSpot("Serangan", "Sanur-Reef", new PointF(985, 828), new PointF(0, 0),
                 Direction.NW, 0, 1 + 2 + 4, 2, 9, "http://magicseaweed.com/Serangan-Surf-Report/2319/", "", -8.743074, 115.243055); // !!
         //addSpot("Hyatt Reef", "Sanur-Grand-Hyatt"), new PointF(1011, 793), new PointF(0, 0), Direction.W);
@@ -234,7 +230,7 @@ public class SurfSpots {
         addSpot("Sanur Reef", new String[]{"Sanur"}, "Sanur-Reef", new PointF(1009, 749), new PointF(0, 0),
                 Direction.W, -1, 2 + 4, 4, 9, "http://magicseaweed.com/Sanur-Surf-Report/1272/", "", -8.672768, 115.266042);
 
-        categories.put(list.size(), "East");
+        areas.put(list.size(), new SpotsArea("East", new PointF(1200, 615)));
 //        addSpot("Padang Galak", "Ketewel"), new PointF(1040, 712), new PointF(0, 0), Direction.W);
         //addSpot("Ketewel", "Ketewel"), new PointF(1078, 683), new PointF(0, 0), Direction.NNW); //!! it is on MSW
 //        addSpot("Lebih", "Ketewel"), new PointF(1150, 637), new PointF(0, 0), Direction.W);
@@ -243,7 +239,7 @@ public class SurfSpots {
         addSpot("Padangbai", new String[]{"Padang Bay"}, "Padangbai", new PointF(1306, 585), new PointF(0, 0),
                 Direction.W, -1, 2, 3, 6, "http://magicseaweed.com/Padangbai-Surf-Report/4010/", "", -8.535793, 115.511652);
 
-        categories.put(list.size(), "Lembongan");
+        areas.put(list.size(), new SpotsArea("Lembongan", new PointF(1210, 750)));
         addSpot("Shipwrecks", new String[]{"Ship Wrecks"}, "Shipwrecks", new PointF(1245, 735), new PointF(0, 0),
                 Direction.E, -1, 2 + 4, 3, 8, "http://magicseaweed.com/Shipwrecks-Lembongan-Surf-Report/1088/", "", -8.664195, 115.442830);
         addSpot("Lacerations", "Lacerations", new PointF(1234, 735), new PointF(0, 0),
@@ -265,6 +261,18 @@ public class SurfSpots {
         for (SurfSpot surfSpot : getFavoriteSurfSpotsList()) {
             surfSpot.conditionsProvider.updateIfNeed();
         }
+    }
+
+    public SpotsArea getArea(int spotI) {
+        int k = 0;
+        for (Integer i : areas.keySet()) {
+            if (i < spotI) {
+                k = i;
+            } else {
+                break;
+            }
+        }
+        return areas.get(k);
     }
 
     public void init() {
@@ -293,10 +301,6 @@ public class SurfSpots {
 //        setSelectedSpotI(willBeSelectedSpotI);
 
 //        getSelectedSpot().conditionsProvider.updateIfNeed();
-    }
-
-    private static int getLastSelectedSpotI(SharedPreferences sp) {
-        return sp.getInt(SPKEY_SELECTED_SPOT, 3);
     }
 
 

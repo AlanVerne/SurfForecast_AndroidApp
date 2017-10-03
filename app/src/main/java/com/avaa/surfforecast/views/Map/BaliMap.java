@@ -461,9 +461,7 @@ public class BaliMap extends View {
         }
 
         c.restore();
-
-        if (currentConditions == null && currentMETAR == null) return;
-
+        
         windCircle.paint(c, ox, oy, awakenedState, parallaxHelper, r);
     }
 
@@ -472,13 +470,6 @@ public class BaliMap extends View {
     private SwellCircle swellCircle;
     private TideCircle tideCircle;
 
-    private void paintSwellCircle(Canvas c, float ox, float oy, float r) {
-        swellCircle.paint(c, ox, oy, awakenedState, parallaxHelper, r);
-    }
-
-    private void paintTideCircle(Canvas c, float ox, float oy) {
-        tideCircle.paint(c, ox, oy, awakenedState, parallaxHelper);
-    }
 
     private final Matrix matrix = new Matrix();
     private final Path pathTemp = new Path();
@@ -654,17 +645,15 @@ public class BaliMap extends View {
 
         float k = windArrowVisible * (float) Math.max(0, (Math.PI - Math.abs(windCircle.angle.getValue() - Math.PI) - 2));
         x -= awakenedState * Math.max(0, k * dh / 2f);
-        //Log.i(TAG, "wind spacing: " + a + " | " + k);
 
-        x -= awakenedState * (1.5 + 1 + 0.75 + 0.25 * swellCircle.scrollerHints.getValue()) * dh;
+        x -= awakenedState * (1.5 + 1 + 0.75 + 0.33 * swellCircle.scrollerHints.getValue()) * dh;
         y += awakenedState * dh / 2;
 
-        float smallR = (dh - densityDHDep) * awakenedState + densityDHDep;
-        paintSwellCircle(canvas, x, y, smallR);
+        swellCircle.paint(canvas, x, y, awakenedState, parallaxHelper);
 
-        x -= awakenedState * (1 + 1 + 0.5 + 0.5 * swellCircle.scrollerHints.getValue()) * dh;
+        x -= awakenedState * (1 + 1 + 0.66 + 0.33 * swellCircle.scrollerHints.getValue()) * dh;
 
-        paintTideCircle(canvas, x, y);
+        tideCircle.paint(canvas, x, y, awakenedState, parallaxHelper);
     }
 
 
