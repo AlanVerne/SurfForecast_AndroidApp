@@ -446,7 +446,7 @@ public class SurfConditionsForecastView extends HorizontalScrollView {
     public void onDraw(Canvas canvas) {
         int sx = getScrollX();
 
-        Log.i(TAG, "onDraw() | " + scrollY);
+//        Log.i(TAG, "onDraw() | " + scrollY);
 
         Trace.beginSection("DRAW");
 

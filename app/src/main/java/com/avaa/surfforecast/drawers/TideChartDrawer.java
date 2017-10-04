@@ -84,15 +84,20 @@ public class TideChartDrawer {
         this.view = view;
         this.tideDataProvider = MainModel.instance.tideDataProvider;
         this.model = mainModel;
+        setPortID(mainModel.getSelectedSpot().tidePortID);
 
         updateDrawer();
 
-        mainModel.addChangeListener(changes -> {
-            if (tidePortID != mainModel.getSelectedSpot().tidePortID) {
-                tideData = tideDataProvider.getTideData(tidePortID);
-                updateBitmaps();
-            }
-        }, MainModel.Change.SELECTED_SPOT);
+        mainModel.addChangeListener(changes -> setPortID(mainModel.getSelectedSpot().tidePortID), MainModel.Change.SELECTED_SPOT);
+    }
+
+
+    public void setPortID(String tidePortID) {
+        if (this.tidePortID != tidePortID) {
+            this.tidePortID = tidePortID;
+            tideData = tideDataProvider.getTideData(tidePortID);
+            updateBitmaps();
+        }
     }
 
 
@@ -119,19 +124,12 @@ public class TideChartDrawer {
     }
 
 
-    private int nowx = 0, nowy = 0;
-
     public void draw(Canvas c, int w, int h, int dx, int orientation) {
         Integer nowTime = Common.getNowTimeInt(TIME_ZONE);
 
         if (tidePortID == null) return;
 
         Integer now = tideData == null ? null : tideData.getNow();
-
-        if (now != null) {
-            nowx = dayWidth * nowTime / 60 / 24;
-            nowy = h - this.h + dh * 3 / 2 - now * dh * 3 / 2 / 300;
-        }
 
         int si = dx / dayWidth;
         int ei = Math.min(MainActivity.NDAYS - 1, (dx + w) / dayWidth);
@@ -147,37 +145,40 @@ public class TideChartDrawer {
         }
 
         if (now != null && bitmaps[0] != null) {
+            int nowX = dayWidth * nowTime / 60 / 24;
+            int nowY = h - this.h + dh * 3 / 2 - now * dh * 3 / 2 / 300;
+
             String tide = String.valueOf(Math.round(now / 10f) / 10f);
 
             if (MainModel.instance.userStat.getSpotsShownCount() > 2 || orientation == 1) {
-                c.drawCircle(nowx, nowy, dh * 0.6f, paintCircle);
+                c.drawCircle(nowX, nowY, dh * 0.6f, paintCircle);
                 if (orientation == 1) {
                     c.rotate(-90);
-                    c.drawText(tide, -nowy, nowx + metricsAndPaints.fontHDiv2, paintFont);
+                    c.drawText(tide, -nowY, nowX + metricsAndPaints.fontHDiv2, paintFont);
                     c.rotate(90);
                 } else {
-                    c.drawText(tide, nowx, nowy + metricsAndPaints.fontHDiv2, paintFont);
+                    c.drawText(tide, nowX, nowY + metricsAndPaints.fontHDiv2, paintFont);
                 }
             } else {
-                c.drawCircle(nowx, nowy, dh * 1.0f, paintCircle);
+                c.drawCircle(nowX, nowY, dh * 1.0f, paintCircle);
 //                if (orientation == 1) {
 //                    c.rotate(-90);
-//                    c.drawText(tide, -nowy, nowx + metricsAndPaints.fontHDiv2, paintFont);
-//                    c.drawText(tide, -nowy, nowx + metricsAndPaints.fontHDiv2, paintFont);
+//                    c.drawText(tide, -nowY, nowX + metricsAndPaints.fontHDiv2, paintFont);
+//                    c.drawText(tide, -nowY, nowX + metricsAndPaints.fontHDiv2, paintFont);
 //                    c.rotate(90);
 //                }
 //                else {
                 float strTideWidth = paintFont.measureText(tide);
 
                 paintFontSmall.setTextAlign(Paint.Align.CENTER);
-                c.drawText(STR_TIDE, nowx, nowy - metricsAndPaints.fontHDiv2 - metricsAndPaints.fontSmallSpacing, paintFontSmall);
-                c.drawText(STR_NOW, nowx, nowy + metricsAndPaints.fontHDiv2 + metricsAndPaints.fontSmallH + metricsAndPaints.fontSmallSpacing, paintFontSmall);
+                c.drawText(STR_TIDE, nowX, nowY - metricsAndPaints.fontHDiv2 - metricsAndPaints.fontSmallSpacing, paintFontSmall);
+                c.drawText(STR_NOW, nowX, nowY + metricsAndPaints.fontHDiv2 + metricsAndPaints.fontSmallH + metricsAndPaints.fontSmallSpacing, paintFontSmall);
 
-                nowy += metricsAndPaints.fontSmallH / 12;
+                nowY += metricsAndPaints.fontSmallH / 12;
 
                 paintFontSmall.setTextAlign(Paint.Align.LEFT);
-                c.drawText(tide, nowx - strMWidth / 3, nowy + metricsAndPaints.fontHDiv2, paintFont);
-                c.drawText(STR_M, nowx - strMWidth / 3 + strTideWidth / 2, nowy + metricsAndPaints.fontHDiv2, paintFontSmall);
+                c.drawText(tide, nowX - strMWidth / 3, nowY + metricsAndPaints.fontHDiv2, paintFont);
+                c.drawText(STR_M, nowX - strMWidth / 3 + strTideWidth / 2, nowY + metricsAndPaints.fontHDiv2, paintFontSmall);
 //                }
             }
         }
@@ -202,8 +203,8 @@ public class TideChartDrawer {
             Log.i(TAG, "updateBitmaps() | " + "cancelled async drawer");
         }
 
-        Calendar todaysStartTime = DateTimeHelper.getTodaysStartTime();
-        long time = todaysStartTime.getTime().getTime();
+//        Calendar todaysStartTime = DateTimeHelper.getTodaysStartTime();
+//        long time = todaysStartTime.getTime().getTime();
 
 //        if (drawnForDay == 0) {
         tideChartBitmapsAsyncDrawer = new TideChartBitmapsAsyncDrawer(0, surfSpot, this);
@@ -225,6 +226,7 @@ public class TideChartDrawer {
 
         return false;
     }
+
 
     public void bitmapsReady(List<Bitmap> bitmaps, int fromDay) {
         for (Bitmap bitmap : bitmaps) this.bitmaps[fromDay++] = bitmap;

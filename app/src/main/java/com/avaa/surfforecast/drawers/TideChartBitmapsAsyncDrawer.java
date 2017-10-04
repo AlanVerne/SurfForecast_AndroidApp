@@ -46,6 +46,7 @@ public class TideChartBitmapsAsyncDrawer extends AsyncTask<Void, Void, List<Bitm
         this.dh = MainModel.instance.metricsAndPaints.dh;
     }
 
+
     @Override
     protected List<Bitmap> doInBackground(Void... params) {
         //Trace.beginSection("doInBackground");
