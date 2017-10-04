@@ -124,13 +124,14 @@ public class SurfConditionsForecastView extends HorizontalScrollView {
 
     float fx, fy;
     boolean isScrollY = false;
+    boolean isScrollYDetermined = false;
 
     public Runnable onTouchActionDown = null;
     OnTouchListener tl = new View.OnTouchListener() {
         @Override
         public boolean onTouch(View v, MotionEvent event) {
             if (event.getAction() == MotionEvent.ACTION_DOWN && event.getY() < getContentTop()) {
-            //    Log.i(TAG, "event.getY() scrollY " +event.getY() +" "+ scrollY +" "+(getHeight()-scrollY));
+                //    Log.i(TAG, "event.getY() scrollY " +event.getY() +" "+ scrollY +" "+(getHeight()-scrollY));
                 return false;
             }
 
@@ -144,9 +145,7 @@ public class SurfConditionsForecastView extends HorizontalScrollView {
                 mActiveFeature = xToDay(getScrollX());
                 smoothScrollTo(dayToX(mActiveFeature), 0);
                 if (isScrollY) {
-                    if (scrollY > (dh * 12 - dh * 4) / 2 + dh * 4) scrollY(dh * 12);
-                    else if (scrollY > (dh * 4) / 2) scrollY(dh * 4);
-                    else scrollY(0);
+                    finishScrollY();
                 }
                 return true;
             } else if (event.getAction() == MotionEvent.ACTION_MOVE) {
@@ -175,7 +174,7 @@ public class SurfConditionsForecastView extends HorizontalScrollView {
         @Override
         public boolean onFling(MotionEvent e1, MotionEvent e2, float velocityX, float velocityY) {
             try {
-                if (Math.abs(velocityX) > Math.abs(velocityY) && Math.abs(velocityX) > SWIPE_THRESHOLD_VELOCITY) {
+                if (!isScrollY && Math.abs(velocityX) > Math.abs(velocityY) && Math.abs(velocityX) > SWIPE_THRESHOLD_VELOCITY) {
                     if (velocityX < 0) { //right to left
                         mActiveFeature = xToDay(getScrollX() + dh * 8);
                         smoothScrollTo(mActiveFeature * dh * 16 + dh * 8 - getWidth() / 2, 0);
@@ -184,7 +183,7 @@ public class SurfConditionsForecastView extends HorizontalScrollView {
                         smoothScrollTo(mActiveFeature * dh * 16 + dh * 8 - getWidth() / 2, 0);
                     }
                     return true;
-                } else if (Math.abs(velocityY) > SWIPE_THRESHOLD_VELOCITY) {
+                } else if (isScrollY && Math.abs(velocityY) > SWIPE_THRESHOLD_VELOCITY) {
                     if (velocityY < 0) {
                         scrollY(dh * 12);
                     } else {
@@ -267,12 +266,19 @@ public class SurfConditionsForecastView extends HorizontalScrollView {
             fx = event.getX();
             fy = event.getY();
             isScrollY = false;
+            isScrollYDetermined = false;
             scrollerY.abortAnimation();
         }
 
         if (event.getAction() == MotionEvent.ACTION_MOVE) {
-            if (!isScrollY && Math.abs(fx - event.getX()) < 15 && Math.abs(fy - event.getY()) > 15) {
-                isScrollY = true;
+            if (!isScrollYDetermined) {
+                double d = (fx - event.getX()) * (fx - event.getX()) + (fy - event.getY()) * (fy - event.getY());
+                if (d > SWIPE_MIN_DISTANCE * SWIPE_MIN_DISTANCE) {
+                    if (Math.abs(fx - event.getX()) < Math.abs(fy - event.getY())) {
+                        isScrollY = true;
+                    }
+                    isScrollYDetermined = true;
+                }
             }
         }
 
@@ -339,14 +345,8 @@ public class SurfConditionsForecastView extends HorizontalScrollView {
 
 
     int rightPaneX;
-
-    public Runnable onScrollY = new Runnable() {
-        @Override
-        public void run() {
-
-        }
+    public Runnable onScrollY = () -> {
     };
-
 
     private void drawWindSwell(Canvas canvas) {
         int sx = getScrollX();
@@ -502,7 +502,7 @@ public class SurfConditionsForecastView extends HorizontalScrollView {
         canvas.save();
         canvas.clipRect(getScrollX() + dh * 1.5f, 0, getScrollX() + getWidth() - dh * 1.5f, getHeight());
 
-        int selhour = model.selectedTime / 60 + model.getDayInt() * 24;
+        int selhour = model.selectedTime / 60 + model.getSelectedDayInt() * 24;
 
         if (orientation == 1) {
             paintHours.setTextAlign(Paint.Align.RIGHT);
@@ -542,7 +542,7 @@ public class SurfConditionsForecastView extends HorizontalScrollView {
             paintHours.setColor(MetricsAndPaints.WHITE);
             int hx, hy;
             hy = (int) (getHeight() - model.metricsAndPaints.density);
-            int hour = model.selectedTime / 60 + model.getDayInt() * 24;
+            int hour = model.selectedTime / 60 + model.getSelectedDayInt() * 24;
             hx = hour * dh * 16 / 24;
             RectF r = new RectF(hx - dh * 16 / 24 / 2, hy, hx - dh * 16 / 24 / 2 + dh * 16 / 24, hy + model.metricsAndPaints.density);
             canvas.drawRect(r, paintHours);
@@ -564,9 +564,16 @@ public class SurfConditionsForecastView extends HorizontalScrollView {
     public void scrollY(int y) {
         scrollerY.startScroll(0, scrollY, 0, y - scrollY);
     }
+
     public void setScrollY(int y) {
         scrollY = y;
         onScrollY.run();
+    }
+
+    public void finishScrollY() {
+        if (scrollY > (dh * 12 - dh * 4) / 2 + dh * 4) scrollY(dh * 12);
+        else if (scrollY > (dh * 4) / 2) scrollY(dh * 4);
+        else scrollY(0);
     }
 
     public void showDaySmooth(int i) {

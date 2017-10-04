@@ -8,19 +8,17 @@ import android.graphics.Paint;
 import android.graphics.Path;
 import android.graphics.PointF;
 import android.os.Build;
-import android.util.Log;
 
 import com.avaa.surfforecast.MainModel;
-import com.avaa.surfforecast.data.Common;
 import com.avaa.surfforecast.data.TideData;
 import com.avaa.surfforecast.drawers.MetricsAndPaints;
 import com.avaa.surfforecast.views.ParallaxHelper;
 
 import static com.avaa.surfforecast.data.Common.STR_M;
 import static com.avaa.surfforecast.data.Common.STR_TIDE;
-import static com.avaa.surfforecast.data.Common.TIME_ZONE;
 import static com.avaa.surfforecast.views.ColorUtils.alpha;
 import static com.avaa.surfforecast.views.Map.BaliMap.STR_DASH;
+
 
 /**
  * Created by Alan on 6 Sep 2017.
@@ -38,6 +36,11 @@ public class TideCircle extends MapCircle {
         setStyle(Paint.Style.FILL);
     }};
 
+    private int time = -1;
+    private Integer tide;
+    private TideData tideData;
+    private Path pathTide;
+
 
     public TideCircle(Context context) {
         super(context);
@@ -48,10 +51,22 @@ public class TideCircle extends MapCircle {
         MainModel model = MainModel.instance;
 
         model.addChangeListener(changes -> {
-            updateTideData();
-        }, MainModel.Change.SELECTED_CONDITIONS);
+            if(changes.contains(MainModel.Change.SELECTED_SPOT)) updateTideData();
+            else updateNowTide();
+        }, MainModel.Change.SELECTED_SPOT, MainModel.Change.SELECTED_CONDITIONS);
 
         updateTideData();
+    }
+
+
+    private void checkNowTide() {
+        if (time + 1 < MainModel.instance.selectedTime) updateNowTide();
+    }
+
+    private void updateTideData() {
+        MainModel model = MainModel.instance;
+        tideData = model.tideDataProvider.getTideData(model.getSelectedSpot().tidePortID);
+        updateNowTide();
     }
 
 
@@ -129,15 +144,6 @@ public class TideCircle extends MapCircle {
     }
 
 
-    private int time = -1;
-    private Integer tide;
-    private TideData tideData;
-    private Path pathTide;
-
-    private void checkNowTide() {
-        if (time + 1 < MainModel.instance.selectedTime) updateNowTide();
-    }
-
     private void updateNowTide() {
         MainModel model = MainModel.instance;
 
@@ -146,7 +152,7 @@ public class TideCircle extends MapCircle {
         Integer newTide = null;
 
         if (tideData != null) {
-            newTide = tideData.getTide(model.getDayInt(), time);
+            newTide = tideData.getTide(model.getSelectedDayInt(), time);
             if (newTide != null) tide = newTide;
         }
 //        if (model != null) Log.i(TAG, "updateNowTide " + model.selectedTime);
@@ -161,7 +167,7 @@ public class TideCircle extends MapCircle {
             int nowH = time / 60;
             final float pathDX = width * (time - (nowH - 2) * 60) / 24 / 60 - nowX;
 
-            Path pathTide = tideData.getPath2(model.getDayInt(), width * 9 / 24, py * 2, 0, 250, nowH - 2, nowH + 7);
+            Path pathTide = tideData.getPath2(model.getSelectedDayInt(), width * 9 / 24, py * 2, 0, 250, nowH - 2, nowH + 7);
             if (pathTide != null) {
                 this.pathTide = pathTide;
                 Matrix translateMatrix = new Matrix();
@@ -179,12 +185,5 @@ public class TideCircle extends MapCircle {
         if (newTide == null) {
             setVisible(false, true);
         }
-    }
-
-
-    private void updateTideData() {
-        MainModel model = MainModel.instance;
-        tideData = model.tideDataProvider.getTideData(model.getSelectedSpot().tidePortID);
-        updateNowTide();
     }
 }

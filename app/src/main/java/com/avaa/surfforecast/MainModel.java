@@ -97,6 +97,7 @@ public class MainModel {
         willBeSelectedSpotI = getLastSelectedSpotI(sharedPreferences);
     }
 
+
     public void init() {
         tideDataProvider.init();
         metarProvider.init();
@@ -104,10 +105,28 @@ public class MainModel {
         surfSpots.init();
 
         setSelectedSpotI(willBeSelectedSpotI);
+        setSelectedDay(0);
     }
 
 
     // --
+
+
+    public SurfConditions selectedConditions = null;
+    public METAR selectedMETAR = null;
+    public TideData selectedTideData = null;
+
+    public SurfConditions nowConditions = null;
+    public METAR nowMETAR = null;
+    public TideData nowTideData = null;
+
+    public float nowH;
+
+    private float selectedDay = -1; // plus days
+    public int selectedTime = 0; // 24*60
+
+    public float selectedRating = 0;
+    public RatedConditions selectedRatedConditions = null;
 
 
     public void setSelectedSpotI(int i) {
@@ -117,14 +136,10 @@ public class MainModel {
         updateCurrentConditions(false);
         //Log.i("SurfSpots", "setSelectedSpotI() 2");
         MainModel.instance.userStat.incrementSpotsShownCount();
-        fireChanged(new HashSet<Change>() {{
-            add(Change.SELECTED_SPOT);
-            add(Change.CONDITIONS);
-            add(Change.SELECTED_CONDITIONS);
-        }});
 
-        SharedPreferences sp = MainModel.instance.sharedPreferences;
-        sp.edit().putInt(SPKEY_SELECTED_SPOT, selectedSpotI).apply();
+        fireChanged(Change.SELECTED_SPOT, Change.ALL_CONDITIONS, Change.SELECTED_CONDITIONS);
+
+        sharedPreferences.edit().putInt(SPKEY_SELECTED_SPOT, selectedSpotI).apply();
     }
 
     public SurfSpot getSelectedSpot() {
@@ -144,29 +159,11 @@ public class MainModel {
         if (getSelectedSpot().conditionsProvider == surfConditionsProvider) {
             selectedConditions = surfConditionsProvider.getNow();
             fireChanged(new HashSet<Change>() {{
-                add(Change.CONDITIONS);
+                add(Change.ALL_CONDITIONS);
                 add(Change.SELECTED_CONDITIONS);
             }});
         }
     };
-
-
-    public SurfConditions selectedConditions = null;
-    public METAR selectedMETAR = null;
-    public TideData selectedTideData = null;
-
-    public SurfConditions nowConditions = null;
-    public METAR nowMETAR = null;
-    public TideData nowTideData = null;
-
-    public float nowH;
-
-    private float day = 0;
-    public float time = -1;
-
-    public float selectedRating = 0;
-    public int selectedTime = 0;
-    public RatedConditions selectedRatedConditions = null;
 
 
     public int getSelectedWindSpeed() {
@@ -181,59 +178,63 @@ public class MainModel {
     }
 
 
-    public int getDayInt() {
-        return Math.round(day);
+    public float getSelectedDay() {
+        return selectedDay;
     }
 
-    public float getDay() {
-        return day;
+    public int getSelectedDayInt() {
+        return Math.round(selectedDay);
     }
 
-    public void setDay(float day) {
-        if (this.day == day) return;
+    public void setSelectedDay(float selectedDay) {
+        if (this.selectedDay == selectedDay) return;
 
-        if (Math.round(this.day) == Math.round(day)) {
-            this.day = day;
+        if (Math.round(this.selectedDay) == Math.round(selectedDay)) {
+            this.selectedDay = selectedDay;
             return;
-        } else {
-            this.day = day;
-            fireChanged(Change.SELECTED_DAY);
-            Log.i(TAG, "selected day changed");
         }
 
+        HashSet<Change> changes = new HashSet<>();
+        changes.add(Change.SELECTED_DAY);
+
+        this.selectedDay = selectedDay;
+//        Log.i(TAG, "selected day int changed");
+
         SurfSpot spot = getSelectedSpot();
-        SurfConditionsOneDay conditionsOneDay = spot.conditionsProvider.get(Math.round(day));
+        SurfConditionsOneDay conditionsOneDay = spot.conditionsProvider.get(Math.round(selectedDay));
         SurfConditions newSC = null;
 
-        if (time == -1) {
-            int nowTimeInt = Common.getNowTimeInt(TIME_ZONE);
+        int nowTimeInt = Common.getNowTimeInt(TIME_ZONE);
 
-            if (conditionsOneDay == null) {
-                selectedTime = -1;
-                selectedRating = -1;
-                selectedConditions = null;
-                return; //continue;
-            }
-
+        if (conditionsOneDay == null) {
+//            selectedTime = -1; //nowTimeInt;
+            selectedRating = -1;
+            newSC = null;
+        }
+        else {
             selectedRating = -1;
 
-            RatedConditions best = MainModel.instance.rater.getBest(spot, Math.round(day));
+            RatedConditions best = rater.getBest(spot, Math.round(selectedDay));
             if (best != null) {
                 selectedTime = best.time;
+                changes.add(Change.SELECTED_TIME);
+
                 selectedRating = best.rating;
-                newSC = best.surfConditions;
                 selectedRatedConditions = best;
+                changes.add(Change.SELECTED_RATING);
+
+                newSC = best.surfConditions;
+            } else {
+                newSC = conditionsOneDay.get(selectedTime);
             }
         }
 
         if (selectedConditions != newSC) {
             selectedConditions = newSC;
-            fireChanged(new HashSet<Change>() {{
-                add(Change.SELECTED_CONDITIONS);
-            }});
+            changes.add(Change.SELECTED_CONDITIONS);
         }
 
-        fireChanged(Change.SELECTED_TIME);
+        fireChanged(changes);
     }
 
 
@@ -264,15 +265,20 @@ public class MainModel {
     }
 
 
+    // Change support
+
+
+    public enum Change {SELECTED_SPOT, ALL_CONDITIONS, SELECTED_CONDITIONS, SELECTED_DAY, SELECTED_TIME, TIDE, SELECTED_RATING}
+
+
     public interface ChangeListener {
         void onChange(Set<Change> changes);
     }
 
-    public enum Change {SELECTED_SPOT, CONDITIONS, SELECTED_CONDITIONS, SELECTED_DAY, SELECTED_TIME, TIDE}
-
     private Map<ChangeListener, Set<Change>> cls = new HashMap<>();
 
-    public void addChangeListener(ChangeListener l) {
+
+    public void addChangeListener(ChangeListener l) { // for all changes
         cls.put(l, null);
     }
 
@@ -282,22 +288,44 @@ public class MainModel {
         }});
     }
 
+    public void addChangeListener(ChangeListener l, Change change, Change change2) { // if change or change2 occured
+        cls.put(l, new HashSet<Change>() {{
+            add(change);
+            add(change2);
+        }});
+    }
+
+    public void addChangeListener(ChangeListener l, Change change, Change change2, Change change3) {
+        cls.put(l, new HashSet<Change>() {{
+            add(change);
+            add(change2);
+            add(change3);
+        }});
+    }
+
     public void addChangeListener(ChangeListener l, Set<Change> changes) {
         cls.put(l, changes);
     }
 
-    private static <T> boolean hasIntersection(Set<T> a, Set<T> b) {
-        for (T ai : a) {
-            for (T bi : b) {
-                if (ai == bi) return true;
-            }
-        }
-        return false;
-    }
 
-    public void fireChanged(Change change) {
+    private void fireChanged(Change change) {
         fireChanged(new HashSet<Change>() {{
             add(change);
+        }});
+    }
+
+    private void fireChanged(Change change, Change change2) {
+        fireChanged(new HashSet<Change>() {{
+            add(change);
+            add(change2);
+        }});
+    }
+
+    private void fireChanged(Change change, Change change2, Change change3) {
+        fireChanged(new HashSet<Change>() {{
+            add(change);
+            add(change2);
+            add(change3);
         }});
     }
 
@@ -306,5 +334,15 @@ public class MainModel {
             if (e.getValue() == null || hasIntersection(e.getValue(), changes))
                 e.getKey().onChange(changes);
         }
+    }
+
+
+    private static <T> boolean hasIntersection(Set<T> a, Set<T> b) {
+        for (T ai : a) {
+            for (T bi : b) {
+                if (ai == bi) return true;
+            }
+        }
+        return false;
     }
 }

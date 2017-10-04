@@ -63,7 +63,7 @@ public class SwellCircle extends MapCircle {
                 strWaveAngleAbbr = STR_DASH;
                 setVisible(false, true);
             }
-        });
+        }, MainModel.Change.SELECTED_CONDITIONS);
     }
 
 

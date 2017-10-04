@@ -20,9 +20,7 @@ import android.widget.Scroller;
 
 import com.avaa.surfforecast.MainModel;
 import com.avaa.surfforecast.R;
-import com.avaa.surfforecast.data.METAR;
 import com.avaa.surfforecast.data.RatedConditions;
-import com.avaa.surfforecast.data.SurfConditions;
 import com.avaa.surfforecast.data.SurfSpot;
 import com.avaa.surfforecast.data.SurfSpots;
 import com.avaa.surfforecast.drawers.MetricsAndPaints;
@@ -559,7 +557,7 @@ public class BaliMap extends View {
 
         int plusDays = 0;
         if (model != null) {
-            plusDays = Math.round(model.getDay());
+            plusDays = Math.round(model.getSelectedDay());
         }
         if (awakenedState == 1 && insetY < dh * 4) {
             float t = Math.max(0, 1f - (float) insetY / (dh * 4));

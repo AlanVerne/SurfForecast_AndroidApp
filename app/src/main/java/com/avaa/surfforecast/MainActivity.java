@@ -115,12 +115,12 @@ public class MainActivity extends AppCompatActivity {
 
         model.addChangeListener(changes -> {
             if (model.selectedRatedConditions == null) {
-                int day = Math.round(model.getDay());
+                int day = Math.round(model.getSelectedDay());
                 tvRating.setText(capitalize(CommandsExecutor.intDayToNL(day)));
                 ((TextView) findViewById(R.id.tvRatingTime)).setText("");
                 rv.setRating(0, 0);
             } else {
-                int day = Math.round(model.getDay());
+                int day = Math.round(model.getSelectedDay());
                 tvRating.setText(capitalize(CommandsExecutor.intDayToNL(day)));
                 ((TextView) findViewById(R.id.tvRatingTime)).setText(capitalize(CommandsExecutor.intTimeToNL(model.selectedTime, false)));
                 rv.setRating(model.selectedRating, model.selectedRatedConditions.waveRating);
@@ -131,7 +131,7 @@ public class MainActivity extends AppCompatActivity {
             if (changes.contains(MainModel.Change.SELECTED_SPOT)) {
                 listSpots.select(spotsTV.get(model.selectedSpotI));
             }
-            if (changes.contains(MainModel.Change.CONDITIONS)) {
+            if (changes.contains(MainModel.Change.ALL_CONDITIONS)) {
                 updateSurfConditionsImages();
             }
 
@@ -252,7 +252,7 @@ public class MainActivity extends AppCompatActivity {
             int w = (int) (smallView.getWidth() * scale);
             float x = smallView.getX() + smallView.getWidth() / 2;
 
-            model.setDay(j);
+            model.setSelectedDay(j);
 
             if (offset > 0) {
                 j++;
