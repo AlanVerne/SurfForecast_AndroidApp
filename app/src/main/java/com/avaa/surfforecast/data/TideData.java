@@ -153,32 +153,59 @@ public class TideData {
         return p;
     }
 
-    public Path getPath2(long day, float w, float h, int min, int max, int hStart, int hEnd) {
-        int[] values = precise.get(day);
-        Calendar c = new GregorianCalendar(Common.TIME_ZONE);
-        c.setTime(new Date(day * 1000));
-        c.add(Calendar.DATE, 1);
-        int[] values2 = precise.get(c.getTime().getTime() / 1000);
-        if (values == null || values2 == null) return null;
-
-        Path p = new Path();
-
-        p.moveTo(0, h * 2);
-
-        hStart *= 6;
-        hEnd *= 6;
-        int hWidth = hEnd - hStart;
-        int minMaxH = max - min;
-        for (int i = hStart; i <= hEnd; i++) {
-            if (i > 24 * 6)
-                p.lineTo(w * (i - hStart) / hWidth, h * (1f - ((float) values2[i - 24 * 6] / 10.0f - min) / minMaxH));
-            else if (i >= 0)
-                p.lineTo(w * (i - hStart) / hWidth, h * (1f - ((float) values[i] / 10.0f - min) / minMaxH));
+    public Path getPath2(int plusDays, float w, float h, int min, int max, int hStart, int hEnd) {
+        if (hStart < 0) {
+            plusDays -= 1;
+            hStart += 24;
+            hEnd += 24;
         }
 
-        p.lineTo(w, h * 2);
-        p.close();
+        long day = Common.getDay(plusDays, TIME_ZONE);
 
+        int[] values = precise.get(day);
+        if (values == null) return null;
+
+        Path p = new Path();
+        p.moveTo(0, h * 2);
+
+        if (hEnd >= 24) {
+            Calendar c = new GregorianCalendar(Common.TIME_ZONE);
+            c.setTime(new Date(day * 1000));
+            c.add(Calendar.DATE, 1);
+            int[] values2 = precise.get(c.getTime().getTime() / 1000);
+
+            hStart *= 6;
+            hEnd *= 6;
+
+            int hWidth = hEnd - hStart;
+            int minMaxH = max - min;
+
+            for (int i = hStart; i <= hEnd; i++) {
+                if (i > 24 * 6) {
+                    if (values2 != null) {
+                        p.lineTo(w * (i - hStart) / hWidth, h * (1f - ((float) values2[i - 24 * 6] / 10.0f - min) / minMaxH));
+                    }
+                } else if (i >= 0) {
+                    p.lineTo(w * (i - hStart) / hWidth, h * (1f - ((float) values[i] / 10.0f - min) / minMaxH));
+                }
+            }
+
+            p.lineTo(w, h * 2);
+            p.close();
+        } else {
+            hStart *= 6;
+            hEnd *= 6;
+
+            int hWidth = hEnd - hStart;
+            int minMaxH = max - min;
+
+            for (int i = hStart; i <= hEnd; i++) {
+                p.lineTo(w * (i - hStart) / hWidth, h * (1f - ((float) values[i] / 10.0f - min) / minMaxH));
+            }
+
+            p.lineTo(w, h * 2);
+            p.close();
+        }
         return p;
     }
 

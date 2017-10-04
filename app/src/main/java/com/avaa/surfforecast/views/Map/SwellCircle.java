@@ -33,7 +33,6 @@ public class SwellCircle extends MapCircle {
         setTypeface(Typeface.create(Typeface.DEFAULT, Typeface.BOLD));
     }};
 
-    private SurfConditions conditions = null;
     private String strWaveHeight = STR_DASH;
     private String strWavePeriod = STR_DASH;
     private String strWaveAngleAbbr = STR_DASH;
@@ -50,7 +49,7 @@ public class SwellCircle extends MapCircle {
         MainModel model = MainModel.instance;
 
         model.addChangeListener(changes -> {
-            conditions = model.selectedConditions;
+            SurfConditions conditions = model.selectedConditions;
 
             if (conditions != null) {
                 strWaveHeight = String.valueOf(conditions.getWaveHeightInFt());

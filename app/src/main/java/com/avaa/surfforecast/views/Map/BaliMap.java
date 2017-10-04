@@ -637,7 +637,7 @@ public class BaliMap extends View {
 
         paintSpotCircle(canvas, x, y, r);
 
-        float k = windArrowVisible * (float) Math.max(0, (Math.PI - Math.abs(windCircle.angle.getValue() - Math.PI) - 2));
+        float k = windArrowVisible * (float) Math.max(0, (Math.PI - Math.abs(windCircle.getAngle() - Math.PI) - 2));
         x -= awakenedState * Math.max(0, k * dh / 2f);
 
         x -= awakenedState * (1.5 + 1 + 0.75 + 0.33 * swellCircle.scrollerHints.getValue()) * dh;

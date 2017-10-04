@@ -29,7 +29,7 @@ public class WindCircle extends MapCircle {
 
     private String strWindSpeed = STR_DASH;
 
-    protected final FloatScroller angle;
+    private final FloatScroller angle;
     private final FloatScroller vbr;
 
 
@@ -60,6 +60,11 @@ public class WindCircle extends MapCircle {
                 setVisible(false, true);
             }
         });
+    }
+
+
+    public float getAngle() {
+        return angle.getValue();
     }
 
 
