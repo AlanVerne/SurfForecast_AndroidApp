@@ -144,8 +144,8 @@ public class SurfConditionsForecastView extends HorizontalScrollView {
                 mActiveFeature = xToDay(getScrollX());
                 smoothScrollTo(dayToX(mActiveFeature), 0);
                 if (isScrollY) {
-                    if (scrollY > (dh * 12 + dh * 4) / 2) scrollY(dh * 12);
-                    if (scrollY > (dh * 4 + 0) / 2) scrollY(dh * 4);
+                    if (scrollY > (dh * 12 - dh * 4) / 2 + dh * 4) scrollY(dh * 12);
+                    else if (scrollY > (dh * 4) / 2) scrollY(dh * 4);
                     else scrollY(0);
                 }
                 return true;
@@ -153,8 +153,8 @@ public class SurfConditionsForecastView extends HorizontalScrollView {
                 if (isScrollY) {
                     scrollY -= event.getY() - fy;
                     if (scrollY < 0) scrollY = 0;
+                    setScrollY(scrollY);
                     fy = event.getY();
-                    onScrollY.run();
                     postInvalidate();
                     return true;
                 }
@@ -564,7 +564,10 @@ public class SurfConditionsForecastView extends HorizontalScrollView {
     public void scrollY(int y) {
         scrollerY.startScroll(0, scrollY, 0, y - scrollY);
     }
-
+    public void setScrollY(int y) {
+        scrollY = y;
+        onScrollY.run();
+    }
 
     public void showDaySmooth(int i) {
         int newScrollX = dayToX(i);
