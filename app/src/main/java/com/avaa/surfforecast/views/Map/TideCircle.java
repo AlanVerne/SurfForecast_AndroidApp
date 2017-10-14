@@ -28,7 +28,7 @@ import static com.avaa.surfforecast.views.Map.BaliMap.STR_DASH;
 public class TideCircle extends MapCircle {
     private static final String TAG = "TideCircle";
 
-    private int colorWaterColor = 0xffacb5b8; //0xffa3b1b6; //0xff819faa; //0xff2e393d;
+    public int colorWaterColor = 0xffacb5b8; //0xffa3b1b6; //0xff819faa; //0xff2e393d;
 
     public final Paint paintPathTide = new Paint() {{
         setAntiAlias(true);
@@ -45,13 +45,13 @@ public class TideCircle extends MapCircle {
     public TideCircle(Context context) {
         super(context);
 
-        paintFont.setColor(MetricsAndPaints.WHITE);
-        paintHintsFont.setColor(MetricsAndPaints.WHITE);
+        paintFont.setColor(MetricsAndPaints.colorWhite);
+        paintHintsFont.setColor(MetricsAndPaints.colorWhite);
 
         MainModel model = MainModel.instance;
 
         model.addChangeListener(changes -> {
-            if(changes.contains(MainModel.Change.SELECTED_SPOT)) updateTideData();
+            if (changes.contains(MainModel.Change.SELECTED_SPOT)) updateTideData();
             else updateNowTide();
         }, MainModel.Change.SELECTED_SPOT, MainModel.Change.SELECTED_CONDITIONS);
 
@@ -76,6 +76,8 @@ public class TideCircle extends MapCircle {
         visible *= scrollerVisible.getValue();
         float hintsVisible = scrollerHints.getValue();
 
+        float alpha = getAlpha(visible);
+
         int dh = metricsAndPaints.dh;
         paintFont.setTextSize(visible * metricsAndPaints.font);
         paintHintsFont.setTextSize(visible * metricsAndPaints.fontSmall);
@@ -96,6 +98,7 @@ public class TideCircle extends MapCircle {
         float nowx = (float) (-Math.cos(Math.asin(nowy / r)) * r);
 
         if (pathTide != null) {
+            paintPathTide.setColor(alpha(alpha, colorWaterColor));
             c.save();
             c.translate(x, y);
             c.scale(visible, visible);
@@ -110,10 +113,10 @@ public class TideCircle extends MapCircle {
         y = pp.y;
 
         float dotR = visible * (dh * 0.7f + hintsVisible * dh / 4);
-        paintFont.setColor(MetricsAndPaints.colorTideBG);
+        paintFont.setColor(alpha(alpha, MetricsAndPaints.colorTideBG));
         c.drawCircle(x, y, dotR, paintFont);
 
-        paintFont.setColor(alpha(visible, 0xffffffff));
+        paintFont.setColor(alpha(alpha, 0xffffffff));
 
         String strTide = tide == null ? STR_DASH : String.valueOf(Math.round(tide / 10f) / 10f);
 
@@ -127,7 +130,7 @@ public class TideCircle extends MapCircle {
 //        }
 
         if (hintsVisible > 0) {
-            paintHintsFont.setColor(alpha(visible * hintsVisible * hintsVisible, 0xffffff));
+            paintHintsFont.setColor(alpha(alpha * hintsVisible * hintsVisible, 0xffffff));
             paintHintsFont.setTextAlign(Paint.Align.CENTER);
 
             hintsVisible *= visible;

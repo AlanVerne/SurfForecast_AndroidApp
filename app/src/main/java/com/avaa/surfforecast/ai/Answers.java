@@ -31,13 +31,11 @@ public class Answers {
 
 
     public Answer windNow() {
-        SurfSpots surfSpots = mainModel.surfSpots;
-
-        METAR currentMETAR = surfSpots.currentMETAR;
+        METAR currentMETAR = mainModel.selectedMETAR;
         if (currentMETAR != null)
             return windAns(currentMETAR.windSpeed, currentMETAR.windAngle, mainModel.getSelectedSpot());
 
-        SurfConditions currentConditions = surfSpots.currentConditions;
+        SurfConditions currentConditions = mainModel.selectedConditions;
         if (currentConditions != null)
             return windAns(currentConditions.windSpeed, currentConditions.windAngle, mainModel.getSelectedSpot());
 
@@ -45,7 +43,7 @@ public class Answers {
     }
 
     public Answer swellNow() {
-        return swellAns(mainModel.surfSpots.currentConditions);
+        return swellAns(mainModel.selectedConditions);
     }
 
     public Answer tideNow() {

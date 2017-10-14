@@ -26,27 +26,6 @@ public class SurfSpots {
 
     public static final String WADD = "WADD";
 
-//    public int selectedSpotI = -1;
-
-
-//    public void setSelectedSpotI(int i) {
-//        if (selectedSpotI == i) return;
-//        //Log.i("SurfSpots", "setSelectedSpotI() 1");
-//        selectedSpotI = i;
-//        updateCurrentConditions(false);
-//        //Log.i("SurfSpots", "setSelectedSpotI() 2");
-//        MainModel.instance.userStat.incrementSpotsShownCount();
-//        fireChanged(new HashSet<Change>(){{add(Change.SELECTED_SPOT);add(Change.ALL_CONDITIONS);add(Change.SELECTED_CONDITIONS);}});
-//
-//        SharedPreferences sp = MainModel.instance.sharedPreferences;
-//        sp.edit().putInt(SPKEY_SELECTED_SPOT, selectedSpotI).apply();
-//    }
-//    public SurfSpot getSelectedSpot() {
-//        if (selectedSpotI == -1) return list.get(willBeSelectedSpotI);
-//        if (selectedSpotI >= list.size()) selectedSpotI = list.size() - 1;
-//        return list.get(selectedSpotI);
-//    }
-
 
     public SurfSpot get(int i) {
         return list.get(i);
@@ -69,58 +48,6 @@ public class SurfSpots {
     public int indexOf(SurfSpot surfSpot) {
         return list.indexOf(surfSpot);
     }
-
-
-//    public void updateAll() {
-//        for (SurfSpot surfSpot : list) {
-//            surfSpot.conditionsProvider.update();
-//        }
-//    }
-
-
-    public SurfConditions currentConditions = null;
-    public METAR currentMETAR = null;
-//    public TideData currentTideData = null; // unsupported
-
-//    public void updateCurrentConditions() {
-//        updateCurrentConditions(true);
-//    }
-//    public void updateCurrentConditions(boolean fire) {
-//        SurfSpot spot = getSelectedSpot();
-//
-//        if (spot == null) return;
-//
-//        spot.conditionsProvider.updateIfNeed();
-//
-//        SurfConditions newCC = spot.conditionsProvider.getNow();
-//        METAR newMETAR = MainModel.instance.metarProvider.get(spot.metarName);
-//
-//        if (newCC == currentConditions && newMETAR == currentMETAR) return;
-//
-//        currentConditions = newCC;
-//        currentMETAR = newMETAR;
-//
-//        Log.i(TAG, newMETAR == null ? "null" : newMETAR.toString());
-//
-//        if (fire) fireChanged(new HashSet<Change>(){{add(Change.SELECTED_CONDITIONS);}});
-//    }
-
-
-//    public interface ChangeListener {
-//        void onChange(Set<Change> changes);
-//    }
-
-//    public enum Change {SELECTED_SPOT, ALL_CONDITIONS, SELECTED_CONDITIONS, SELECTED_DAY, SELECTED_TIME}
-
-//    private Map<ChangeListener, Set<Change>> cls = new HashMap<>();
-
-//    public void addChangeListener(ChangeListener l) {
-//        cls.put(l, null);
-//    }
-
-//    public void addChangeListener(ChangeListener l, Set<Change> changes) {
-//        cls.put(l, changes);
-//    }
 
 
     public Set<String> getFavorite() {
@@ -155,10 +82,8 @@ public class SurfSpots {
     private List<SurfSpot> list = new ArrayList<>();
     public Map<Integer, SpotsArea> areas = new TreeMap<>();
 
-//    private BusyStateListener bsl;
 
-    public SurfSpots(SharedPreferences sp) {
-//        this.bsl = bsl;
+    public SurfSpots() {
         initSpots();
     }
 
@@ -263,6 +188,7 @@ public class SurfSpots {
         }
     }
 
+
     public SpotsArea getArea(int spotI) {
         int k = 0;
         for (Integer i : areas.keySet()) {
@@ -274,6 +200,7 @@ public class SurfSpots {
         }
         return areas.get(k);
     }
+
 
     public void init() {
         final MainModel mainModel = MainModel.instance;
@@ -297,37 +224,14 @@ public class SurfSpots {
 
         final Handler handler = new Handler();
         handler.postDelayed(this::updateFavorite, 10000);
-
-//        setSelectedSpotI(willBeSelectedSpotI);
-
-//        getSelectedSpot().conditionsProvider.updateIfNeed();
     }
-
-
-    private static <T> boolean hasIntersection(Set<T> a, Set<T> b) {
-        for (T ai : a) {
-            for (T bi : b) {
-                if (ai == bi) return true;
-            }
-        }
-        return false;
-    }
-//    public void fireChanged(Change change) {
-//        fireChanged(new HashSet<Change>(){{add(change);}});
-//    }
-//    public void fireChanged(Set<Change> changes) {
-//        for (Map.Entry<ChangeListener, Set<Change>> e : cls.entrySet()) {
-//            if (e.getValue() == null || hasIntersection(e.getValue(), changes)) e.getKey().onChange(changes);
-//        }
-//    }
 
 
     private void addSpot(SurfSpot surfSpot) {
         list.add(surfSpot);
     }
 
-
-    //    private void addSpot(String name, SurfConditionsProvider provider, PointF onSVG, PointF onMap, Direction direction) {
+//    private void addSpot(String name, SurfConditionsProvider provider, PointF onSVG, PointF onMap, Direction direction) {
 //        addSpot(new SurfSpot(name, provider, onSVG, onMap, direction));
 //    }
 //    private void addSpot(String name, SurfConditionsProvider provider, PointF onSVG, PointF onMap, Direction direction, int lr) {
@@ -339,6 +243,7 @@ public class SurfSpots {
 //    private void addSpot(String name, SurfConditionsProvider conditionsProvider, PointF pointOnSVG, PointF pointEarth, Direction waveDirection, int leftright, int tides, int minSwell, int maxSwell, String msw, String sf) {
 //        addSpot(new SurfSpot(name, conditionsProvider, pointOnSVG, pointEarth, waveDirection, leftright, tides, minSwell, maxSwell, msw, sf, 0, 0));
 //    }
+
     private void addSpot(String name, String conditionsProvider, PointF pointOnSVG, PointF pointEarth, Direction waveDirection, int leftright, int tides, int minSwell, int maxSwell, String msw, String urlCam, double la, double lo) {
         addSpot(new SurfSpot(name, conditionsProvider, pointOnSVG, pointEarth, waveDirection, leftright, tides, minSwell, maxSwell, msw, urlCam, la, lo));
     }

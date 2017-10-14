@@ -381,7 +381,7 @@ public class CommandsExecutor {
 
             if (c.day == null) lastAnswer.addClarification(intDayToNL(plusDays));
         } else if ((c.day != null && c.day == 0) && c.time == -1) {      //      time now
-            METAR currentMETAR = mainModel.surfSpots.currentMETAR;
+            METAR currentMETAR = mainModel.selectedMETAR;
 
             for (SurfSpot surfSpot : mainModel.surfSpots.getFavoriteSurfSpotsList()) {
                 SurfConditions surfConditions = surfSpot.conditionsProvider.getNow();

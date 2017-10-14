@@ -16,6 +16,7 @@ import com.avaa.surfforecast.views.ParallaxHelper;
 import static com.avaa.surfforecast.data.Common.STR_FT;
 import static com.avaa.surfforecast.data.Common.STR_S;
 import static com.avaa.surfforecast.data.Common.STR_SWELL;
+import static com.avaa.surfforecast.drawers.MetricsAndPaints.colorWaveText;
 import static com.avaa.surfforecast.views.ColorUtils.alpha;
 import static com.avaa.surfforecast.views.Map.BaliMap.STR_DASH;
 import static com.avaa.surfforecast.views.Map.BaliMap.getArrow;
@@ -27,7 +28,7 @@ import static com.avaa.surfforecast.views.Map.BaliMap.getArrow;
 
 
 public class SwellCircle extends MapCircle {
-    private static final int COLOR_SWELL_BG = MetricsAndPaints.WHITE;
+    private static final int COLOR_SWELL_BG = MetricsAndPaints.colorWhite;
 
     private final Paint paintFontBig = new Paint(paintFont) {{
         setTypeface(Typeface.create(Typeface.DEFAULT, Typeface.BOLD));
@@ -73,6 +74,8 @@ public class SwellCircle extends MapCircle {
         visible *= scrollerVisible.getValue();
         float hintsVisible = scrollerHints.getValue();
 
+        float alpha = getAlpha(visible);
+
         int dh = metricsAndPaints.dh;
         paintFontBig.setTextSize(visible * metricsAndPaints.fontBig);
         paintFont.setTextSize(visible * metricsAndPaints.font);
@@ -92,7 +95,7 @@ public class SwellCircle extends MapCircle {
 
         float a = angle.getValue(); //conditions.waveAngle;
 
-        paintBG.setColor(COLOR_SWELL_BG);
+        paintBG.setColor(alpha(alpha, COLOR_SWELL_BG));
         c.drawPath(getArrow(x, y, a, r), paintBG);
 
         float strFtWidth = 0;
@@ -101,7 +104,7 @@ public class SwellCircle extends MapCircle {
         float yDelta = (fontBigH + dh / 6 * visible + fontH) / 2;
 
         if (hintsVisible > 0) {
-            paintHintsFont.setColor(alpha(visible * hintsVisible * hintsVisible, 0x000000));
+            paintHintsFont.setColor(alpha(alpha * hintsVisible * hintsVisible, colorWaveText));
 
             float additionalArrowSize = visible * dh / 4; //r*(SQRT_2-1)/SQRT_2/2;
             float windArrowR = r * SQRT_2 - additionalArrowSize * SQRT_2;
@@ -140,10 +143,10 @@ public class SwellCircle extends MapCircle {
             //c.drawText(conditions.waveEnergy+"kJ", x, y + (fontBigH + visible*dh/6 + fontH)/2 + visible*(dh / 6 + dh / 12 + dh / 6 * hintsVisible), paintAdditionalText);
         }
 
-        paintFontBig.setColor(alpha(visible, MetricsAndPaints.colorWaveText));
+        paintFontBig.setColor(alpha(alpha, colorWaveText));
         c.drawText(strWaveHeight, x - strFtWidth / 3, y - yDelta + fontBigH, paintFontBig);
 
-        paintFont.setColor(alpha(visible, MetricsAndPaints.colorWaveText));
+        paintFont.setColor(alpha(alpha, colorWaveText));
         c.drawText(strWavePeriod, x - strSWidth / 3, y + yDelta, paintFont);
     }
 

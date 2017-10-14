@@ -25,8 +25,8 @@ import com.avaa.surfforecast.data.SurfSpot;
 import com.avaa.surfforecast.data.SurfSpots;
 import com.avaa.surfforecast.drawers.MetricsAndPaints;
 import com.avaa.surfforecast.drawers.SVGPathToAndroidPath;
+import com.avaa.surfforecast.views.ColorUtils;
 import com.avaa.surfforecast.views.ParallaxHelper;
-import com.avaa.surfforecast.views.RatingView;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
@@ -535,7 +535,7 @@ public class BaliMap extends View {
 
                 bmpMapZoomedInForSpotI = model.selectedSpotI;
             }
-            canvas.drawBitmap(bmpMapZoomedIn, pp.x - 2 * dh, -insetY/2+pp.y - 2 * dh, null);
+            canvas.drawBitmap(bmpMapZoomedIn, pp.x - 2 * dh, -insetY / 2 + pp.y - 2 * dh, null);
         } else {
             float s = scale / (dh * 2f / rOut);
             rectFTemp.set(dx + pp.x, dy + pp.y, dx + pp.x + bmpMapZoomedOut.getWidth() * s, dy + pp.y + bmpMapZoomedOut.getHeight() * s);
@@ -580,20 +580,26 @@ public class BaliMap extends View {
                 float t = Math.max(0, 1f - (float) insetY / (dh * 4)); //(1f - awakenedState);
                 float x = spot.pointOnSVG.x * scale + dx;
                 float y = spot.pointOnSVG.y * scale + dy;
-                if (x > 0 && y > paddingTop*dh && x < getWidth() && y < getHeight()-paddingBottom*dh) {
+                if (x > 0 && y > paddingTop * dh && x < getWidth() && y < getHeight() - paddingBottom * dh) {
                     float r = densityDHDep * 1.5f;
 
-                    paintBG.setColor((int) (t * 0xff) * 0x1000000 + colorSpotDot);
-                    canvas.drawCircle(x, y, r, paintBG);
-
-                    x += dh / 5;
-                    y += dh / 5;
-
-                    canvas.drawText(spot.name.substring(0, 3), x, y, paintFont);
-
                     RatedConditions best = MainModel.instance.rater.getBest(spot, plusDays);
-                    if (best != null)
-                        RatingView.drawStatic(canvas, (int) x - dh, (int) y, dh / 4, best.rating, best.waveRating * best.tideRating, (int) (t * 255));
+                    if (best != null) {
+                        paintBG.setColor(ColorUtils.alpha(t * best.rating, 0x006281)); //colorSpotDot);
+                        canvas.drawCircle(x, y, r, paintBG);
+
+                        x += dh / 5;
+                        y += dh / 5;
+
+//                        RatingView.drawStatic(canvas, (int) x - dh, (int) y, dh / 4, best.rating, best.waveRating * best.tideRating, (int) (t * 255));
+                        paintFont.setColor(ColorUtils.alpha(t * best.rating, 0x006281));
+                        canvas.drawText(spot.name.substring(0, 3) + " " + Math.round(best.rating * 7), x, y, paintFont);
+                    } else {
+                        canvas.drawCircle(x, y, r, paintBG);
+                        x += dh / 5;
+                        y += dh / 5;
+                        canvas.drawText(spot.name.substring(0, 3), x, y, paintFont);
+                    }
                 }
             }
             i++;
@@ -666,6 +672,6 @@ public class BaliMap extends View {
 
     public void setAccentColor(int accentColor) {
         colorWaterColor = accentColor;
-        tideCircle.paintPathTide.setColor(accentColor);
+        tideCircle.colorWaterColor = accentColor;
     }
 }

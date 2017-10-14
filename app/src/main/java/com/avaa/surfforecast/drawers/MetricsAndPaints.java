@@ -10,9 +10,6 @@ import android.graphics.Rect;
 public class MetricsAndPaints {
     public static final float TEXT_K = 1.33333f;
 
-    public static final int WHITE = 0xffffffff;
-    public static final int BLACK = 0xff000000;
-
     public static int colorWindBG = 0xfff8f8f8; //0xff25c2e3;
     public static int colorWaveBG = 0xffffffff; //0xff188bc4;
     public static int colorTideBG = 0xFF006283; //0xFF005C86; //ff122D54; //0xff2e393d;
@@ -21,7 +18,7 @@ public class MetricsAndPaints {
     public static int colorWhite = 0xffffffff;
     public static int colorMinorWhite = 0x88ffffff;
 
-    public static int colorBlack = 0xff000000;
+    public static int colorBlack = 0xff003545;
     public static int colorMinorBlack = 0x33000000;
 
     public static int colorWindText = colorBlack;
@@ -56,6 +53,7 @@ public class MetricsAndPaints {
     public final Paint paintFont = new Paint() {{
         setAntiAlias(true);
         setTextAlign(Align.CENTER);
+        setColor(colorBlack);
     }};
     public final Paint paintFontSmall = new Paint(paintFont);
     public final Paint paintFontBig = new Paint(paintFont);

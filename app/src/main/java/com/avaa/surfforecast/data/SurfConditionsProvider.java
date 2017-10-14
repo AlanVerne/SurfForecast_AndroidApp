@@ -37,12 +37,12 @@ public class SurfConditionsProvider {
 
     private boolean loaded = false;
 
-    public String url = "";
-    public String urlfull = "";
-    public String urlfullweek = "";
+    public final String url;
+    public final String urlfull;
+    public final String urlfullweek;
 
     public TreeMap<Long, SurfConditions> conditions = null;
-    public HashMap<Integer, TreeMap<Long, SurfConditions>> allconditions = null;
+//    public HashMap<Integer, TreeMap<Long, SurfConditions>> allconditions = null;
     public long lastUpdate = 0;
     private List<UpdateListener> uls = new ArrayList<>();
     public BusyStateListener bsl = null;

@@ -185,9 +185,11 @@ public class SurfConditionsForecastView extends HorizontalScrollView {
                     return true;
                 } else if (isScrollY && Math.abs(velocityY) > SWIPE_THRESHOLD_VELOCITY) {
                     if (velocityY < 0) {
-                        scrollY(dh * 12);
+                        if (scrollY > dh * 4) scrollY(dh * 12);
+                        else scrollY(dh * 4);
                     } else {
-                        scrollY(0);
+                        if (scrollY < dh * 4) scrollY(0);
+                        else scrollY(dh*4);
                     }
                     return true;
                 }
@@ -523,7 +525,7 @@ public class SurfConditionsForecastView extends HorizontalScrollView {
                 String strH = String.valueOf(hour % 24);
                 if (MainModel.instance.userStat.userLevel == 2) strH += ":00";
                 if (hour == selhour) {
-                    paintHours.setColor(MetricsAndPaints.WHITE);
+                    paintHours.setColor(MetricsAndPaints.colorWhite);
                 }
                 canvas.drawText(strH, hx, hy, paintHours);
                 if (hour == selhour) {
@@ -533,13 +535,13 @@ public class SurfConditionsForecastView extends HorizontalScrollView {
             if (selhour % 3 != 0 && MainModel.instance.userStat.userLevel != 2) {
                 hx = selhour * dh * 16 / 24;
                 String strH = String.valueOf(selhour % 24);
-                paintHours.setColor(MetricsAndPaints.WHITE);
+                paintHours.setColor(MetricsAndPaints.colorWhite);
                 canvas.drawText(strH, hx, hy, paintHours);
                 paintHours.setColor(0x66ffffff);
             }
         }
         if (model.selectedTime > 0) {
-            paintHours.setColor(MetricsAndPaints.WHITE);
+            paintHours.setColor(MetricsAndPaints.colorWhite);
             int hx, hy;
             hy = (int) (getHeight() - model.metricsAndPaints.density);
             int hour = model.selectedTime / 60 + model.getSelectedDayInt() * 24;
@@ -562,7 +564,7 @@ public class SurfConditionsForecastView extends HorizontalScrollView {
     private OverScroller scrollerY;
 
     public void scrollY(int y) {
-        scrollerY.startScroll(0, scrollY, 0, y - scrollY);
+        scrollerY.startScroll(0, scrollY, 0, y - scrollY, 333);
     }
 
     public void setScrollY(int y) {

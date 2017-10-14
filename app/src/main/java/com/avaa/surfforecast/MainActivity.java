@@ -86,7 +86,7 @@ public class MainActivity extends AppCompatActivity {
     ProgressBar progressBar;
 
     LinearLayout llRating;
-    TextView tvRating;
+    TextView tvRatingDay;
     TextView tvRatingTime;
     RatingView rv;
 
@@ -116,13 +116,13 @@ public class MainActivity extends AppCompatActivity {
         model.addChangeListener(changes -> {
             if (model.selectedRatedConditions == null) {
                 int day = Math.round(model.getSelectedDay());
-                tvRating.setText(capitalize(CommandsExecutor.intDayToNL(day)));
-                ((TextView) findViewById(R.id.tvRatingTime)).setText("");
+                tvRatingDay.setText(capitalize(CommandsExecutor.intDayToNL(day)));
+                tvRatingTime.setText("");
                 rv.setRating(0, 0);
             } else {
                 int day = Math.round(model.getSelectedDay());
-                tvRating.setText(capitalize(CommandsExecutor.intDayToNL(day)));
-                ((TextView) findViewById(R.id.tvRatingTime)).setText(capitalize(CommandsExecutor.intTimeToNL(model.selectedTime, false)));
+                tvRatingDay.setText(capitalize(CommandsExecutor.intDayToNL(day)));
+                tvRatingTime.setText(capitalize(CommandsExecutor.intTimeToNL(model.selectedTime, false)));
                 rv.setRating(model.selectedRating, model.selectedRatedConditions.waveRating);
             }
         });
@@ -141,12 +141,12 @@ public class MainActivity extends AppCompatActivity {
             SurfConditions now = surfSpot.conditionsProvider.getNow();
 
             if (now != null) {
-                now.addMETAR(model.surfSpots.currentMETAR);
+                now.addMETAR(model.selectedMETAR);
 
                 TideData tideData = model.tideDataProvider.getTideData(surfSpot.tidePortID);
                 if (tideData != null) { //!!!!!!!!!!!!!!!!!!
 //                    float rate = now.rate(surfSpot, tideData, 0, Common.getNowTimeInt(Common.TIME_ZONE));
-                    //((TextView)findViewById(R.id.tvRating)).setText("Rating: " + rate + "\nWave: " + now.waveRating + "\nWind: " + now.windRating + "\nTide: " + now.tideRating);
+                    //((TextView)findViewById(R.id.tvRatingDay)).setText("Rating: " + rate + "\nWave: " + now.waveRating + "\nWind: " + now.windRating + "\nTide: " + now.tideRating);
 //                    rv.setRating(rate, now.waveRating * now.tideRating);
                 }
             }
@@ -174,7 +174,7 @@ public class MainActivity extends AppCompatActivity {
         btnMenu = (FrameLayout) findViewById(R.id.flBtnMenu);
 
         llRating = (LinearLayout) findViewById(R.id.llRating);
-        tvRating = ((TextView) findViewById(R.id.tvRating));
+        tvRatingDay = ((TextView) findViewById(R.id.tvRatingDay));
         tvRatingTime = ((TextView) findViewById(R.id.tvRatingTime));
         rv = ((RatingView) findViewById(R.id.ratingView));
 
@@ -418,7 +418,7 @@ public class MainActivity extends AppCompatActivity {
         int starH = (int) (fontRating * 1.1);
         LinearLayout.LayoutParams rvlp = new LinearLayout.LayoutParams(starH * 10, starH);
         rvlp.gravity = Gravity.CENTER_VERTICAL;
-        rvlp.topMargin = dh / 8;
+        rvlp.topMargin = dh / 4;
         rvlp.bottomMargin = dh / 8;
         //rvlp.leftMargin = (int)fontRating/2;
         rv.setLayoutParams(rvlp);
@@ -434,7 +434,7 @@ public class MainActivity extends AppCompatActivity {
         layoutParams.height = (int) metrics.fontHeader;
         ivBtnMenu.setLayoutParams(layoutParams);
 
-        tvRating.setTextSize(TypedValue.COMPLEX_UNIT_PX, fontRating);
+        tvRatingDay.setTextSize(TypedValue.COMPLEX_UNIT_PX, fontRating);
         tvRatingTime.setTextSize(TypedValue.COMPLEX_UNIT_PX, fontRating);
 
         final RelativeLayout spotsRL = (RelativeLayout) findViewById(R.id.top);
@@ -567,7 +567,7 @@ public class MainActivity extends AppCompatActivity {
             lparams.setMargins(0, 0, 0, 0);
             textView.setLayoutParams(lparams);
             textView.setTextSize(TypedValue.COMPLEX_UNIT_PX, metricsAndPaints.fontHeader);
-            textView.setTextColor(0xff000000 | colorTextSpotNames);
+            textView.setTextColor(0xff000000 | colorTextSpotNames); //0x003343); //0x006281); //colorTextSpotNames);
             textView.setText(SurfSpot.name + (SurfSpot.favorite ? "   " + "\u2605" : "")); //2605");
             textView.setAlpha(i == ssi ? 1 : 0);
             textView.setGravity(Gravity.CENTER_VERTICAL);

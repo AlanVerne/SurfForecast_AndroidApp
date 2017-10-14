@@ -13,6 +13,7 @@ import com.avaa.surfforecast.views.ParallaxHelper;
 
 import static com.avaa.surfforecast.data.Common.STR_KMH;
 import static com.avaa.surfforecast.data.Common.STR_WIND;
+import static com.avaa.surfforecast.drawers.MetricsAndPaints.colorWindText;
 import static com.avaa.surfforecast.views.ColorUtils.alpha;
 import static com.avaa.surfforecast.views.Map.BaliMap.STR_DASH;
 
@@ -23,7 +24,7 @@ import static com.avaa.surfforecast.views.Map.BaliMap.STR_DASH;
 
 
 public class WindCircle extends MapCircle {
-    private static final int COLOR_WIND_BG = MetricsAndPaints.WHITE;
+    private static final int COLOR_WIND_BG = MetricsAndPaints.colorWhite;
 
     private static final float DEFAULT_WIND_ANGLE = (float) (Math.PI * 2 - Math.PI * 1 / 4);
 
@@ -74,6 +75,8 @@ public class WindCircle extends MapCircle {
         visible *= scrollerVisible.getValue();
         float hintsVisible = scrollerHints.getValue();
 
+        float alpha = getAlpha(visible);
+
         int dh = metricsAndPaints.dh;
         paintFont.setTextSize(visible * metricsAndPaints.font);
         paintHintsFont.setTextSize(visible * metricsAndPaints.fontSmall);
@@ -95,15 +98,15 @@ public class WindCircle extends MapCircle {
         ax = pp.x;
         ay = pp.y;
 
-        paintBG.setColor(COLOR_WIND_BG);
+        paintBG.setColor(alpha(alpha, COLOR_WIND_BG));
 
         if (vbr) c.drawCircle(ax, ay, windArrowR, paintBG);
         else c.drawPath(BaliMap.getArrow(ax, ay, a, windArrowR), paintBG);
 
-        paintFont.setColor(alpha(visible, MetricsAndPaints.colorWindText));
+        paintFont.setColor(alpha(alpha, colorWindText));
 
         if (hintsVisible > 0) {
-            paintHintsFont.setColor(alpha(visible * hintsVisible * hintsVisible, 0x000000));
+            paintHintsFont.setColor(alpha(alpha * hintsVisible * hintsVisible, colorWindText));
             paintHintsFont.setTextAlign(Paint.Align.CENTER);
 
             if (!vbr) {

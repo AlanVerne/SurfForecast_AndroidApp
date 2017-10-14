@@ -30,7 +30,7 @@ public class MapCircle {
     protected final Paint paintFont = new Paint() {{
         setFlags(Paint.ANTI_ALIAS_FLAG);
         setTextAlign(Paint.Align.CENTER);
-        setColor(MetricsAndPaints.WHITE);
+        setColor(MetricsAndPaints.colorWhite);
     }};
     protected final Paint paintHintsFont = new Paint() {{
         setFlags(Paint.ANTI_ALIAS_FLAG);
@@ -63,5 +63,10 @@ public class MapCircle {
         repaint |= scrollerVisible.compute();
         repaint |= scrollerHints.compute();
         return repaint;
+    }
+
+
+    protected float getAlpha(float visible) {
+        return (float)(Math.pow(visible, 5));
     }
 }

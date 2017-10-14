@@ -17,7 +17,7 @@ import static com.avaa.surfforecast.data.Common.TIME_ZONE;
 public class SurfSpot {
     public final SurfConditionsProvider conditionsProvider;
 
-    public String name;
+    public final String name;
 
     public String[] altNames;
 
@@ -37,8 +37,8 @@ public class SurfSpot {
 
     public double la, lo;
 
-    public String urlMSW = null;
-    public String urlCam = null;
+    public final String urlMSW;
+    public final String urlCam;
 
     public String metarName = null;
 

@@ -75,7 +75,7 @@ public class MainModel {
 
         userStat = new UserStat(sharedPreferences);
         metarProvider = new METARProvider(bsl);
-        surfSpots = new SurfSpots(sharedPreferences);
+        surfSpots = new SurfSpots();
         tideDataProvider = new TideDataProvider();
 
         rater = new Rater();
