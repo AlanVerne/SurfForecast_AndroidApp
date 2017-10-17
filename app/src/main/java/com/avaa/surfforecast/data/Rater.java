@@ -18,11 +18,15 @@ import java.util.TreeSet;
 public class Rater {
     public long lastUpdate = 0;
     public final Map<SurfSpot, TreeMap<Long, RatedConditions>> bestBySpot = new HashMap<>();
-    public final Map<Long, SortedSet<RatedConditions>> bestByDay = new HashMap<Long, SortedSet<RatedConditions>>(){{
+    public final Map<Long, SortedSet<RatedConditions>> bestByDay = new HashMap<Long, SortedSet<RatedConditions>>();
+
+
+    private void initBestByDay() {
+        bestByDay.clear();
         for (int plusDays = 0; plusDays < 6; plusDays++) {
-            put(Common.getDay(plusDays, Common.TIME_ZONE), new TreeSet<>());
+            bestByDay.put(Common.getDay(plusDays, Common.TIME_ZONE), new TreeSet<>());
         }
-    }};
+    }
 
 
     public RatedConditions getBest(SurfSpot surfSpot, int plusDays) {
@@ -38,6 +42,7 @@ public class Rater {
 
 
     public void updateBest() {
+        initBestByDay();
         for (SurfSpot surfSpot : MainModel.instance.surfSpots.getAll()) {
             TreeMap<Long, RatedConditions> map = updateBest(surfSpot);
             for (Map.Entry<Long, RatedConditions> entry : map.entrySet()) {

@@ -60,7 +60,7 @@ public class WindCircle extends MapCircle {
             } else {
                 setVisible(false, true);
             }
-        });
+        }, MainModel.Change.SELECTED_CONDITIONS);
     }
 
 

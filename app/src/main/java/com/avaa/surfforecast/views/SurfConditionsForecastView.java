@@ -1,6 +1,5 @@
 package com.avaa.surfforecast.views;
 
-import android.annotation.TargetApi;
 import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
@@ -8,8 +7,6 @@ import android.graphics.Paint;
 import android.graphics.Rect;
 import android.graphics.RectF;
 import android.os.AsyncTask;
-import android.os.Build;
-import android.os.Trace;
 import android.util.AttributeSet;
 import android.util.Log;
 import android.view.GestureDetector;
@@ -52,7 +49,7 @@ import static com.avaa.surfforecast.data.Common.STR_WIND_U;
  */
 
 
-@TargetApi(Build.VERSION_CODES.JELLY_BEAN_MR2)
+//@TargetApi(Build.VERSION_CODES.JELLY_BEAN_MR2)
 public class SurfConditionsForecastView extends HorizontalScrollView {
     private static final String TAG = "SCForecastView";
 
@@ -70,7 +67,7 @@ public class SurfConditionsForecastView extends HorizontalScrollView {
 
     private TideChartDrawer tideChartDrawer = null;
 
-    public final SurfConditionsOneDayBitmaps[] bitmaps = new SurfConditionsOneDayBitmaps[7];
+    private final SurfConditionsOneDayBitmaps[] bitmaps = new SurfConditionsOneDayBitmaps[7];
     private int dh = 0;
 
     private MainModel model;
@@ -83,32 +80,14 @@ public class SurfConditionsForecastView extends HorizontalScrollView {
     }
 
 
-    public interface OnScrollChangedListener {
-        void onScrollChanged(int i, float offset, float scale);
-    }
-
-    private OnScrollChangedListener mOnScrollChangedListener;
-
-    public void setOnScrollChangedListener(OnScrollChangedListener listener) {
-        mOnScrollChangedListener = listener;
-    }
-
     @Override
     protected void onScrollChanged(int l, int t, int oldl, int oldt) {
         super.onScrollChanged(l, t, oldl, oldt);
-        if (mOnScrollChangedListener != null) {
-            float offset = (float) (getScrollX() - dh * 8 + getWidth() / 2) / dh / 16;
-            int i = (int) offset;
-            if (offset - i < 0.5) {
-                offset = offset - i;
-                mOnScrollChangedListener.onScrollChanged(i, offset, getScale(i));
-            } else {
-                i++;
-                offset = i - offset;
-                mOnScrollChangedListener.onScrollChanged(i, -offset, getScale(i));
-            }
-        }
+        float offset = (float) (getScrollX() - dh * 8 + getWidth() / 2) / dh / 16;
+//        Log.i(TAG, "onScrollChanged " + l + " " + oldl + " " + offset + Log.getStackTraceString(new Exception()));
+        model.setSelectedDay(offset);
     }
+
 
     public float getScale(int i) {
         return (float) getWidth() / (dh * 16);
@@ -123,30 +102,37 @@ public class SurfConditionsForecastView extends HorizontalScrollView {
 
 
     float fx, fy;
+    boolean isScrollX = false;
     boolean isScrollY = false;
     boolean isScrollYDetermined = false;
 
     public Runnable onTouchActionDown = null;
+
     OnTouchListener tl = new View.OnTouchListener() {
         @Override
         public boolean onTouch(View v, MotionEvent event) {
-            if (event.getAction() == MotionEvent.ACTION_DOWN && event.getY() < getContentTop()) {
-                //    Log.i(TAG, "event.getY() scrollY " +event.getY() +" "+ scrollY +" "+(getHeight()-scrollY));
-                return false;
-            }
+            if (event.getAction() == MotionEvent.ACTION_DOWN) {
+                if (event.getY() < getContentTop()) {
+                    //    Log.i(TAG, "event.getY() scrollY " +event.getY() +" "+ scrollY +" "+(getHeight()-scrollY));
+                    return false;
+                }
 
-            if (event.getAction() == MotionEvent.ACTION_DOWN && onTouchActionDown != null) {
-                onTouchActionDown.run();
+                isScrollX = true;
+
+                if (onTouchActionDown != null) {
+                    onTouchActionDown.run();
+                }
             }
 
             if (mGestureDetector.onTouchEvent(event)) { //If the user swipes
                 return true;
             } else if (event.getAction() == MotionEvent.ACTION_UP || event.getAction() == MotionEvent.ACTION_CANCEL) {
                 mActiveFeature = xToDay(getScrollX());
-                smoothScrollTo(dayToX(mActiveFeature), 0);
+                showDaySmooth(mActiveFeature);
                 if (isScrollY) {
                     finishScrollY();
                 }
+                isScrollX = false;
                 return true;
             } else if (event.getAction() == MotionEvent.ACTION_MOVE) {
                 if (isScrollY) {
@@ -182,6 +168,7 @@ public class SurfConditionsForecastView extends HorizontalScrollView {
                         mActiveFeature = xToDay(getScrollX() - dh * 8);
                         smoothScrollTo(mActiveFeature * dh * 16 + dh * 8 - getWidth() / 2, 0);
                     }
+                    isScrollX = false;
                     return true;
                 } else if (isScrollY && Math.abs(velocityY) > SWIPE_THRESHOLD_VELOCITY) {
                     if (velocityY < 0) {
@@ -189,7 +176,7 @@ public class SurfConditionsForecastView extends HorizontalScrollView {
                         else scrollY(dh * 4);
                     } else {
                         if (scrollY < dh * 4) scrollY(0);
-                        else scrollY(dh*4);
+                        else scrollY(dh * 4);
                     }
                     return true;
                 }
@@ -219,7 +206,7 @@ public class SurfConditionsForecastView extends HorizontalScrollView {
     private void init() {
         model = MainModel.instance;
 
-        MainModel.instance.tideDataProvider.addListener(
+        model.tideDataProvider.addListener(
                 new TideDataProvider.TideDataProviderListener() {
                     @Override
                     public void updated(String portID) {
@@ -231,6 +218,13 @@ public class SurfConditionsForecastView extends HorizontalScrollView {
                     }
                 }
         );
+
+
+
+        model.addChangeListener(changes -> {
+            Log.i(TAG, "Change.SELECTED_DAY isSX="+isScrollX);
+            if (!isScrollX) showDay(model.getSelectedDayInt());
+        }, MainModel.Change.SELECTED_DAY);
 
         for (int i = 0; i < bitmaps.length; i++) {
             bitmaps[i] = new SurfConditionsOneDayBitmaps();
@@ -255,19 +249,20 @@ public class SurfConditionsForecastView extends HorizontalScrollView {
         if (scrollerY.computeScrollOffset()) {
             scrollY = scrollerY.getCurrY();
             onScrollY.run();
-            postInvalidateOnAnimation();
+            postInvalidate();
         }
     }
 
 
     @Override
     public boolean onTouchEvent(MotionEvent event) {
-        if (event.getY() < getContentTop() - dh * 4) return false;
+        if (event.getY() < getContentTop() - dh * 0) return false;
 
         if (event.getAction() == MotionEvent.ACTION_DOWN) {
             fx = event.getX();
             fy = event.getY();
             isScrollY = false;
+            isScrollX = true;
             isScrollYDetermined = false;
             scrollerY.abortAnimation();
         }
@@ -278,6 +273,7 @@ public class SurfConditionsForecastView extends HorizontalScrollView {
                 if (d > SWIPE_MIN_DISTANCE * SWIPE_MIN_DISTANCE) {
                     if (Math.abs(fx - event.getX()) < Math.abs(fy - event.getY())) {
                         isScrollY = true;
+                        isScrollX = false;
                     }
                     isScrollYDetermined = true;
                 }
@@ -358,8 +354,7 @@ public class SurfConditionsForecastView extends HorizontalScrollView {
         float windy = recty + dh * 0.5f;
         float swelly = recty + dh * 3f;
 
-
-        Trace.beginSection("DRAW");
+//        Trace.beginSection("DRAW");
         int x = -dh;
 
         paintBGs.setColor(0xffe0e0e0);
@@ -439,8 +434,12 @@ public class SurfConditionsForecastView extends HorizontalScrollView {
     public int scrollY = 0;
 
 
+    public float getTideVisible() {
+        return Math.min((float) scrollY / tideChartDrawer.h, 1f);
+    }
+
     public int getContentTop() {
-        return getHeight() - (scrollY <= tideChartDrawer.h ? scrollY : Math.max(tideChartDrawer.h, scrollY - dh * 2));
+        return getHeight() - (scrollY <= tideChartDrawer.h ? scrollY : (scrollY - tideChartDrawer.h) * 6 / 8 + tideChartDrawer.h); //Math.max(tideChartDrawer.h, scrollY - dh * 2));
     }
 
 
@@ -450,7 +449,7 @@ public class SurfConditionsForecastView extends HorizontalScrollView {
 
 //        Log.i(TAG, "onDraw() | " + scrollY);
 
-        Trace.beginSection("DRAW");
+//        Trace.beginSection("DRAW");
 
         rightPaneX = getWidth() - dh;
 
@@ -552,7 +551,7 @@ public class SurfConditionsForecastView extends HorizontalScrollView {
         }
         canvas.restore();
 
-        Trace.endSection();
+//        Trace.endSection();
     }
 
 
@@ -565,6 +564,7 @@ public class SurfConditionsForecastView extends HorizontalScrollView {
 
     public void scrollY(int y) {
         scrollerY.startScroll(0, scrollY, 0, y - scrollY, 333);
+        postInvalidateOnAnimation();
     }
 
     public void setScrollY(int y) {
@@ -578,23 +578,26 @@ public class SurfConditionsForecastView extends HorizontalScrollView {
         else scrollY(0);
     }
 
-    public void showDaySmooth(int i) {
-        int newScrollX = dayToX(i);
+    public void showDaySmooth(int plusDays) {
+        int newScrollX = dayToX(plusDays);
         if (getScrollX() != newScrollX) {
             //Log.i(TAG, "showday " + i + " " + iv.getWidth() + " " + getScrollX() + " " + newScrollX + "   " + iv.getWidth());
             //smoothScrollBy(0, 0);
+            mActiveFeature = plusDays;
             smoothScrollTo(newScrollX, 0);
             //Log.i(TAG, "showday " + i + " " + iv.getWidth() + " " + getScrollX());
         }
     }
 
-    public void showDay(int i) {
-        int newScrollX = dayToX(i);
-        if (getScrollX() != newScrollX) {
-            //Log.i(TAG, "showday " + i + " " + iv.getWidth() + " " + getScrollX() + " " + newScrollX + "   " + iv.getWidth());
+    public void showDay(int plusDays) {
+        int newScrollX = dayToX(plusDays);
+        if (getScrollX() != newScrollX && mActiveFeature != plusDays) {
+            mActiveFeature = plusDays;
+//            Log.i(TAG, "showDay " + getScrollX() + " " + plusDays);
             smoothScrollBy(0, 0);
+            smoothScrollTo(getScrollX(), 0); // KILL ME BUT IT WORKS ONLY THIS WAY!
             scrollTo(newScrollX, 0);
-            //Log.i(TAG, "showday " + i + " " + iv.getWidth() + " " + getScrollX());
+//            Log.i(TAG, "showDay<<");
         }
     }
 

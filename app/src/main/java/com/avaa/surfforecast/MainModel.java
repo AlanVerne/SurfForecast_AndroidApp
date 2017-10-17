@@ -187,14 +187,20 @@ public class MainModel {
     }
 
     public void setSelectedDay(float selectedDay) {
+//        Log.i(TAG, "setSelectedDay(" + selectedDay);
+
         if (this.selectedDay == selectedDay) return;
 
         if (Math.round(this.selectedDay) == Math.round(selectedDay)) {
-            this.selectedDay = selectedDay;
-            return;
+            if (this.selectedDay != selectedDay) {
+                this.selectedDay = selectedDay;
+                fireChanged(Change.SELECTED_DAY_FLOAT);
+                return;
+            }
         }
 
         HashSet<Change> changes = new HashSet<>();
+        changes.add(Change.SELECTED_DAY_FLOAT);
         changes.add(Change.SELECTED_DAY);
 
         this.selectedDay = selectedDay;
@@ -268,7 +274,7 @@ public class MainModel {
     // Change support
 
 
-    public enum Change {SELECTED_SPOT, ALL_CONDITIONS, SELECTED_CONDITIONS, SELECTED_DAY, SELECTED_TIME, TIDE, SELECTED_RATING}
+    public enum Change {SELECTED_SPOT, ALL_CONDITIONS, SELECTED_CONDITIONS, SELECTED_DAY, SELECTED_DAY_FLOAT, SELECTED_TIME, TIDE, SELECTED_RATING}
 
 
     public interface ChangeListener {

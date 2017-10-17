@@ -36,6 +36,12 @@
                 android:layout_width="match_parent"
                 android:layout_height="match_parent" />
 
+            <TextView
+                android:id="@+id/tvPlace"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Bali" />
+
             <com.avaa.surfforecast.views.MyList
                 android:id="@+id/svSpots"
                 android:layout_width="match_parent"
@@ -96,7 +102,7 @@
             <!--android:layout_alignParentBottom="true"-->
             <!--android:scrollbars="none">-->
             <RelativeLayout
-                android:id="@+id/vllDays"
+                android:id="@+id/rlDays"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_alignParentBottom="true"

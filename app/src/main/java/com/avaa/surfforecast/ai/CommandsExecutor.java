@@ -9,9 +9,7 @@ import com.avaa.surfforecast.MainModel;
 import com.avaa.surfforecast.data.Common;
 import com.avaa.surfforecast.data.METAR;
 import com.avaa.surfforecast.data.RatedConditions;
-import com.avaa.surfforecast.data.Rater;
 import com.avaa.surfforecast.data.SurfConditions;
-import com.avaa.surfforecast.data.SurfConditionsOneDay;
 import com.avaa.surfforecast.data.SurfSpot;
 
 import java.util.ArrayList;

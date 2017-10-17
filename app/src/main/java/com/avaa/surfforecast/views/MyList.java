@@ -79,7 +79,7 @@ public class MyList extends FeaturedScrollView {
         void scrolled(float awakeState);
     }
 
-    public ScrollListener sl = null;
+    public ScrollListener scrollListener = null;
 
     int pointers = 0;
 
@@ -167,7 +167,7 @@ public class MyList extends FeaturedScrollView {
 
             prevTime = SystemClock.uptimeMillis();
 
-            if (sl != null) sl.scrolled(awakeState);
+            if (scrollListener != null) scrollListener.scrolled(awakeState);
 
             repaint();
         } else {
@@ -305,13 +305,14 @@ public class MyList extends FeaturedScrollView {
     }
 
 
-    public void updatePadding(int h) {
+    public void updatePadding() {
         if (!views.isEmpty()) {
-            int pb = h - dh * 2 - paddingTop; //views.get(views.size() - 1).getHeight() - paddingTop*2;
+            int pb = getHeight() - dh * 2 - paddingTop; //views.get(views.size() - 1).getHeight() - paddingTop*2;
             if (layout.getPaddingBottom() != pb) {
                 //layout.setPadding(90, 990, 90, 9990);
                 layout.setPadding(0, paddingTop, 0, pb);
             }
+            onScrollChanged(getScrollX(), getScrollY(), getScrollX(), getScrollY());
         }
     }
 //    @Override
@@ -352,8 +353,8 @@ public class MyList extends FeaturedScrollView {
 
 
     @Override
-    protected void onScrollChanged(int l, int kt, int oldl, int oldt) {
-        super.onScrollChanged(l, kt, oldl, oldt);
+    protected void onScrollChanged(int l, int t, int oldl, int oldt) {
+        super.onScrollChanged(l, t, oldl, oldt);
 
         float fi = -1;
         float li = -1;
@@ -362,14 +363,14 @@ public class MyList extends FeaturedScrollView {
 
         int i = 0;
 
-        int bottom = kt + getHeight();
+        int bottom = t + getHeight();
         for (View view : views) {
             if (isViewSelectable(view)) {
-                if (view.getTop() <= kt + paddingTop && si == -1)
-                    si = i + (float) (kt + paddingTop - view.getTop()) / view.getHeight();
+                if (view.getTop() <= t + paddingTop && si == -1)
+                    si = i + (float) (t + paddingTop - view.getTop()) / view.getHeight();
 
-                if (fi == -1 && view.getTop() + view.getHeight() > kt)
-                    fi = Math.max(i, i + (float) (kt - view.getTop()) / view.getHeight());
+                if (fi == -1 && view.getTop() + view.getHeight() > t)
+                    fi = Math.max(i, i + (float) (t - view.getTop()) / view.getHeight());
                 if (li == -1 && view.getTop() + view.getHeight() > bottom)
                     li = Math.max(i, i + (float) (bottom - view.getTop()) / view.getHeight()) - 1;
 
@@ -382,7 +383,7 @@ public class MyList extends FeaturedScrollView {
         if (li == -1) li = i - 1f;
 
         si = Math.max(0f, Math.min(i - 1f, si));
-        if (sl != null) sl.scrolled(si, fi, Math.min(i - 1f, li), awakeState);
+        if (scrollListener != null) scrollListener.scrolled(si, fi, Math.min(i - 1f, li), awakeState);
     }
 
 

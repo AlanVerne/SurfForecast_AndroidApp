@@ -25,7 +25,6 @@ import com.avaa.surfforecast.data.SurfSpot;
 import com.avaa.surfforecast.data.SurfSpots;
 import com.avaa.surfforecast.drawers.MetricsAndPaints;
 import com.avaa.surfforecast.drawers.SVGPathToAndroidPath;
-import com.avaa.surfforecast.views.ColorUtils;
 import com.avaa.surfforecast.views.ParallaxHelper;
 
 import java.io.ByteArrayOutputStream;
@@ -35,6 +34,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Timer;
 import java.util.TimerTask;
+
+import static com.avaa.surfforecast.views.ColorUtils.alpha;
 
 
 /**
@@ -66,6 +67,8 @@ public class BaliMap extends View {
 
     private float awakenedState = 0;
     private float awakenedStatePrev = 0;
+
+    private float overviewState = 1;
 
     private float densityDHDep = 3;
 
@@ -112,7 +115,7 @@ public class BaliMap extends View {
         if (this.dh != 0) bmpMapZoomedOut.eraseColor(0x00000000);
 
         this.dh = dh;
-        metricsAndPaints = MainModel.instance.metricsAndPaints;
+        metricsAndPaints = model.metricsAndPaints;
 
         this.densityDHDep = metricsAndPaints.densityDHDependent;
 
@@ -159,14 +162,14 @@ public class BaliMap extends View {
 
         powerManager = (PowerManager) getContext().getSystemService(Context.POWER_SERVICE);
 
-        SurfSpots surfSpots = MainModel.instance.surfSpots;
+        SurfSpots surfSpots = model.surfSpots;
         surfSpotsList = surfSpots.getAll();
 
         scrollerHints = new Scroller(getContext());
 
         densityDHDep = getResources().getDisplayMetrics().density;
 
-        MainModel.instance.userStat.addUserLevelListener(this::setHintsVisiblePolicy);
+        model.userStat.addUserLevelListener(this::setHintsVisiblePolicy);
 
         setAwakenedState(1);
 
@@ -221,7 +224,7 @@ public class BaliMap extends View {
 
     @Override
     public boolean onTouchEvent(MotionEvent ev) {
-        Log.i(TAG, "onTouchEvent() | " + ev.getAction());
+//        Log.i(TAG, "onTouchEvent() | " + ev.getAction() + " ovs=" + overviewState);
 
         if (hintsVisiblePolicy == 1) {
             rescheduleHintsHide();
@@ -234,6 +237,10 @@ public class BaliMap extends View {
             if (tideCircle.setHintsVisible(true, !isPowerSavingMode())) {
                 repaint();
             }
+        }
+
+        if (overviewState == 1f) {
+            model.mainActivity.performSelectSpot(model.getSelectedSpot(), null);
         }
 
         return super.onTouchEvent(ev);
@@ -473,7 +480,8 @@ public class BaliMap extends View {
     private final RectF rectFTemp = new RectF();
 
 
-    public int insetY = 0;
+    public int insetBottom = 0;
+
 
     @Override
     protected void onDraw(Canvas canvas) {
@@ -481,7 +489,7 @@ public class BaliMap extends View {
 
         super.onDraw(canvas);
 
-        int height = getHeight() - insetY;
+        int height = getHeight() - insetBottom;
 
         int h = height - (int) ((paddingTop + paddingBottom) * dh);
 
@@ -501,7 +509,7 @@ public class BaliMap extends View {
         dx += (1 - awakenedState) * (getWidth() - (3 * dh));
         dy += (1 - awakenedState) * (height - 2 * dh) / 2;
 
-        int mapCenterY = getHeight() / 2 - insetY / 2;
+        int mapCenterY = getHeight() / 2 - insetBottom / 2;
 
         PointF pp = parallaxHelper.applyParallax(getWidth() / 2, mapCenterY, -dh * 1.0f);
         pp.offset(-getWidth() / 2, -mapCenterY);
@@ -535,7 +543,7 @@ public class BaliMap extends View {
 
                 bmpMapZoomedInForSpotI = model.selectedSpotI;
             }
-            canvas.drawBitmap(bmpMapZoomedIn, pp.x - 2 * dh, -insetY / 2 + pp.y - 2 * dh, null);
+            canvas.drawBitmap(bmpMapZoomedIn, pp.x - 2 * dh, -insetBottom / 2 + pp.y - 2 * dh, null);
         } else {
             float s = scale / (dh * 2f / rOut);
             rectFTemp.set(dx + pp.x, dy + pp.y, dx + pp.x + bmpMapZoomedOut.getWidth() * s, dy + pp.y + bmpMapZoomedOut.getHeight() * s);
@@ -559,9 +567,8 @@ public class BaliMap extends View {
         if (model != null) {
             plusDays = Math.round(model.getSelectedDay());
         }
-        if (awakenedState == 1 && insetY < dh * 4) {
-            float t = Math.max(0, 1f - (float) insetY / (dh * 4));
-            paintFont.setColor((int) (t * 0xff) * 0x1000000 + colorSpotDot);
+        if (awakenedState == 1 && insetBottom < dh * 4) {
+            paintFont.setColor(alpha(overviewState, colorSpotDot));
             paintFont.setTextAlign(Paint.Align.LEFT);
         }
 
@@ -576,23 +583,23 @@ public class BaliMap extends View {
                 paintBG.setColor((int) (t * 0xff) * 0x1000000 + colorSpotDot);
                 canvas.drawCircle(x, y, r, paintBG);
             }
-            if (awakenedState == 1 && insetY < dh * 4) {
-                float t = Math.max(0, 1f - (float) insetY / (dh * 4)); //(1f - awakenedState);
+            if (awakenedState == 1 && overviewState > 0) {
                 float x = spot.pointOnSVG.x * scale + dx;
                 float y = spot.pointOnSVG.y * scale + dy;
                 if (x > 0 && y > paddingTop * dh && x < getWidth() && y < getHeight() - paddingBottom * dh) {
                     float r = densityDHDep * 1.5f;
 
-                    RatedConditions best = MainModel.instance.rater.getBest(spot, plusDays);
+                    RatedConditions best = model.rater.getBest(spot, plusDays);
                     if (best != null) {
-                        paintBG.setColor(ColorUtils.alpha(t * best.rating, 0x006281)); //colorSpotDot);
+                        paintBG.setColor(alpha(overviewState * best.rating, 0x006281)); //colorSpotDot);
                         canvas.drawCircle(x, y, r, paintBG);
 
                         x += dh / 5;
                         y += dh / 5;
 
 //                        RatingView.drawStatic(canvas, (int) x - dh, (int) y, dh / 4, best.rating, best.waveRating * best.tideRating, (int) (t * 255));
-                        paintFont.setColor(ColorUtils.alpha(t * best.rating, 0x006281));
+                        paintFont.setColor(alpha(overviewState * (best.rating/2f+0.5f), 0x006281));
+                        paintFont.setTextSize(best.rating>=0.7?metricsAndPaints.fontBig:best.rating>0.3?metricsAndPaints.font:metricsAndPaints.fontSmall);
                         canvas.drawText(spot.name.substring(0, 3) + " " + Math.round(best.rating * 7), x, y, paintFont);
                     } else {
                         canvas.drawCircle(x, y, r, paintBG);
@@ -617,7 +624,7 @@ public class BaliMap extends View {
                 canvas.drawCircle(x, y, densityDHDep * (2 + isHighlighted(selectedSpotI)), paintBG);
             } else {
                 float t = awakenedState;
-                awakenedState *= Math.min(1, (float) insetY / (dh * 4));
+                awakenedState *= 1f - overviewState;
 
                 float r = (dh * 1.5f - densityDHDep * 3) * awakenedState + densityDHDep * 3;
                 if (awakenedState > 0) {
@@ -673,5 +680,11 @@ public class BaliMap extends View {
     public void setAccentColor(int accentColor) {
         colorWaterColor = accentColor;
         tideCircle.colorWaterColor = accentColor;
+    }
+
+
+    public void setInsetBottom(int insetBottom) {
+        this.insetBottom = insetBottom;
+        overviewState = Math.max(0, Math.min(1, 1 - (float) insetBottom / (dh * 4)));
     }
 }

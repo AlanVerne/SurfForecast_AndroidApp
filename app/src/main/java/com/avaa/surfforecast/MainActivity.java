@@ -63,17 +63,14 @@ public class MainActivity extends AppCompatActivity {
     int colorConditionsPreviews = 0xffffff;
 
     MainModel model;
-//    TidesProvider tidesProvider;
-//    SurfSpots surfSpots;
-//    UserStat userStat;
 
     int dh = 0;
 
     Map<Integer, View> spotsTV = new TreeMap<>();
 
-    private List<OneDayConditionsSmallView> smallViews = new ArrayList<>();
-
     float density;
+
+    private List<OneDayConditionsSmallView> smallViews = new ArrayList<>();
 
     VoiceInterfaceFragment vif;
     View mainLayout;
@@ -89,6 +86,7 @@ public class MainActivity extends AppCompatActivity {
     TextView tvRatingDay;
     TextView tvRatingTime;
     RatingView rv;
+    TextView tvPlace;
 
     SharedPreferences sharedPreferences;
 
@@ -125,12 +123,11 @@ public class MainActivity extends AppCompatActivity {
                 tvRatingTime.setText(capitalize(CommandsExecutor.intTimeToNL(model.selectedTime, false)));
                 rv.setRating(model.selectedRating, model.selectedRatedConditions.waveRating);
             }
-        });
 
-        model.addChangeListener(changes -> {
             if (changes.contains(MainModel.Change.SELECTED_SPOT)) {
                 listSpots.select(spotsTV.get(model.selectedSpotI));
             }
+
             if (changes.contains(MainModel.Change.ALL_CONDITIONS)) {
                 updateSurfConditionsImages();
             }
@@ -170,71 +167,21 @@ public class MainActivity extends AppCompatActivity {
         listSpots = (MyList) findViewById(R.id.svSpots);
         forecast = (SurfConditionsForecastView) findViewById(R.id.scfv);
         progressBar = (MaterialProgressBar) findViewById(R.id.progressBar);
-        rlDays = (RelativeLayout) findViewById(R.id.vllDays);
+        rlDays = (RelativeLayout) findViewById(R.id.rlDays);
         btnMenu = (FrameLayout) findViewById(R.id.flBtnMenu);
 
         llRating = (LinearLayout) findViewById(R.id.llRating);
         tvRatingDay = ((TextView) findViewById(R.id.tvRatingDay));
         tvRatingTime = ((TextView) findViewById(R.id.tvRatingTime));
         rv = ((RatingView) findViewById(R.id.ratingView));
+        tvPlace = (TextView) findViewById(R.id.tvPlace);
 
         vif.commandsExecutor = new CommandsExecutor(model);
 
         progressBar.getIndeterminateDrawable().setColorFilter(0xffffffff, PorterDuff.Mode.SRC_IN);
         progressBar.setVisibility(busyCount > 0 ? View.VISIBLE : View.INVISIBLE);
 
-        btnMenu.setOnClickListener(v2 -> {
-            SurfSpot spot = model.getSelectedSpot();
-
-            PopupMenu menu = new PopupMenu(this, btnMenu);
-
-            menu.setOnMenuItemClickListener(item -> {
-                switch (item.getItemId()) {
-                    case 0:
-                        spot.conditionsProvider.update();
-                        model.metarProvider.update(spot.metarName);
-                        model.tideDataProvider.fetchIfNeed(spot.tidePortID);
-                        return true;
-                    case 1:
-                        model.surfSpots.swapFavorite(spot);
-                        listSpots.getView(model.selectedSpotI).setText(spot.name + (spot.favorite ? "   " + "\u2605" : ""));
-                        return true;
-                    case 2: {
-                        Intent geoIntent = new Intent(Intent.ACTION_VIEW, Uri.parse("geo:" + spot.la + "," + spot.lo + "?q=" + spot.la + "," + spot.lo + "(" + spot.name + ")"));
-                        startActivity(geoIntent);
-                        return true;
-                    }
-                    case 3: {
-                        Intent browserIntent = new Intent(Intent.ACTION_VIEW, Uri.parse(spot.urlMSW));
-                        startActivity(browserIntent);
-                        return true;
-                    }
-                    case 4: {
-                        Intent browserIntent = new Intent(Intent.ACTION_VIEW, Uri.parse(spot.getSFURL()));
-                        startActivity(browserIntent);
-                        return true;
-                    }
-                    case 5: {
-                        Intent browserIntent = new Intent(Intent.ACTION_VIEW, Uri.parse(spot.urlCam));
-                        startActivity(browserIntent);
-                        return true;
-                    }
-                    default:
-                        return true;
-                }
-            });
-
-            menu.getMenu().add(0, 0, 0, "Update");
-            menu.getMenu().add(0, 1, 0, spot.favorite ? "Remove star" : "Star");
-            menu.getMenu().add(0, 2, 0, "Show on map");
-
-            menu.getMenu().add(1, 3, 0, "MSW.com");
-            menu.getMenu().add(1, 4, 0, "SF.com");
-
-            if (spot.urlCam != null) menu.getMenu().add(2, 5, 0, "Camera");
-
-            menu.show();
-        });
+        initMenuButton();
 
         mainLayout.setBackgroundColor(colorBG);
         baliMap.setAccentColor(colorAccent);
@@ -246,43 +193,9 @@ public class MainActivity extends AppCompatActivity {
 
         forecast.onTouchActionDown = () -> listSpots.sleep();
 
-        forecast.setOnScrollChangedListener((j, offset, scale) -> {
-            //Log.i("MA", j+" "+offset+" "+scale);
-            OneDayConditionsSmallView smallView = smallViews.get(j);
-            int w = (int) (smallView.getWidth() * scale);
-            float x = smallView.getX() + smallView.getWidth() / 2;
+        initSmallForecastViews();
 
-            model.setSelectedDay(j);
-
-            if (offset > 0) {
-                j++;
-            } else {
-                j--;
-                offset = -offset;
-            }
-            if (j >= 0 && j <= 6) {
-                smallView = smallViews.get(j);
-                x = x - (x - (smallView.getX() + smallView.getWidth() / 2)) * offset;
-                w = w - (int) ((w - (int) (smallView.getWidth() * forecast.getScale(j))) * offset);
-            }
-
-            ViewGroup.LayoutParams layoutParams = daysScroller.getLayoutParams();
-            layoutParams.width = w;
-            daysScroller.setLayoutParams(layoutParams);
-            daysScroller.setX((int) (x - w / 2));
-        });
-
-        smallViews.add((OneDayConditionsSmallView) findViewById(R.id.odcs0));
-        smallViews.add((OneDayConditionsSmallView) findViewById(R.id.odcs1));
-        smallViews.add((OneDayConditionsSmallView) findViewById(R.id.odcs2));
-        smallViews.add((OneDayConditionsSmallView) findViewById(R.id.odcs3));
-        smallViews.add((OneDayConditionsSmallView) findViewById(R.id.odcs4));
-        smallViews.add((OneDayConditionsSmallView) findViewById(R.id.odcs5));
-        smallViews.add((OneDayConditionsSmallView) findViewById(R.id.odcs6));
-        for (OneDayConditionsSmallView smallView : smallViews)
-            smallView.setColorText(colorConditionsPreviews);
-
-        listSpots.sl = new MyList.ScrollListener() {
+        listSpots.scrollListener = new MyList.ScrollListener() {
             @Override
             public void scrolled(float shownI, float firstI, float lastI, float awakeState) {
                 awakeState = 1f - awakeState;
@@ -316,7 +229,8 @@ public class MainActivity extends AppCompatActivity {
             int k = 0;
             for (OneDayConditionsSmallView v1 : smallViews) {
                 if (x < v1.getRight() + ((LinearLayout.LayoutParams) v1.getLayoutParams()).rightMargin) {
-                    forecast.showDay(k);
+//                    forecast.showDay(k);
+                    model.setSelectedDay(k);
                     break;
                 }
                 k++;
@@ -324,7 +238,24 @@ public class MainActivity extends AppCompatActivity {
             return true;
         });
 
-        mainLayout.getViewTreeObserver().addOnGlobalLayoutListener(new OLCL()); //LayoutChangeListener(new OLCL());
+        mainLayout.getViewTreeObserver().addOnGlobalLayoutListener(new OGLL()); //LayoutChangeListener(new OGLL());
+
+        forecast.onScrollY = () -> {
+            float v = forecast.getTideVisible();
+            listSpots.setAlpha(v);
+            tvRatingTime.setAlpha(v);
+            rv.setAlpha(v);
+
+            tvPlace.setAlpha(1f - v);
+
+            baliMap.setInsetBottom(forecast.getHeight() - forecast.getContentTop());
+            rlDays.setY(forecast.getContentTop() - rlDays.getHeight());
+
+            ViewGroup.LayoutParams p = listSpots.getLayoutParams();
+            p.height = forecast.getContentTop();
+            listSpots.setLayoutParams(p);
+            listSpots.updatePadding();
+        };
 
         OrientationEventListener orientationListener = new
                 OrientationEventListener(getApplicationContext(), SensorManager.SENSOR_DELAY_NORMAL) {
@@ -394,6 +325,7 @@ public class MainActivity extends AppCompatActivity {
         super.onBackPressed();
     }
 
+
     Calendar c = null;
 
     private void resetDates() {
@@ -418,9 +350,8 @@ public class MainActivity extends AppCompatActivity {
         int starH = (int) (fontRating * 1.1);
         LinearLayout.LayoutParams rvlp = new LinearLayout.LayoutParams(starH * 10, starH);
         rvlp.gravity = Gravity.CENTER_VERTICAL;
-        rvlp.topMargin = dh / 4;
+        rvlp.topMargin = dh / 2;
         rvlp.bottomMargin = dh / 8;
-        //rvlp.leftMargin = (int)fontRating/2;
         rv.setLayoutParams(rvlp);
 
         RelativeLayout.LayoutParams llRatingLP = new RelativeLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, (int) (dh * 2.5f));
@@ -437,31 +368,22 @@ public class MainActivity extends AppCompatActivity {
         tvRatingDay.setTextSize(TypedValue.COMPLEX_UNIT_PX, fontRating);
         tvRatingTime.setTextSize(TypedValue.COMPLEX_UNIT_PX, fontRating);
 
-        final RelativeLayout spotsRL = (RelativeLayout) findViewById(R.id.top);
+        tvPlace.setLayoutParams(new RelativeLayout.LayoutParams(FrameLayout.LayoutParams.MATCH_PARENT, (int) (dh * 2.5)) {{
+            setMargins(0, 0, 0, 0);
+        }});
+        tvPlace.setPadding(dh, dh / 2, 0, 0);
+        tvPlace.setTextSize(TypedValue.COMPLEX_UNIT_PX, metrics.fontHeader);
+        tvPlace.setGravity(Gravity.CENTER_VERTICAL);
+        tvPlace.setTextColor(metrics.colorWhite);
 
-        ViewGroup.LayoutParams mParams = spotsRL.getLayoutParams();
-
-        int h = (int) (dh * 10.1);
-        mParams.height = mainLayout.getHeight() - h;
-        spotsRL.setLayoutParams(mParams);
-
-//        mParams = forecast.getLayoutParams();
-//        mParams.height = h;
-//        forecast.setLayoutParams(mParams);
-
-        forecast.onScrollY = () -> {
-            baliMap.insetY = (int) (forecast.getHeight() - forecast.getContentTop());
-            rlDays.setY(forecast.getContentTop() - rlDays.getHeight());
-        };
-
-        spotsRL.invalidate();
+//        spotsRL.invalidate();
         forecast.invalidate();
         mainLayout.invalidate();
 
         int daysBottom = (int) (dh * 0.75);
 
         RelativeLayout.LayoutParams vllDaysLayoutParams = (RelativeLayout.LayoutParams) rlDays.getLayoutParams();
-        vllDaysLayoutParams.height = (int) (dh * 3 + daysBottom);
+        vllDaysLayoutParams.height = dh * 3 + daysBottom;
 
         View rlDaysScroller = findViewById(R.id.rlDaysScroller);
         RelativeLayout.LayoutParams rlDaysScrollerLayoutParams = (RelativeLayout.LayoutParams) rlDaysScroller.getLayoutParams();
@@ -495,7 +417,7 @@ public class MainActivity extends AppCompatActivity {
         baliMap.setDh(dh);
 
         initListSpots();
-        listSpots.updatePadding(mainLayout.getHeight() - h);
+        listSpots.updatePadding();//mainLayout.getHeight());// - h);
 
         forecast.post(() -> {
             forecast.showDay(0);
@@ -506,11 +428,11 @@ public class MainActivity extends AppCompatActivity {
     //    private boolean olclWorked = false;
     private int w, h;
 
-    class OLCL implements ViewTreeObserver.OnGlobalLayoutListener {
+    private class OGLL implements ViewTreeObserver.OnGlobalLayoutListener {
         @Override
         public void onGlobalLayout() {
 //            if (olclWorked) {
-//                Log.i(TAG, "OLCL:  if (olclWorked) {");
+//                Log.i(TAG, "OGLL:  if (olclWorked) {");
 //                return;
 //            }
 //            else olclWorked = true;
@@ -535,6 +457,112 @@ public class MainActivity extends AppCompatActivity {
 //                mainLayout.getViewTreeObserver().removeOnGlobalLayoutListener(this);
 //            }
         }
+    }
+
+
+    private void initSmallForecastViews() {
+        smallViews.add((OneDayConditionsSmallView) findViewById(R.id.odcs0));
+        smallViews.add((OneDayConditionsSmallView) findViewById(R.id.odcs1));
+        smallViews.add((OneDayConditionsSmallView) findViewById(R.id.odcs2));
+        smallViews.add((OneDayConditionsSmallView) findViewById(R.id.odcs3));
+        smallViews.add((OneDayConditionsSmallView) findViewById(R.id.odcs4));
+        smallViews.add((OneDayConditionsSmallView) findViewById(R.id.odcs5));
+        smallViews.add((OneDayConditionsSmallView) findViewById(R.id.odcs6));
+
+        for (OneDayConditionsSmallView smallView : smallViews) {
+            smallView.setColorText(colorConditionsPreviews);
+        }
+
+        model.addChangeListener(changes -> {
+            float offset = model.getSelectedDay();
+
+            int j = (int) offset;
+            if (offset - j < 0.5) {
+                offset = offset - j;
+            } else {
+                j++;
+                offset = j - offset;
+                offset = -offset;
+            }
+
+            OneDayConditionsSmallView smallView = smallViews.get(j);
+            int w = (int) (smallView.getWidth() * forecast.getScale(j));
+            float x = smallView.getX() + smallView.getWidth() / 2;
+
+            if (offset > 0) {
+                j++;
+            } else {
+                j--;
+                offset = -offset;
+            }
+
+            if (j >= 0 && j <= 6) {
+                smallView = smallViews.get(j);
+                x = x - (x - (smallView.getX() + smallView.getWidth() / 2)) * offset;
+                w = w - (int) ((w - (int) (smallView.getWidth() * forecast.getScale(j))) * offset);
+            }
+
+            ViewGroup.LayoutParams layoutParams = daysScroller.getLayoutParams();
+            layoutParams.width = w;
+            daysScroller.setLayoutParams(layoutParams);
+            daysScroller.setX((int) (x - w / 2));
+        }, MainModel.Change.SELECTED_DAY_FLOAT);
+    }
+
+
+    private void initMenuButton() {
+        btnMenu.setOnClickListener(v2 -> {
+            SurfSpot spot = model.getSelectedSpot();
+
+            PopupMenu menu = new PopupMenu(this, btnMenu);
+
+            menu.setOnMenuItemClickListener(item -> {
+                switch (item.getItemId()) {
+                    case 0:
+                        spot.conditionsProvider.update();
+                        model.metarProvider.update(spot.metarName);
+                        model.tideDataProvider.fetchIfNeed(spot.tidePortID);
+                        return true;
+                    case 1:
+                        model.surfSpots.swapFavorite(spot);
+                        listSpots.getView(model.selectedSpotI).setText(spot.name + (spot.favorite ? "   " + "\u2605" : ""));
+                        return true;
+                    case 2: {
+                        Intent geoIntent = new Intent(Intent.ACTION_VIEW, Uri.parse("geo:" + spot.la + "," + spot.lo + "?q=" + spot.la + "," + spot.lo + "(" + spot.name + ")"));
+                        startActivity(geoIntent);
+                        return true;
+                    }
+                    case 3: {
+                        Intent browserIntent = new Intent(Intent.ACTION_VIEW, Uri.parse(spot.urlMSW));
+                        startActivity(browserIntent);
+                        return true;
+                    }
+                    case 4: {
+                        Intent browserIntent = new Intent(Intent.ACTION_VIEW, Uri.parse(spot.getSFURL()));
+                        startActivity(browserIntent);
+                        return true;
+                    }
+                    case 5: {
+                        Intent browserIntent = new Intent(Intent.ACTION_VIEW, Uri.parse(spot.urlCam));
+                        startActivity(browserIntent);
+                        return true;
+                    }
+                    default:
+                        return true;
+                }
+            });
+
+            menu.getMenu().add(0, 0, 0, "Update");
+            menu.getMenu().add(0, 1, 0, spot.favorite ? "Remove star" : "Star");
+            menu.getMenu().add(0, 2, 0, "Show on map");
+
+            menu.getMenu().add(1, 3, 0, "MSW.com");
+            menu.getMenu().add(1, 4, 0, "SF.com");
+
+            if (spot.urlCam != null) menu.getMenu().add(2, 5, 0, "Camera");
+
+            menu.show();
+        });
     }
 
 
@@ -594,6 +622,9 @@ public class MainActivity extends AppCompatActivity {
     }
 
 
+    // --
+
+
     //keep a history
     private int[] _orientationHistory = new int[5];
     private int _orientationIndex;
@@ -612,6 +643,9 @@ public class MainActivity extends AppCompatActivity {
     }
 
 
+    // --
+
+
     private void updateConditionsSmallViews() {
         SurfConditionsProvider conditionsProvider = model.getSelectedSpot().conditionsProvider;
         for (int i = 0; i < smallViews.size(); i++) {
@@ -626,23 +660,30 @@ public class MainActivity extends AppCompatActivity {
     }
 
 
-    public void performSelectSpot(SurfSpot spot, Runnable after) {
-        Log.i(TAG, "performSelectSpot(" + spot.name + ")");
+    // --
 
+
+    public void performSelectSpot(SurfSpot spot, Runnable after) {
+//        Log.i(TAG, "performSelectSpot(" + spot.name + ")");
         int spotI = model.surfSpots.indexOf(spot);
 
         if (model.selectedSpotI != spotI) {
             View view = spotsTV.get(spotI);
-            listSpots.awake(() -> listSpots.scrollTo(view, () -> listSpots.select(view, after)));
-        } else if (after != null) after.run();
+            listSpots.awake(() -> listSpots.scrollTo(view, () -> {
+                forecast.scrollY(dh * 4);
+                listSpots.select(view, after);
+            }));
+        } else {
+            forecast.scrollY(dh * 4);
+            if (after != null) {
+                after.run();
+            }
+        }
     }
 
-    //  &@&
-    //   |
-    //   \
 
     public void performSelectDay(int day, Runnable after) {
-        Log.i(TAG, "performSelectDay(" + day + ")");
+//        Log.i(TAG, "performSelectDay(" + day + ")");
         forecast.showDaySmooth(day);
     }
 }
