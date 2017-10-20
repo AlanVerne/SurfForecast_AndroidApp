@@ -23,7 +23,7 @@ public class Rater {
 
     private void initBestByDay() {
         bestByDay.clear();
-        for (int plusDays = 0; plusDays < 6; plusDays++) {
+        for (int plusDays = 0; plusDays <= 6; plusDays++) {
             bestByDay.put(Common.getDay(plusDays, Common.TIME_ZONE), new TreeSet<>());
         }
     }
@@ -62,7 +62,7 @@ public class Rater {
 
         TideData tideData = MainModel.instance.tideDataProvider.getTideData(surfSpot.tidePortID);
 
-        for (int plusDays = 0; plusDays < 6; plusDays++) {
+        for (int plusDays = 0; plusDays <= 6; plusDays++) {
             SurfConditions surfConditions = null;
 
             int nowTimeInt = Common.getNowTimeInt(Common.TIME_ZONE);

@@ -242,11 +242,14 @@ public class MainActivity extends AppCompatActivity {
 
         forecast.onScrollY = () -> {
             float v = forecast.getTideVisible();
-            listSpots.setAlpha(v);
+
+            listSpots.setAlpha(Math.max(0, v*3/2-1/2));
+            listSpots.setVisibility(v == 0 ? View.INVISIBLE : View.VISIBLE);
+
             tvRatingTime.setAlpha(v);
             rv.setAlpha(v);
 
-            tvPlace.setAlpha(1f - v);
+            tvPlace.setAlpha(1f - Math.min(1, v*3/2));
 
             baliMap.setInsetBottom(forecast.getHeight() - forecast.getContentTop());
             rlDays.setY(forecast.getContentTop() - rlDays.getHeight());
@@ -685,5 +688,10 @@ public class MainActivity extends AppCompatActivity {
     public void performSelectDay(int day, Runnable after) {
 //        Log.i(TAG, "performSelectDay(" + day + ")");
         forecast.showDaySmooth(day);
+    }
+
+
+    public void performShowTide() {
+        forecast.scrollY(dh * 4, 1000);
     }
 }

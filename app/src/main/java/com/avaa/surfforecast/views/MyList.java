@@ -298,10 +298,20 @@ public class MyList extends FeaturedScrollView {
                 return;
             }
         }
+        if (awakeState == 0) {
+            selectedView.setAlpha(0);
+            selectedView.setVisibility(INVISIBLE);
+        }
         selectedView = view;
         selectedView.setAlpha(1);
+        selectedView.setVisibility(VISIBLE);
         onSelected.onSelected(getIndex(selectedView));
-        sleep();
+        if (awakeState == 0) {
+            ObjectAnimator objectAnimator = ObjectAnimator.ofInt(this, "scrollY", selectedView.getTop() - paddingTop).setDuration(0);
+            objectAnimator.start();
+        } else {
+            sleep();
+        }
     }
 
 
@@ -383,7 +393,8 @@ public class MyList extends FeaturedScrollView {
         if (li == -1) li = i - 1f;
 
         si = Math.max(0f, Math.min(i - 1f, si));
-        if (scrollListener != null) scrollListener.scrolled(si, fi, Math.min(i - 1f, li), awakeState);
+        if (scrollListener != null)
+            scrollListener.scrolled(si, fi, Math.min(i - 1f, li), awakeState);
     }
 
 

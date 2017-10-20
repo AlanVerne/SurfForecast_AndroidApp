@@ -12,9 +12,11 @@ import android.util.Log;
 import android.view.GestureDetector;
 import android.view.MotionEvent;
 import android.view.View;
+import android.view.animation.Interpolator;
 import android.widget.HorizontalScrollView;
 import android.widget.LinearLayout;
 import android.widget.OverScroller;
+import android.widget.Scroller;
 
 import com.avaa.surfforecast.MainActivity;
 import com.avaa.surfforecast.MainModel;
@@ -564,6 +566,11 @@ public class SurfConditionsForecastView extends HorizontalScrollView {
 
     public void scrollY(int y) {
         scrollerY.startScroll(0, scrollY, 0, y - scrollY, 333);
+        postInvalidateOnAnimation();
+    }
+
+    public void scrollY(int y, int d) {
+        scrollerY.startScroll(0, scrollY, 0, y - scrollY, d);
         postInvalidateOnAnimation();
     }
 

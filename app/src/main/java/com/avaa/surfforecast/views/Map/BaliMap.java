@@ -8,6 +8,7 @@ import android.graphics.Paint;
 import android.graphics.Path;
 import android.graphics.Point;
 import android.graphics.PointF;
+import android.graphics.Rect;
 import android.graphics.RectF;
 import android.graphics.Region;
 import android.os.Build;
@@ -31,7 +32,9 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Timer;
 import java.util.TimerTask;
 
@@ -105,8 +108,30 @@ public class BaliMap extends View {
 
     private MetricsAndPaints metricsAndPaints;
 
-
     private MainModel model = null;
+
+    private WindCircle windCircle;
+    private SwellCircle swellCircle;
+    private TideCircle tideCircle;
+
+    private final Matrix matrix = new Matrix();
+    private final Path pathTemp = new Path();
+    private Bitmap bmpMapZoomedOut = null;
+    private Bitmap bmpMapZoomedIn = null;
+    private int bmpMapZoomedInForSpotI = -1;
+    private PointF zoomedInPoint = new PointF(0, 0);
+
+    private static final float paddingTop = 4.5f;
+    private static final float paddingBottom = 4.8f;
+
+    private static final float rOut = 200;
+    private static final float rIn = 25;
+
+    private final RectF rectFTemp = new RectF();
+
+    private Map<Rect, Integer> spotsLabels = new HashMap<>();
+
+    public int insetBottom = 0;
 
 
     public void setDh(int dh) {
@@ -222,9 +247,12 @@ public class BaliMap extends View {
     }
 
 
+    private PointF actionDown;
+    private boolean moved;
+
     @Override
-    public boolean onTouchEvent(MotionEvent ev) {
-//        Log.i(TAG, "onTouchEvent() | " + ev.getAction() + " ovs=" + overviewState);
+    public boolean onTouchEvent(MotionEvent e) {
+//        Log.i(TAG, "onTouchEvent() | " + e.getAction() + " ovs=" + overviewState);
 
         if (hintsVisiblePolicy == 1) {
             rescheduleHintsHide();
@@ -240,10 +268,29 @@ public class BaliMap extends View {
         }
 
         if (overviewState == 1f) {
-            model.mainActivity.performSelectSpot(model.getSelectedSpot(), null);
+            if (e.getAction() == MotionEvent.ACTION_DOWN) {
+                actionDown = new PointF(e.getX(), e.getY());
+                moved = false;
+                return true;
+            } else if (e.getAction() == MotionEvent.ACTION_MOVE) {
+                if (!moved && Math.pow(-e.getX() + actionDown.x, 2) + Math.pow(-e.getY() + actionDown.y, 2) > dh)
+                    moved = true;
+                float s = dh * 2 / rIn;
+                zoomedInPoint.offset((-e.getX() + actionDown.x) / s, (-e.getY() + actionDown.y) / s);
+                repaint();
+                actionDown = new PointF(e.getX(), e.getY());
+            } else if (e.getAction() == MotionEvent.ACTION_UP && !moved) {
+                for (Map.Entry<Rect, Integer> rect : spotsLabels.entrySet()) {
+                    if (rect.getKey().contains((int) e.getX(), (int) e.getY())) {
+                        model.setSelectedSpotI(rect.getValue());
+                        model.mainActivity.performShowTide();
+                        return true;
+                    }
+                }
+            }
         }
 
-        return super.onTouchEvent(ev);
+        return super.onTouchEvent(e);
     }
 
 
@@ -375,9 +422,15 @@ public class BaliMap extends View {
 
         float radf = 0;
 
-        SurfSpot spot = model.getSelectedSpot();
-        avex = awakenedState * spot.pointOnSVG.x + (1f - awakenedState) * avex;
-        avey = awakenedState * spot.pointOnSVG.y + (1f - awakenedState) * avey;
+        if (overviewState != 1) {
+            SurfSpot spot = model.getSelectedSpot();
+
+            zoomedInPoint.x += (spot.pointOnSVG.x - zoomedInPoint.x) / 10;
+            zoomedInPoint.y += (spot.pointOnSVG.y - zoomedInPoint.y) / 10;
+        }
+
+        avex = awakenedState * zoomedInPoint.x + (1f - awakenedState) * avex;
+        avey = awakenedState * zoomedInPoint.y + (1f - awakenedState) * avey;
 
         shownSpotsAverage = new PointF(avex, avey);
         shownSpotsBoundRect = new RectF(avex - radf, avey - radf, avex + radf, avey + radf);
@@ -460,29 +513,6 @@ public class BaliMap extends View {
     }
 
 
-    private WindCircle windCircle;
-    private SwellCircle swellCircle;
-    private TideCircle tideCircle;
-
-
-    private final Matrix matrix = new Matrix();
-    private final Path pathTemp = new Path();
-    private Bitmap bmpMapZoomedOut = null;
-    private Bitmap bmpMapZoomedIn = null;
-    private int bmpMapZoomedInForSpotI = -1;
-
-    private static final float paddingTop = 4f;
-    private static final float paddingBottom = 4.8f;
-
-    private static final float rOut = 200;
-    private static final float rIn = 25;
-
-    private final RectF rectFTemp = new RectF();
-
-
-    public int insetBottom = 0;
-
-
     @Override
     protected void onDraw(Canvas canvas) {
         //Log.i("BaliMap", "onDraw" + hintsVisible);
@@ -516,34 +546,34 @@ public class BaliMap extends View {
 
         if (awakenedState == 0) {
             canvas.drawBitmap(bmpMapZoomedOut, dx + pp.x, dy + pp.y, null);
-        } else if (awakenedState == 1 && bmpMapZoomedIn != null) {
-            if (bmpMapZoomedInForSpotI != model.selectedSpotI) {
-                int h2 = getHeight() - (int) ((paddingTop + paddingBottom) * dh);
-
-                updateShownSpotsBoundRect();
-
-                float dx2 = -shownSpotsBoundRect.left * scale;
-                float dy2 = -shownSpotsBoundRect.top * scale;
-
-                dx2 += getWidth() - (3 * dh);
-                dy2 += paddingTop * dh + h2 / 2;
-
-                bmpMapZoomedIn.eraseColor(0x00000000);
-                Canvas c = new Canvas(bmpMapZoomedIn);
-
-                matrix.setTranslate(dx2 + 2 * dh, dy2 + 2 * dh);
-                matrix.preScale(scale, scale);
-                pathTerrain.transform(matrix, pathTemp);
-
-                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT) { //TODO FIX
-                    pathTemp.op(pathTemp, pathCropMap, Path.Op.INTERSECT);
-                }
-
-                c.drawPath(pathTemp, paintTerrain);
-
-                bmpMapZoomedInForSpotI = model.selectedSpotI;
-            }
-            canvas.drawBitmap(bmpMapZoomedIn, pp.x - 2 * dh, -insetBottom / 2 + pp.y - 2 * dh, null);
+//        } else if (awakenedState == 1 && bmpMapZoomedIn != null) {
+//            if (bmpMapZoomedInForSpotI != model.selectedSpotI) {
+//                int h2 = getHeight() - (int) ((paddingTop + paddingBottom) * dh);
+//
+//                updateShownSpotsBoundRect();
+//
+//                float dx2 = -shownSpotsBoundRect.left * scale;
+//                float dy2 = -shownSpotsBoundRect.top * scale;
+//
+//                dx2 += getWidth() - (3 * dh);
+//                dy2 += paddingTop * dh + h2 / 2;
+//
+//                bmpMapZoomedIn.eraseColor(0x00000000);
+//                Canvas c = new Canvas(bmpMapZoomedIn);
+//
+//                matrix.setTranslate(dx2 + 2 * dh, dy2 + 2 * dh);
+//                matrix.preScale(scale, scale);
+//                pathTerrain.transform(matrix, pathTemp);
+//
+//                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT) { //TODO FIX
+//                    pathTemp.op(pathTemp, pathCropMap, Path.Op.INTERSECT);
+//                }
+//
+//                c.drawPath(pathTemp, paintTerrain);
+//
+//                bmpMapZoomedInForSpotI = model.selectedSpotI;
+//            }
+//            canvas.drawBitmap(bmpMapZoomedIn, pp.x - 2 * dh, -insetBottom / 2 + pp.y - 2 * dh, null);
         } else {
             float s = scale / (dh * 2f / rOut);
             rectFTemp.set(dx + pp.x, dy + pp.y, dx + pp.x + bmpMapZoomedOut.getWidth() * s, dy + pp.y + bmpMapZoomedOut.getHeight() * s);
@@ -572,6 +602,8 @@ public class BaliMap extends View {
             paintFont.setTextAlign(Paint.Align.LEFT);
         }
 
+        spotsLabels.clear();
+
         for (SurfSpot spot : surfSpotsList) {
             float highlighted = isHighlighted(i);
             if (highlighted > 0 && i != selectedSpotI) {
@@ -598,9 +630,11 @@ public class BaliMap extends View {
                         y += dh / 5;
 
 //                        RatingView.drawStatic(canvas, (int) x - dh, (int) y, dh / 4, best.rating, best.waveRating * best.tideRating, (int) (t * 255));
-                        paintFont.setColor(alpha(overviewState * (best.rating/2f+0.5f), 0x006281));
-                        paintFont.setTextSize(best.rating>=0.7?metricsAndPaints.fontBig:best.rating>0.3?metricsAndPaints.font:metricsAndPaints.fontSmall);
+                        paintFont.setColor(alpha(overviewState * (best.rating / 3f + 0.66f), 0x006281));
+                        paintFont.setTextSize(best.rating >= 0.7 ? metricsAndPaints.fontBig : best.rating > 0.3 ? metricsAndPaints.font : metricsAndPaints.fontSmall);
                         canvas.drawText(spot.name.substring(0, 3) + " " + Math.round(best.rating * 7), x, y, paintFont);
+
+                        spotsLabels.put(new Rect((int) x - dh, (int) y - dh, (int) x + dh * 4, (int) y + dh * 2), i);
                     } else {
                         canvas.drawCircle(x, y, r, paintBG);
                         x += dh / 5;
