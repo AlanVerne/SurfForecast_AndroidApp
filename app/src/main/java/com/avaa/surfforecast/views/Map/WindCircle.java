@@ -15,6 +15,7 @@ import static com.avaa.surfforecast.data.Common.STR_KMH;
 import static com.avaa.surfforecast.data.Common.STR_WIND;
 import static com.avaa.surfforecast.drawers.MetricsAndPaints.colorWindText;
 import static com.avaa.surfforecast.views.ColorUtils.alpha;
+import static com.avaa.surfforecast.views.Map.Arrow.createArrow;
 import static com.avaa.surfforecast.views.Map.BaliMap.STR_DASH;
 
 
@@ -101,7 +102,7 @@ public class WindCircle extends MapCircle {
         paintBG.setColor(alpha(alpha, COLOR_WIND_BG));
 
         if (vbr) c.drawCircle(ax, ay, windArrowR, paintBG);
-        else c.drawPath(BaliMap.getArrow(ax, ay, a, windArrowR), paintBG);
+        else c.drawPath(createArrow(ax, ay, a, windArrowR), paintBG);
 
         paintFont.setColor(alpha(alpha, colorWindText));
 

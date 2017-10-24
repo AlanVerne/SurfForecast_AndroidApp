@@ -46,7 +46,7 @@
                 android:id="@+id/svSpots"
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
-                android:visibility="invisible"/>
+                android:visibility="invisible" />
 
             <LinearLayout
                 android:id="@+id/llRating"
@@ -66,6 +66,7 @@
                     android:id="@+id/tvRatingTime"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
+                    android:alpha="0"
                     android:gravity="left|center_vertical"
                     android:text="Now "
                     android:textColor="#ddffffff" />
@@ -74,7 +75,8 @@
                     android:id="@+id/ratingView"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:layout_gravity="center_vertical" />
+                    android:layout_gravity="center_vertical"
+                    android:alpha="0" />
             </LinearLayout>
 
             <FrameLayout

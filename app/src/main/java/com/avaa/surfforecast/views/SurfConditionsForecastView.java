@@ -7,16 +7,15 @@ import android.graphics.Paint;
 import android.graphics.Rect;
 import android.graphics.RectF;
 import android.os.AsyncTask;
+import android.os.Build;
 import android.util.AttributeSet;
 import android.util.Log;
 import android.view.GestureDetector;
 import android.view.MotionEvent;
 import android.view.View;
-import android.view.animation.Interpolator;
 import android.widget.HorizontalScrollView;
 import android.widget.LinearLayout;
 import android.widget.OverScroller;
-import android.widget.Scroller;
 
 import com.avaa.surfforecast.MainActivity;
 import com.avaa.surfforecast.MainModel;
@@ -126,7 +125,7 @@ public class SurfConditionsForecastView extends HorizontalScrollView {
                 }
             }
 
-            if (mGestureDetector.onTouchEvent(event)) { //If the user swipes
+            if (gestureDetector.onTouchEvent(event)) { //If the user swipes
                 return true;
             } else if (event.getAction() == MotionEvent.ACTION_UP || event.getAction() == MotionEvent.ACTION_CANCEL) {
                 mActiveFeature = xToDay(getScrollX());
@@ -142,7 +141,7 @@ public class SurfConditionsForecastView extends HorizontalScrollView {
                     if (scrollY < 0) scrollY = 0;
                     setScrollY(scrollY);
                     fy = event.getY();
-                    postInvalidate();
+                    repaint();
                     return true;
                 }
             }
@@ -158,37 +157,33 @@ public class SurfConditionsForecastView extends HorizontalScrollView {
     private static final int SWIPE_THRESHOLD_VELOCITY = 300;
     private int mActiveFeature = 0;
 
-    private final GestureDetector.OnGestureListener ogl = new GestureDetector.SimpleOnGestureListener() {
+    private final GestureDetector.OnGestureListener gestureListener = new GestureDetector.SimpleOnGestureListener() {
         @Override
         public boolean onFling(MotionEvent e1, MotionEvent e2, float velocityX, float velocityY) {
-            try {
-                if (!isScrollY && Math.abs(velocityX) > Math.abs(velocityY) && Math.abs(velocityX) > SWIPE_THRESHOLD_VELOCITY) {
-                    if (velocityX < 0) { //right to left
-                        mActiveFeature = xToDay(getScrollX() + dh * 8);
-                        smoothScrollTo(mActiveFeature * dh * 16 + dh * 8 - getWidth() / 2, 0);
-                    } else { //left to right
-                        mActiveFeature = xToDay(getScrollX() - dh * 8);
-                        smoothScrollTo(mActiveFeature * dh * 16 + dh * 8 - getWidth() / 2, 0);
-                    }
-                    isScrollX = false;
-                    return true;
-                } else if (isScrollY && Math.abs(velocityY) > SWIPE_THRESHOLD_VELOCITY) {
-                    if (velocityY < 0) {
-                        if (scrollY > dh * 4) scrollY(dh * 12);
-                        else scrollY(dh * 4);
-                    } else {
-                        if (scrollY < dh * 4) scrollY(0);
-                        else scrollY(dh * 4);
-                    }
-                    return true;
+            if (!isScrollY && Math.abs(velocityX) > Math.abs(velocityY) && Math.abs(velocityX) > SWIPE_THRESHOLD_VELOCITY) {
+                if (velocityX < 0) { //right to left
+                    mActiveFeature = xToDay(getScrollX() + dh * 8);
+                    smoothScrollTo(mActiveFeature * dh * 16 + dh * 8 - getWidth() / 2, 0);
+                } else { //left to right
+                    mActiveFeature = xToDay(getScrollX() - dh * 8);
+                    smoothScrollTo(mActiveFeature * dh * 16 + dh * 8 - getWidth() / 2, 0);
                 }
-            } catch (Exception e) {
-                Log.e("Fling", "There was an error processing the Fling event:" + e.getMessage());
+                isScrollX = false;
+                return true;
+            } else if (isScrollY && Math.abs(velocityY) > SWIPE_THRESHOLD_VELOCITY) {
+                if (velocityY < 0) {
+                    if (scrollY > dh * 4) scrollY(dh * 12);
+                    else scrollY(dh * 4);
+                } else {
+                    if (scrollY < dh * 4) scrollY(0);
+                    else scrollY(dh * 4);
+                }
+                return true;
             }
             return false;
         }
     };
-    GestureDetector mGestureDetector = new GestureDetector(this.getContext(), ogl);
+    private final GestureDetector gestureDetector = new GestureDetector(this.getContext(), gestureListener);
 
 
     public SurfConditionsForecastView(Context context) {
@@ -222,9 +217,8 @@ public class SurfConditionsForecastView extends HorizontalScrollView {
         );
 
 
-
         model.addChangeListener(changes -> {
-            Log.i(TAG, "Change.SELECTED_DAY isSX="+isScrollX);
+            Log.i(TAG, "Change.SELECTED_DAY isSX=" + isScrollX);
             if (!isScrollX) showDay(model.getSelectedDayInt());
         }, MainModel.Change.SELECTED_DAY);
 
@@ -251,8 +245,14 @@ public class SurfConditionsForecastView extends HorizontalScrollView {
         if (scrollerY.computeScrollOffset()) {
             scrollY = scrollerY.getCurrY();
             onScrollY.run();
-            postInvalidate();
+            repaint();
         }
+    }
+
+
+    public void repaint() {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN) postInvalidateOnAnimation();
+        else postInvalidate();
     }
 
 
@@ -566,12 +566,12 @@ public class SurfConditionsForecastView extends HorizontalScrollView {
 
     public void scrollY(int y) {
         scrollerY.startScroll(0, scrollY, 0, y - scrollY, 333);
-        postInvalidateOnAnimation();
+        repaint();
     }
 
     public void scrollY(int y, int d) {
         scrollerY.startScroll(0, scrollY, 0, y - scrollY, d);
-        postInvalidateOnAnimation();
+        repaint();
     }
 
     public void setScrollY(int y) {
@@ -695,13 +695,13 @@ public class SurfConditionsForecastView extends HorizontalScrollView {
             bitmaps[fb.getKey()].wave = fb.getValue().wave;
         }
 
-        if (step == 0) postInvalidate();
+        if (step == 0) repaint();
     }
 
 
     public void redrawTide() {
         if (tideChartDrawer != null && tideChartDrawer.updateBitmaps()) {
-            postInvalidate();
+            repaint();
         }
     }
 }

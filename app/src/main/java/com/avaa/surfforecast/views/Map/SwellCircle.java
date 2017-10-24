@@ -18,8 +18,8 @@ import static com.avaa.surfforecast.data.Common.STR_S;
 import static com.avaa.surfforecast.data.Common.STR_SWELL;
 import static com.avaa.surfforecast.drawers.MetricsAndPaints.colorWaveText;
 import static com.avaa.surfforecast.views.ColorUtils.alpha;
+import static com.avaa.surfforecast.views.Map.Arrow.createArrow;
 import static com.avaa.surfforecast.views.Map.BaliMap.STR_DASH;
-import static com.avaa.surfforecast.views.Map.BaliMap.getArrow;
 
 
 /**
@@ -96,7 +96,7 @@ public class SwellCircle extends MapCircle {
         float a = angle.getValue(); //conditions.waveAngle;
 
         paintBG.setColor(alpha(alpha, COLOR_SWELL_BG));
-        c.drawPath(getArrow(x, y, a, r), paintBG);
+        c.drawPath(createArrow(x, y, a, r), paintBG);
 
         float strFtWidth = 0;
         float strSWidth = 0;

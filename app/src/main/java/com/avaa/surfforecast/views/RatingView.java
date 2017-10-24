@@ -44,7 +44,7 @@ public class RatingView extends View {
 
         if (d == null) {
             d = ContextCompat.getDrawable(getContext(), R.drawable.ic_star_white_24dp);
-            dTr = ContextCompat.getDrawable(getContext(), R.drawable.ic_star_white_tr_24dp);
+            dTr = ContextCompat.getDrawable(getContext(), R.drawable.ic_remove_white_24dp); //ic_star_white_tr_24dp);
             dB = ContextCompat.getDrawable(getContext(), R.drawable.ic_star_border_white_24dp);
         }
 
@@ -59,8 +59,8 @@ public class RatingView extends View {
                 d.setBounds(x, 0, x + height, height);
                 d.draw(canvas);
             } else if (minorRating - 0.75f > i) {
-                dTr.setBounds(x, 0, x + height, height);
-                dTr.draw(canvas);
+//                dTr.setBounds(x, 0, x + height, height);
+//                dTr.draw(canvas);
                 dB.setBounds(x, 0, x + height, height);
                 dB.draw(canvas);
             } else {
@@ -81,9 +81,9 @@ public class RatingView extends View {
                 d.setAlpha(alpha);
                 d.draw(canvas);
             } else if (minorRating - 0.75f > i) {
-                dTr.setBounds(x, y, x + height, y + height);
-                dTr.setAlpha(alpha);
-                dTr.draw(canvas);
+//                dTr.setBounds(x, y, x + height, y + height);
+//                dTr.setAlpha(alpha);
+//                dTr.draw(canvas);
                 dB.setBounds(x, y, x + height, y + height);
                 dB.setAlpha(alpha);
                 dB.draw(canvas);

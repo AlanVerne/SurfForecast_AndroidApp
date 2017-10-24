@@ -129,6 +129,10 @@ public class MainModel {
     public RatedConditions selectedRatedConditions = null;
 
 
+    public int getSelectedSpotI() {
+        return selectedSpotI == -1 ? willBeSelectedSpotI : selectedSpotI;
+    }
+
     public void setSelectedSpotI(int i) {
         if (selectedSpotI == i) return;
         //Log.i("SurfSpots", "setSelectedSpotI() 1");
@@ -216,8 +220,7 @@ public class MainModel {
 //            selectedTime = -1; //nowTimeInt;
             selectedRating = -1;
             newSC = null;
-        }
-        else {
+        } else {
             selectedRating = -1;
 
             RatedConditions best = rater.getBest(spot, Math.round(selectedDay));

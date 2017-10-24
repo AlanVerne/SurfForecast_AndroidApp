@@ -199,7 +199,7 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void scrolled(float shownI, float firstI, float lastI, float awakeState) {
                 awakeState = 1f - awakeState;
-                baliMap.show(shownI, firstI, lastI, awakeState);
+                baliMap.highlightSpots(shownI, firstI, lastI, awakeState);
                 changed(awakeState);
             }
 

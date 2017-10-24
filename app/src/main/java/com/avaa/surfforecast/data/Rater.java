@@ -55,9 +55,13 @@ public class Rater {
 
     public TreeMap<Long, RatedConditions> updateBest(SurfSpot surfSpot) {
         TreeMap<Long, RatedConditions> map = bestBySpot.get(surfSpot);
+
         if (map == null) {
             map = new TreeMap<>();
             bestBySpot.put(surfSpot, map);
+        }
+        else {
+            map.clear();
         }
 
         TideData tideData = MainModel.instance.tideDataProvider.getTideData(surfSpot.tidePortID);

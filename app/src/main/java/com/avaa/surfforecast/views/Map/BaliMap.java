@@ -15,6 +15,7 @@ import android.os.Build;
 import android.os.PowerManager;
 import android.util.AttributeSet;
 import android.util.Log;
+import android.view.GestureDetector;
 import android.view.MotionEvent;
 import android.view.View;
 import android.widget.Scroller;
@@ -119,7 +120,8 @@ public class BaliMap extends View {
     private Bitmap bmpMapZoomedOut = null;
     private Bitmap bmpMapZoomedIn = null;
     private int bmpMapZoomedInForSpotI = -1;
-    private PointF zoomedInPoint = new PointF(0, 0);
+    private final PointF zoomedInPoint = new PointF(0, 0);
+    private PointF zoomedInV = new PointF(0, 0);
 
     private static final float paddingTop = 4.5f;
     private static final float paddingBottom = 4.8f;
@@ -129,7 +131,7 @@ public class BaliMap extends View {
 
     private final RectF rectFTemp = new RectF();
 
-    private Map<Rect, Integer> spotsLabels = new HashMap<>();
+    private Map<Integer, Rect> spotsLabels = new HashMap<>();
 
     public int insetBottom = 0;
 
@@ -196,6 +198,9 @@ public class BaliMap extends View {
 
         model.userStat.addUserLevelListener(this::setHintsVisiblePolicy);
 
+        PointF pointOnSVG = model.surfSpots.getArea(model.getSelectedSpotI()).pointOnSVG;
+        zoomedInPoint.set(pointOnSVG.x, pointOnSVG.y);
+
         setAwakenedState(1);
 
         try {
@@ -250,6 +255,25 @@ public class BaliMap extends View {
     private PointF actionDown;
     private boolean moved;
 
+    private final GestureDetector.OnGestureListener gestureListener = new GestureDetector.SimpleOnGestureListener() {
+        @Override
+        public boolean onFling(MotionEvent e1, MotionEvent e2, float velocityX, float velocityY) {
+            float s = dh * 2 / rIn;
+            zoomedInV = new PointF(-velocityX / s, -velocityY / s);
+            return true;
+        }
+
+        @Override
+        public boolean onScroll(MotionEvent e1, MotionEvent e2, float distanceX, float distanceY) {
+            float s = dh * 2 / rIn;
+            zoomedInPoint.offset(distanceX / s, distanceY / s);
+            repaint();
+            return super.onScroll(e1, e2, distanceX, distanceY);
+        }
+    };
+    private final GestureDetector gestureDetector = new GestureDetector(this.getContext(), gestureListener);
+
+
     @Override
     public boolean onTouchEvent(MotionEvent e) {
 //        Log.i(TAG, "onTouchEvent() | " + e.getAction() + " ovs=" + overviewState);
@@ -268,24 +292,39 @@ public class BaliMap extends View {
         }
 
         if (overviewState == 1f) {
+            if (gestureDetector.onTouchEvent(e)) { //If the user swipes
+                return true;
+            }
             if (e.getAction() == MotionEvent.ACTION_DOWN) {
                 actionDown = new PointF(e.getX(), e.getY());
+                zoomedInV.set(0, 0);
                 moved = false;
                 return true;
             } else if (e.getAction() == MotionEvent.ACTION_MOVE) {
                 if (!moved && Math.pow(-e.getX() + actionDown.x, 2) + Math.pow(-e.getY() + actionDown.y, 2) > dh)
                     moved = true;
-                float s = dh * 2 / rIn;
-                zoomedInPoint.offset((-e.getX() + actionDown.x) / s, (-e.getY() + actionDown.y) / s);
-                repaint();
-                actionDown = new PointF(e.getX(), e.getY());
             } else if (e.getAction() == MotionEvent.ACTION_UP && !moved) {
-                for (Map.Entry<Rect, Integer> rect : spotsLabels.entrySet()) {
-                    if (rect.getKey().contains((int) e.getX(), (int) e.getY())) {
-                        model.setSelectedSpotI(rect.getValue());
+                for (Map.Entry<Integer, Rect> rect : spotsLabels.entrySet()) {
+                    if (rect.getValue().contains((int) e.getX(), (int) e.getY())) {
+                        model.setSelectedSpotI(rect.getKey());
                         model.mainActivity.performShowTide();
                         return true;
                     }
+                }
+
+                double min = dh * dh * 4;
+                int minI = -1;
+                for (Map.Entry<Integer, Rect> rect : spotsLabels.entrySet()) {
+                    double d = Math.pow(rect.getValue().centerX() - e.getX(), 2) + Math.pow(rect.getValue().centerY() - (int) e.getY(), 2);
+                    if (d < min) {
+                        min = d;
+                        minI = rect.getKey();
+                    }
+                }
+                if (minI != -1) {
+                    model.setSelectedSpotI(minI);
+                    model.mainActivity.performShowTide();
+                    return true;
                 }
             }
         }
@@ -298,10 +337,26 @@ public class BaliMap extends View {
     public void computeScroll() {
         //Log.i(TAG, "computeScroll()");
         super.computeScroll();
-        if (windCircle.computeScroll()) repaint();
-        if (swellCircle.computeScroll()) repaint();
-        if (tideCircle.computeScroll()) repaint();
+
+        boolean b = false;
+        b |= windCircle.computeScroll();
+        b |= swellCircle.computeScroll();
+        b |= tideCircle.computeScroll();
+
+        if (overviewState != 1) {
+            SurfSpot spot = model.getSelectedSpot();
+
+            zoomedInPoint.x += (spot.pointOnSVG.x - zoomedInPoint.x) / 10;
+            zoomedInPoint.y += (spot.pointOnSVG.y - zoomedInPoint.y) / 10;
+        }
+
+        zoomedInV.set(zoomedInV.x * 0.9f, zoomedInV.y * 0.9f);
+
+        zoomedInPoint.offset(zoomedInV.x / 60, zoomedInV.y / 60);
+
+        if (b) repaint();
     }
+
 
     private void cancelScheduledHintsHide() {
         if (timerHintsHide != null) {
@@ -348,7 +403,7 @@ public class BaliMap extends View {
         repaint();
     }
 
-    public void show(float shownI, float firstI, float lastI, float awakenedState) {
+    public void highlightSpots(float shownI, float firstI, float lastI, float awakenedState) {
         //Log.i(TAG, shownI +" "+ firstI +" "+ lastI);
 
         if (this.shownI == shownI && this.firstI == firstI && this.lastI == lastI && this.awakenedState == awakenedState)
@@ -422,13 +477,6 @@ public class BaliMap extends View {
 
         float radf = 0;
 
-        if (overviewState != 1) {
-            SurfSpot spot = model.getSelectedSpot();
-
-            zoomedInPoint.x += (spot.pointOnSVG.x - zoomedInPoint.x) / 10;
-            zoomedInPoint.y += (spot.pointOnSVG.y - zoomedInPoint.y) / 10;
-        }
-
         avex = awakenedState * zoomedInPoint.x + (1f - awakenedState) * avex;
         avey = awakenedState * zoomedInPoint.y + (1f - awakenedState) * avey;
 
@@ -436,17 +484,6 @@ public class BaliMap extends View {
         shownSpotsBoundRect = new RectF(avex - radf, avey - radf, avex + radf, avey + radf);
     }
 
-
-    private final static float SQRT_2 = (float) Math.sqrt(2);
-    private final static Path pathArrow = new Path();
-
-    public static Path getArrow(float x, float y, float a, float arrowSize) {
-        pathArrow.reset();
-        pathArrow.moveTo(x - (float) Math.cos(a) * arrowSize * SQRT_2, y + (float) Math.sin(a) * arrowSize * SQRT_2);
-        pathArrow.arcTo(new RectF(x - arrowSize, y - arrowSize, x + arrowSize, y + arrowSize), -a * 180 / (float) Math.PI + 45 + 180, 360 - 2 * 45, false);
-        pathArrow.close();
-        return pathArrow;
-    }
 
     private final Path pathSpotCircleBG = new Path();
     private final Path pathSpotCircleClip = new Path();
@@ -618,29 +655,48 @@ public class BaliMap extends View {
             if (awakenedState == 1 && overviewState > 0) {
                 float x = spot.pointOnSVG.x * scale + dx;
                 float y = spot.pointOnSVG.y * scale + dy;
-                if (x > 0 && y > paddingTop * dh && x < getWidth() && y < getHeight() - paddingBottom * dh) {
+                if (x > -dh * 2 && (y > paddingTop * dh || x > dh * 4) && x < getWidth() && y < getHeight() - paddingBottom * dh) {
                     float r = densityDHDep * 1.5f;
 
                     RatedConditions best = model.rater.getBest(spot, plusDays);
                     if (best != null) {
-                        paintBG.setColor(alpha(overviewState * best.rating, 0x006281)); //colorSpotDot);
+                        paintBG.setColor(alpha(overviewState * (best.rating / 2f + 0.5f), 0x006281)); //colorSpotDot);
                         canvas.drawCircle(x, y, r, paintBG);
 
-                        x += dh / 5;
-                        y += dh / 5;
-
+                        float size = best.rating >= 0.7 ? metricsAndPaints.fontBig : best.rating > 0.3 ? metricsAndPaints.font : metricsAndPaints.fontSmall;
 //                        RatingView.drawStatic(canvas, (int) x - dh, (int) y, dh / 4, best.rating, best.waveRating * best.tideRating, (int) (t * 255));
                         paintFont.setColor(alpha(overviewState * (best.rating / 3f + 0.66f), 0x006281));
-                        paintFont.setTextSize(best.rating >= 0.7 ? metricsAndPaints.fontBig : best.rating > 0.3 ? metricsAndPaints.font : metricsAndPaints.fontSmall);
+                        paintFont.setTextSize(size);
+
+                        x += dh / 5;
+                        y -= paintFont.getFontMetrics().ascent / 3;
+
                         canvas.drawText(spot.name.substring(0, 3) + " " + Math.round(best.rating * 7), x, y, paintFont);
 
-                        spotsLabels.put(new Rect((int) x - dh, (int) y - dh, (int) x + dh * 4, (int) y + dh * 2), i);
+                        Rect rect = spotsLabels.get(i);
+                        if (rect == null) {
+                            rect = new Rect((int) x - dh / 2, (int) (y + paintFont.getFontMetrics().ascent), (int) x + dh * 2, (int) y);
+                            spotsLabels.put(i, rect);
+                        }
+                        else {
+                            rect.set((int) x - dh / 2, (int) (y + paintFont.getFontMetrics().ascent), (int) x + dh * 2, (int) y);
+                        }
+                        //canvas.drawRect(rect, paintFont);
                     } else {
                         canvas.drawCircle(x, y, r, paintBG);
                         x += dh / 5;
                         y += dh / 5;
                         canvas.drawText(spot.name.substring(0, 3), x, y, paintFont);
                     }
+                } else {
+                    float r = densityDHDep * 1.5f;
+                    RatedConditions best = model.rater.getBest(spot, plusDays);
+                    if (best != null) {
+                        paintBG.setColor(alpha(overviewState * (best.rating / 2f + 0.5f), 0x006281));
+                    } else {
+                        paintBG.setColor(alpha(0.5f, 0x006281));
+                    }
+                    canvas.drawCircle(x, y, r, paintBG);
                 }
             }
             i++;
