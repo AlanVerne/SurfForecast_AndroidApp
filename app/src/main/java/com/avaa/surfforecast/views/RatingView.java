@@ -55,10 +55,10 @@ public class RatingView extends View {
         int height = getHeight();
         for (int i = 0; i < N; i++) {
             int x = i * height;
-            if (rating - 0.75f > i) {
+            if (rating - 0.5f > i) {
                 d.setBounds(x, 0, x + height, height);
                 d.draw(canvas);
-            } else if (minorRating - 0.75f > i) {
+            } else if (minorRating - 0.5f > i) {
 //                dTr.setBounds(x, 0, x + height, height);
 //                dTr.draw(canvas);
                 dB.setBounds(x, 0, x + height, height);

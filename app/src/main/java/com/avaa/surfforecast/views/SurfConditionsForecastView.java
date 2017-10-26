@@ -505,7 +505,9 @@ public class SurfConditionsForecastView extends HorizontalScrollView {
         canvas.save();
         canvas.clipRect(getScrollX() + dh * 1.5f, 0, getScrollX() + getWidth() - dh * 1.5f, getHeight());
 
-        int selhour = model.selectedTime / 60 + model.getSelectedDayInt() * 24;
+        int selectedHour = model.getSelectedTime() / 60;
+
+        int selhour = selectedHour + model.getSelectedDayInt() * 24;
 
         if (orientation == 1) {
             paintHours.setTextAlign(Paint.Align.RIGHT);
@@ -541,11 +543,11 @@ public class SurfConditionsForecastView extends HorizontalScrollView {
                 paintHours.setColor(0x66ffffff);
             }
         }
-        if (model.selectedTime > 0) {
+        if (selectedHour > 0) {
             paintHours.setColor(MetricsAndPaints.colorWhite);
             int hx, hy;
             hy = (int) (getHeight() - model.metricsAndPaints.density);
-            int hour = model.selectedTime / 60 + model.getSelectedDayInt() * 24;
+            int hour = selectedHour + model.getSelectedDayInt() * 24;
             hx = hour * dh * 16 / 24;
             RectF r = new RectF(hx - dh * 16 / 24 / 2, hy, hx - dh * 16 / 24 / 2 + dh * 16 / 24, hy + model.metricsAndPaints.density);
             canvas.drawRect(r, paintHours);

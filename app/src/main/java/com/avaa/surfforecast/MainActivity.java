@@ -23,15 +23,15 @@ import android.widget.ProgressBar;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
 
+import com.avaa.surfforecast.MainModel.Change;
 import com.avaa.surfforecast.ai.CommandsExecutor;
 import com.avaa.surfforecast.ai.VoiceInterfaceFragment;
 import com.avaa.surfforecast.data.BusyStateListener;
 import com.avaa.surfforecast.data.Common;
-import com.avaa.surfforecast.data.SurfConditions;
+import com.avaa.surfforecast.data.RatedConditions;
 import com.avaa.surfforecast.data.SurfConditionsProvider;
 import com.avaa.surfforecast.data.SurfSpot;
 import com.avaa.surfforecast.data.SurfSpots;
-import com.avaa.surfforecast.data.TideData;
 import com.avaa.surfforecast.drawers.MetricsAndPaints;
 import com.avaa.surfforecast.views.Map.BaliMap;
 import com.avaa.surfforecast.views.MyList;
@@ -112,43 +112,42 @@ public class MainActivity extends AppCompatActivity {
         model = MainModel.getInstance(this, sharedPreferences, bsl);
 
         model.addChangeListener(changes -> {
-            if (model.selectedRatedConditions == null) {
-                int day = Math.round(model.getSelectedDay());
-                tvRatingDay.setText(capitalize(CommandsExecutor.intDayToNL(day)));
-                tvRatingTime.setText("");
+            listSpots.select(spotsTV.get(model.getSelectedSpotI()));
+        }, Change.SELECTED_SPOT);
+
+        model.addChangeListener(changes -> {
+            updateSurfConditionsImages();
+        }, Change.ALL_CONDITIONS);
+
+        model.addChangeListener(changes -> {
+            int day = Math.round(model.getSelectedDay());
+            tvRatingDay.setText(capitalize(CommandsExecutor.intDayToNL(day)));
+        }, Change.SELECTED_DAY);
+
+        model.addChangeListener(changes -> {
+            tvRatingTime.setText(capitalize(CommandsExecutor.intTimeToNL(model.getSelectedTime(), false)));
+        }, Change.SELECTED_TIME);
+
+        model.addChangeListener(changes -> {
+            RatedConditions ratedConditions = model.getSelectedRatedConditions();
+            if (ratedConditions == null) {
                 rv.setRating(0, 0);
             } else {
-                int day = Math.round(model.getSelectedDay());
-                tvRatingDay.setText(capitalize(CommandsExecutor.intDayToNL(day)));
-                tvRatingTime.setText(capitalize(CommandsExecutor.intTimeToNL(model.selectedTime, false)));
-                rv.setRating(model.selectedRating, model.selectedRatedConditions.waveRating);
+                rv.setRating(ratedConditions.rating, ratedConditions.waveRating);
             }
+        }, Change.SELECTED_RATING);
 
-            if (changes.contains(MainModel.Change.SELECTED_SPOT)) {
-                listSpots.select(spotsTV.get(model.selectedSpotI));
-            }
-
-            if (changes.contains(MainModel.Change.ALL_CONDITIONS)) {
-                updateSurfConditionsImages();
-            }
-
-            //rating
-
-            SurfSpot surfSpot = model.getSelectedSpot();
-            SurfConditions now = surfSpot.conditionsProvider.getNow();
-
-            if (now != null) {
-                now.addMETAR(model.selectedMETAR);
-
-                TideData tideData = model.tideDataProvider.getTideData(surfSpot.tidePortID);
-                if (tideData != null) { //!!!!!!!!!!!!!!!!!!
+//            SurfSpot surfSpot = model.getSelectedSpot();
+//            SurfConditions now = surfSpot.conditionsProvider.getNow();
+//            if (now != null) {
+//                now.addMETAR(model.selectedMETAR);
+//                TideData tideData = model.tideDataProvider.getTideData(surfSpot.tidePortID);
+//                if (tideData != null) { //!!!!!!!!!!!!!!!!!!
 //                    float rate = now.rate(surfSpot, tideData, 0, Common.getNowTimeInt(Common.TIME_ZONE));
-                    //((TextView)findViewById(R.id.tvRatingDay)).setText("Rating: " + rate + "\nWave: " + now.waveRating + "\nWind: " + now.windRating + "\nTide: " + now.tideRating);
+            //((TextView)findViewById(R.id.tvRatingDay)).setText("Rating: " + rate + "\nWave: " + now.waveRating + "\nWind: " + now.windRating + "\nTide: " + now.tideRating);
 //                    rv.setRating(rate, now.waveRating * now.tideRating);
-                }
-            }
-        });
-
+//                }
+//            }
 
         density = getResources().getDisplayMetrics().density;
 
@@ -243,13 +242,15 @@ public class MainActivity extends AppCompatActivity {
         forecast.onScrollY = () -> {
             float v = forecast.getTideVisible();
 
-            listSpots.setAlpha(Math.max(0, v*3/2-1/2));
+            listSpots.setAlpha(Math.max(0, v * 1.5f - 0.5f));
             listSpots.setVisibility(v == 0 ? View.INVISIBLE : View.VISIBLE);
+            listSpots.setX((int) (dh * (1 - v) / 2));
 
             tvRatingTime.setAlpha(v);
             rv.setAlpha(v);
 
-            tvPlace.setAlpha(1f - Math.min(1, v*3/2));
+            tvPlace.setAlpha(1f - Math.min(1, v * 1.5f));
+            tvPlace.setPadding((int) (dh / 2 + dh * (1 - v) / 2), dh / 2, 0, 0);
 
             baliMap.setInsetBottom(forecast.getHeight() - forecast.getContentTop());
             rlDays.setY(forecast.getContentTop() - rlDays.getHeight());
@@ -509,7 +510,7 @@ public class MainActivity extends AppCompatActivity {
             layoutParams.width = w;
             daysScroller.setLayoutParams(layoutParams);
             daysScroller.setX((int) (x - w / 2));
-        }, MainModel.Change.SELECTED_DAY_FLOAT);
+        }, Change.SELECTED_DAY_FLOAT);
     }
 
 
@@ -528,7 +529,7 @@ public class MainActivity extends AppCompatActivity {
                         return true;
                     case 1:
                         model.surfSpots.swapFavorite(spot);
-                        listSpots.getView(model.selectedSpotI).setText(spot.name + (spot.favorite ? "   " + "\u2605" : ""));
+                        listSpots.getView(model.getSelectedSpotI()).setText(spot.name + (spot.favorite ? "   " + "\u2605" : ""));
                         return true;
                     case 2: {
                         Intent geoIntent = new Intent(Intent.ACTION_VIEW, Uri.parse("geo:" + spot.la + "," + spot.lo + "?q=" + spot.la + "," + spot.lo + "(" + spot.name + ")"));
@@ -574,7 +575,7 @@ public class MainActivity extends AppCompatActivity {
         View selected = null;
         int i = 0;
         SurfSpots surfSpots = model.surfSpots;
-        int ssi = model.selectedSpotI;
+        int ssi = model.getSelectedSpotI();
 
         MetricsAndPaints metricsAndPaints = model.metricsAndPaints;
 
@@ -670,7 +671,7 @@ public class MainActivity extends AppCompatActivity {
 //        Log.i(TAG, "performSelectSpot(" + spot.name + ")");
         int spotI = model.surfSpots.indexOf(spot);
 
-        if (model.selectedSpotI != spotI) {
+        if (model.getSelectedSpotI() != spotI) {
             View view = spotsTV.get(spotI);
             listSpots.awake(() -> listSpots.scrollTo(view, () -> {
                 forecast.scrollY(dh * 4);
@@ -692,6 +693,6 @@ public class MainActivity extends AppCompatActivity {
 
 
     public void performShowTide() {
-        forecast.scrollY(dh * 4, 1000);
+        forecast.scrollY(dh * 4, 333);
     }
 }

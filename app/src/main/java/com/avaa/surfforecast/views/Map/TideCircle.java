@@ -14,6 +14,8 @@ import com.avaa.surfforecast.data.TideData;
 import com.avaa.surfforecast.drawers.MetricsAndPaints;
 import com.avaa.surfforecast.views.ParallaxHelper;
 
+import static com.avaa.surfforecast.MainModel.Change.SELECTED_CONDITIONS;
+import static com.avaa.surfforecast.MainModel.Change.SELECTED_SPOT;
 import static com.avaa.surfforecast.data.Common.STR_M;
 import static com.avaa.surfforecast.data.Common.STR_TIDE;
 import static com.avaa.surfforecast.views.ColorUtils.alpha;
@@ -51,21 +53,21 @@ public class TideCircle extends MapCircle {
         MainModel model = MainModel.instance;
 
         model.addChangeListener(changes -> {
-            if (changes.contains(MainModel.Change.SELECTED_SPOT)) updateTideData();
+            if (changes.contains(SELECTED_SPOT)) updateTideData();
             else updateNowTide();
-        }, MainModel.Change.SELECTED_SPOT, MainModel.Change.SELECTED_CONDITIONS);
+        }, SELECTED_SPOT, SELECTED_CONDITIONS);
 
         updateTideData();
     }
 
 
     private void checkNowTide() {
-        if (time + 1 < MainModel.instance.selectedTime) updateNowTide();
+        if (time + 1 < MainModel.instance.getSelectedTime()) updateNowTide();
     }
 
     private void updateTideData() {
         MainModel model = MainModel.instance;
-        tideData = model.tideDataProvider.getTideData(model.getSelectedSpot().tidePortID);
+        tideData = model.selectedTideData; //tideDataProvider.getTideData(model.getSelectedSpot().tidePortID);
         updateNowTide();
     }
 
@@ -150,7 +152,9 @@ public class TideCircle extends MapCircle {
     private void updateNowTide() {
         MainModel model = MainModel.instance;
 
-        time = model.selectedTime;
+        time = model.getSelectedTime();
+
+        if (time < 0) return;
 
         Integer newTide = null;
 

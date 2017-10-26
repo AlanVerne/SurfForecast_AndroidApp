@@ -73,10 +73,10 @@ public class SurfConditionsProvider {
         return sc == null ? null : sc.getNow();
     }
 
-    public SortedMap<Integer, SurfConditions> getFixed(int plusDays) {
-        SurfConditionsOneDay sc = get(plusDays);
-        return sc == null ? null : sc.getFixed();
-    }
+//    public SortedMap<Integer, SurfConditions> getFixed(int plusDays) {
+//        SurfConditionsOneDay sc = get(plusDays);
+//        return sc == null ? null : sc.getFixed();
+//    }
 
 
     public boolean isDetailed(int plusDays) {

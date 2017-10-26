@@ -6,6 +6,7 @@ import android.os.AsyncTask;
 import android.util.Log;
 
 import com.avaa.surfforecast.MainModel;
+import com.avaa.surfforecast.data.SurfConditions;
 import com.avaa.surfforecast.data.SurfConditionsOneDay;
 import com.avaa.surfforecast.data.SurfSpot;
 import com.avaa.surfforecast.views.SurfConditionsForecastView;
@@ -75,7 +76,7 @@ public class SurfConditionsOneDayBitmapsAsyncDrawer extends AsyncTask<Void, Void
             SurfConditionsForecastView.SurfConditionsOneDayBitmaps surfConditionsOneDayBitmaps = new SurfConditionsForecastView.SurfConditionsOneDayBitmaps();
 
             if (sc != null) {
-                SurfConditionsOneDay scFixed = sc.getFixed();
+                Map<Integer, SurfConditions> scFixed = sc.getFixed();
 
                 surfConditionsOneDayBitmaps.wave = drawer.drawWave(scFixed, orientationF == 1);
 

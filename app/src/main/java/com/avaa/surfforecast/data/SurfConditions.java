@@ -98,4 +98,16 @@ public class SurfConditions {
         if (windSpeed <= 38) return 5;
         return 6;
     }
+
+
+    public static boolean equals(SurfConditions a, SurfConditions b) {
+        if (a==b) return true;
+        if (a==null) return false;
+        if (a.waveHeight != b.waveHeight) return false;
+        if (Float.compare(a.waveAngle, b.waveAngle) != 0) return false;
+        if (a.wavePeriod != b.wavePeriod) return false;
+        if (a.waveEnergy != b.waveEnergy) return false;
+        if (a.windSpeed != b.windSpeed) return false;
+        return Float.compare(a.windAngle, a.windAngle) == 0;
+    }
 }

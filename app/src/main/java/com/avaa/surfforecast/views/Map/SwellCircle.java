@@ -50,7 +50,7 @@ public class SwellCircle extends MapCircle {
         MainModel model = MainModel.instance;
 
         model.addChangeListener(changes -> {
-            SurfConditions conditions = model.selectedConditions;
+            final SurfConditions conditions = model.selectedConditions;
 
             if (conditions != null) {
                 strWaveHeight = String.valueOf(conditions.getWaveHeightInFt());

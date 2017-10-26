@@ -621,7 +621,7 @@ public class BaliMap extends View {
             paintFont.setTextSize(awakenedState * metricsAndPaints.font);
         }
 
-        int selectedSpotI = model.selectedSpotI;
+        int selectedSpotI = model.getSelectedSpotI();
 
         pp = parallaxHelper.applyParallax(getWidth() / 2, mapCenterY, -dh * 0.9f * (1 - awakenedState));
         pp.offset(-getWidth() / 2, -mapCenterY);
@@ -668,17 +668,25 @@ public class BaliMap extends View {
                         paintFont.setColor(alpha(overviewState * (best.rating / 3f + 0.66f), 0x006281));
                         paintFont.setTextSize(size);
 
-                        x += dh / 5;
                         y -= paintFont.getFontMetrics().ascent / 3;
 
+                        if (spot.labelLeft) {
+                            x -= dh / 5;
+                            paintFont.setTextAlign(Paint.Align.RIGHT);
+                        } else {
+                            x += dh / 5;
+                            paintFont.setTextAlign(Paint.Align.LEFT);
+                        }
+
                         canvas.drawText(spot.name.substring(0, 3) + " " + Math.round(best.rating * 7), x, y, paintFont);
+
+                        if (spot.labelLeft) x -= dh;
 
                         Rect rect = spotsLabels.get(i);
                         if (rect == null) {
                             rect = new Rect((int) x - dh / 2, (int) (y + paintFont.getFontMetrics().ascent), (int) x + dh * 2, (int) y);
                             spotsLabels.put(i, rect);
-                        }
-                        else {
+                        } else {
                             rect.set((int) x - dh / 2, (int) (y + paintFont.getFontMetrics().ascent), (int) x + dh * 2, (int) y);
                         }
                         //canvas.drawRect(rect, paintFont);

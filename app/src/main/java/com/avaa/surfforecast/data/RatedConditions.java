@@ -2,6 +2,14 @@ package com.avaa.surfforecast.data;
 
 import android.support.annotation.NonNull;
 
+import static java.lang.Math.PI;
+import static java.lang.Math.abs;
+import static java.lang.Math.cos;
+import static java.lang.Math.max;
+import static java.lang.Math.min;
+import static java.lang.Math.pow;
+import static java.lang.Math.round;
+
 
 /**
  * Created by Alan on 10 Sep 2017.
@@ -21,7 +29,7 @@ public class RatedConditions implements Comparable<RatedConditions> {
     public final SurfSpot surfSpot;
 
 
-    public RatedConditions(SurfSpot surfSpot, int plusDays, int time, SurfConditions surfConditions, TideData tideData) {
+    public RatedConditions(@NonNull SurfSpot surfSpot, int plusDays, int time, @NonNull SurfConditions surfConditions, @NonNull TideData tideData) {
         waveRating = rateWave(surfConditions, surfSpot);
         tideRating = rateTide(surfSpot, tideData, plusDays, time);
 //        if (windRating == -1)
@@ -38,6 +46,12 @@ public class RatedConditions implements Comparable<RatedConditions> {
     }
 
 
+    public static RatedConditions create(SurfSpot surfSpot, int plusDays, int time, SurfConditions surfConditions, TideData tideData) {
+        if (surfSpot == null || surfConditions == null || tideData == null || time < 0) return null;
+        return new RatedConditions(surfSpot, plusDays, time, surfConditions, tideData);
+    }
+
+
     private static float rateWave(SurfConditions surfConditions, SurfSpot spot) {
 //        Log.i(TAG, "wave " + waveHeight);
         if (spot.maxSwell - spot.minSwell != 0) {
@@ -45,9 +59,9 @@ public class RatedConditions implements Comparable<RatedConditions> {
 
             float waveRating = (surfConditions.getWaveHeightInFt() - swellHeightAve) / (swellHeightAve - spot.minSwell);
 //            Log.i(TAG, "waveRating " + waveRating);
-            waveRating = Math.max(0f, 1f - waveRating * waveRating);
+            waveRating = max(0f, 1f - waveRating * waveRating);
 //            Log.i(TAG, "waveRating " + waveRating);
-            waveRating = Math.max(0f, Math.min(1f, waveRating * ((surfConditions.wavePeriod - 7) / 7f)));
+            waveRating = max(0f, min(1f, waveRating * ((surfConditions.wavePeriod - 7) / 7f)));
 //            Log.i(TAG, "waveRating " + waveRating);
             return waveRating;
         }
@@ -91,10 +105,10 @@ public class RatedConditions implements Comparable<RatedConditions> {
     private static float rateWind(SurfConditions surfConditions, SurfSpot spot) {
         //windRating = 1f - (float)Math.abs((spot.getWindRelativeAngle(windAngle) - Math.PI) / Math.PI); // angle component
 
-        float windRating = (float) Math.cos(Math.abs(spot.getWindRelativeAngle(surfConditions.windAngle) - Math.PI)) / 2f + 0.5f;
+        float windRating = (float) cos(abs(spot.getWindRelativeAngle(surfConditions.windAngle) - PI)) / 2f + 0.5f;
         windRating = windRating * 0.8f + 0.1f;
 //        Log.i("SurfConditions", "rateWind() | " + windRating + " " + windAngle);
-        windRating = (float) Math.pow(windRating, Math.pow(10, ((surfConditions.windSpeed - 20) / 10)));
+        windRating = (float) pow(windRating, pow(10, ((surfConditions.windSpeed - 20) / 10)));
 //        Log.i("SurfConditions", "rateWind() | " + ((windSpeed - 20) / 10));
 //        Log.i("SurfConditions", "rateWind() | " + Math.pow(10, ((windSpeed - 20) / 10)));
         return windRating;
@@ -118,6 +132,13 @@ public class RatedConditions implements Comparable<RatedConditions> {
 
     @Override
     public int compareTo(@NonNull RatedConditions ratedConditions) {
-        return (int)(1000*(rating-ratedConditions.rating));
+        return (int) (1000 * (rating - ratedConditions.rating));
+    }
+
+    public static boolean sameEstimate(RatedConditions a, RatedConditions b) {
+        return a == null && b == null ||
+                a != null && b != null &&
+                        round(7 * a.rating) == round(7 * b.rating) &&
+                        round(7 * a.waveRating) == round(7 * b.waveRating);
     }
 }

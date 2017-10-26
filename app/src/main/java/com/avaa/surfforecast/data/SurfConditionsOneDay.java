@@ -2,6 +2,7 @@ package com.avaa.surfforecast.data;
 
 import java.util.Calendar;
 import java.util.GregorianCalendar;
+import java.util.HashMap;
 import java.util.Map;
 import java.util.TreeMap;
 
@@ -27,18 +28,29 @@ public class SurfConditionsOneDay extends TreeMap<Integer, SurfConditions> { // 
     }
 
     public SurfConditions get(int time) { // 24*60
-        for (Map.Entry<Integer, SurfConditions> c : entrySet()) {
-            if (c.getKey() >= time - 90 - 60) {
-                return c.getValue();
+//        SurfConditions conditions = super.get(time);
+//        if (conditions != null) return conditions;
+
+        if (isDetailed()) {
+            time -= 90 + 60;
+            for (Map.Entry<Integer, SurfConditions> c : entrySet()) {
+                if (c.getKey() >= time) {
+                    return c.getValue();
+                }
             }
+        } else {
+            if (time < 9 * 60) return super.get(2 * 60);
+            if (time < 15 * 60) return super.get(11 * 60);
+            return super.get(17 * 60);
         }
+
         return null;
     }
 
-    public SurfConditionsOneDay getFixed() {
+    public Map<Integer, SurfConditions> getFixed() {
         boolean detailed = isDetailed();
 
-        SurfConditionsOneDay fixedConditions = new SurfConditionsOneDay();
+        Map<Integer, SurfConditions> fixedConditions = new HashMap<>();
         if (detailed) {
             for (int i = -60; i < 23 * 60; i += 3 * 60) {
                 fixedConditions.put(i + 60, super.get(i));

@@ -1,6 +1,9 @@
 package com.avaa.surfforecast.data;
 
 
+import android.support.annotation.NonNull;
+import android.util.Log;
+
 import com.avaa.surfforecast.MainModel;
 
 import java.util.HashMap;
@@ -16,6 +19,8 @@ import java.util.TreeSet;
 
 
 public class Rater {
+    private static final String TAG = "Rater";
+
     public long lastUpdate = 0;
     public final Map<SurfSpot, TreeMap<Long, RatedConditions>> bestBySpot = new HashMap<>();
     public final Map<Long, SortedSet<RatedConditions>> bestByDay = new HashMap<Long, SortedSet<RatedConditions>>();
@@ -29,7 +34,7 @@ public class Rater {
     }
 
 
-    public RatedConditions getBest(SurfSpot surfSpot, int plusDays) {
+    public RatedConditions getBest(@NonNull SurfSpot surfSpot, int plusDays) {
         if (lastUpdate < surfSpot.conditionsProvider.lastUpdate) updateBest();
         if (bestBySpot.get(surfSpot) == null) return null;
         return bestBySpot.get(surfSpot).get(Common.getDay(plusDays, Common.TIME_ZONE));
@@ -38,6 +43,20 @@ public class Rater {
 
     public RatedConditions getBest(int plusDays) {
         return bestByDay.get(Common.getDay(plusDays, Common.TIME_ZONE)).first();
+    }
+
+
+    public RatedConditions getRating(@NonNull SurfSpot surfSpot, int plusDays, int time) {
+        TideData tideData = MainModel.instance.tideDataProvider.getTideData(surfSpot.tidePortID);
+        if (tideData == null) return null;
+
+        SurfConditionsOneDay surfConditionsOneDay = surfSpot.conditionsProvider.get(plusDays);
+        if (surfConditionsOneDay == null) return null;
+
+        SurfConditions conditions = surfConditionsOneDay.get(time * 60);
+        if (conditions == null) return null;
+
+        return new RatedConditions(surfSpot, plusDays, time, conditions, tideData);
     }
 
 
@@ -59,18 +78,16 @@ public class Rater {
         if (map == null) {
             map = new TreeMap<>();
             bestBySpot.put(surfSpot, map);
-        }
-        else {
+        } else {
             map.clear();
         }
 
         TideData tideData = MainModel.instance.tideDataProvider.getTideData(surfSpot.tidePortID);
 
+        int nowTimeInt = Common.getNowTimeInt(Common.TIME_ZONE);
+
         for (int plusDays = 0; plusDays <= 6; plusDays++) {
-            SurfConditions surfConditions = null;
-
-            int nowTimeInt = Common.getNowTimeInt(Common.TIME_ZONE);
-
+            SurfConditions bestConditions = null;
             float bestRate = -1;
             int bestTime = -1;
 
@@ -80,18 +97,21 @@ public class Rater {
 
             for (int time = 6; time < 18; time++) {
                 SurfConditions conditions = surfConditionsOneDay.get(time * 60);
-                if ((plusDays == 0 && time * 60 < nowTimeInt - 120 && nowTimeInt < 18)
-                        || time < 5 || time > 19 || conditions == null) continue;
+                if ((plusDays == 0 && time * 60 < nowTimeInt - 120 && nowTimeInt < 18 * 60)
+                        || conditions == null) continue;
                 float rate = RatedConditions.rate(conditions, surfSpot, tideData, plusDays, time * 60);
                 if (rate > bestRate) {
                     bestRate = rate;
                     bestTime = time * 60;
-                    surfConditions = conditions;
+                    bestConditions = conditions;
                 }
+
+                if (plusDays == 0 && "Green Ball".equals(surfSpot.name))
+                    Log.i(TAG, "best time " + time + "  " + conditions.getWaveHeightInFt() + "  " + conditions.windSpeed);
             }
 
-            if (surfConditions != null) {
-                map.put(Common.getDay(plusDays, Common.TIME_ZONE), new RatedConditions(surfSpot, plusDays, bestTime, surfConditions, tideData));
+            if (bestConditions != null) {
+                map.put(Common.getDay(plusDays, Common.TIME_ZONE), new RatedConditions(surfSpot, plusDays, bestTime, bestConditions, tideData));
             }
         }
 
