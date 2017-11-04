@@ -2,6 +2,7 @@ package com.avaa.surfforecast;
 
 import android.content.SharedPreferences;
 import android.support.annotation.NonNull;
+import android.util.Log;
 
 import com.avaa.surfforecast.ai.CommandsExecutor;
 import com.avaa.surfforecast.ai.VoiceRecognitionHelper;
@@ -349,6 +350,13 @@ public class MainModel {
     }
 
 
+    public void updateSelectedSpotAll() {
+        selectedSpot.conditionsProvider.update();
+        metarProvider.update(selectedSpot.metarName);
+        tideDataProvider.fetchIfNeed(selectedSpot.tidePortID);
+    }
+
+
     // Change support
 
 
@@ -434,6 +442,7 @@ public class MainModel {
     }
 
     private void fireChanged(Set<Change> changes) {
+        Log.i(TAG, "fire");
         for (Map.Entry<ChangeListener, Set<Change>> e : changeListeners.entrySet()) {
             if (e.getValue() == null || hasIntersection(e.getValue(), changes))
                 e.getKey().onChange(changes);

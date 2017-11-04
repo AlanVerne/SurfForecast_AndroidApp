@@ -7,6 +7,7 @@ import android.util.Log;
 import com.avaa.surfforecast.MainModel;
 
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.Map;
 import java.util.SortedSet;
 import java.util.TreeMap;
@@ -21,9 +22,11 @@ import java.util.TreeSet;
 public class Rater {
     private static final String TAG = "Rater";
 
-    public long lastUpdate = 0;
-    public final Map<SurfSpot, TreeMap<Long, RatedConditions>> bestBySpot = new HashMap<>();
-    public final Map<Long, SortedSet<RatedConditions>> bestByDay = new HashMap<Long, SortedSet<RatedConditions>>();
+    private final Map<SurfSpot, Long> updated = new HashMap<>();
+    private final Map<SurfSpot, TreeMap<Long, RatedConditions>> bestBySpot = new HashMap<>();
+    private final Map<Long, SortedSet<RatedConditions>> bestByDay = new HashMap<>();
+
+    private long lastUpdate = 0;
 
 
     private void initBestByDay() {
@@ -35,13 +38,18 @@ public class Rater {
 
 
     public RatedConditions getBest(@NonNull SurfSpot surfSpot, int plusDays) {
-        if (lastUpdate < surfSpot.conditionsProvider.lastUpdate) updateBest();
+        Long updated = this.updated.get(surfSpot);
+        if (updated == null || updated < surfSpot.conditionsProvider.lastUpdate) {
+            updateBest(surfSpot);
+        }
+
         if (bestBySpot.get(surfSpot) == null) return null;
+
         return bestBySpot.get(surfSpot).get(Common.getDay(plusDays, Common.TIME_ZONE));
     }
 
 
-    public RatedConditions getBest(int plusDays) {
+    public RatedConditions getBestForDay(int plusDays) {
         return bestByDay.get(Common.getDay(plusDays, Common.TIME_ZONE)).first();
     }
 
@@ -61,6 +69,7 @@ public class Rater {
 
 
     public void updateBest() {
+        Log.i(TAG, "updateBest");
         initBestByDay();
         for (SurfSpot surfSpot : MainModel.instance.surfSpots.getAll()) {
             TreeMap<Long, RatedConditions> map = updateBest(surfSpot);
@@ -86,35 +95,64 @@ public class Rater {
 
         int nowTimeInt = Common.getNowTimeInt(Common.TIME_ZONE);
 
+        RatedConditions rc = new RatedConditions();
+
         for (int plusDays = 0; plusDays <= 6; plusDays++) {
-            SurfConditions bestConditions = null;
+            RatedConditions bestRC = null;
             float bestRate = -1;
-            int bestTime = -1;
 
             SurfConditionsOneDay surfConditionsOneDay = surfSpot.conditionsProvider.get(plusDays);
 
             if (surfConditionsOneDay == null) continue;
 
-            for (int time = 6; time < 18; time++) {
-                SurfConditions conditions = surfConditionsOneDay.get(time * 60);
-                if ((plusDays == 0 && time * 60 < nowTimeInt - 120 && nowTimeInt < 18 * 60)
+            for (int hour = 6; hour < 18; hour++) {
+                SurfConditions conditions = surfConditionsOneDay.get(hour * 60);
+
+                if ((plusDays == 0
+                        && hour * 60 < nowTimeInt - 120
+                        && nowTimeInt < 18 * 60)
                         || conditions == null) continue;
-                float rate = RatedConditions.rate(conditions, surfSpot, tideData, plusDays, time * 60);
+
+                float rate = RatedConditions.rate(rc, surfSpot, conditions, tideData, plusDays, hour * 60);
+
                 if (rate > bestRate) {
                     bestRate = rate;
-                    bestTime = time * 60;
-                    bestConditions = conditions;
+                    bestRC = rc.clone();
                 }
 
-                if (plusDays == 0 && "Green Ball".equals(surfSpot.name))
-                    Log.i(TAG, "best time " + time + "  " + conditions.getWaveHeightInFt() + "  " + conditions.windSpeed);
+//                if ("Green Ball".equals(surfSpot.name))
+//                    Log.i(TAG, "day" + plusDays + " best hour " + hour + "  " + conditions.getWaveHeightInFt() + "  " + conditions.windSpeed);
             }
 
-            if (bestConditions != null) {
-                map.put(Common.getDay(plusDays, Common.TIME_ZONE), new RatedConditions(surfSpot, plusDays, bestTime, bestConditions, tideData));
+            if (bestRC != null) {
+                long day = Common.getDay(plusDays, Common.TIME_ZONE);
+
+                map.put(day, bestRC);
+
+                SortedSet<RatedConditions> set = bestByDay.get(day);
+                if (set == null) {
+                    set = new TreeSet<>();
+                    bestByDay.put(day, set);
+                }
+                replaceInSet(set, bestRC);
             }
         }
 
+        updated.put(surfSpot, surfSpot.conditionsProvider.lastUpdate);
+
         return map;
+    }
+
+
+    private void replaceInSet(SortedSet<RatedConditions> set, RatedConditions newRC) {
+        SurfSpot surfSpot = newRC.surfSpot;
+
+        Iterator<RatedConditions> setI = set.iterator();
+        while (setI.hasNext()) {
+            RatedConditions rc = setI.next();
+            if (rc.surfSpot == surfSpot) setI.remove();
+        }
+
+        set.add(newRC);
     }
 }

@@ -24,7 +24,6 @@ import com.avaa.surfforecast.MainModel;
 import com.avaa.surfforecast.R;
 import com.avaa.surfforecast.data.RatedConditions;
 import com.avaa.surfforecast.data.SurfSpot;
-import com.avaa.surfforecast.data.SurfSpots;
 import com.avaa.surfforecast.drawers.MetricsAndPaints;
 import com.avaa.surfforecast.drawers.SVGPathToAndroidPath;
 import com.avaa.surfforecast.views.ParallaxHelper;
@@ -40,6 +39,10 @@ import java.util.Timer;
 import java.util.TimerTask;
 
 import static com.avaa.surfforecast.views.ColorUtils.alpha;
+import static java.lang.Math.PI;
+import static java.lang.Math.abs;
+import static java.lang.Math.max;
+import static java.lang.Math.sqrt;
 
 
 /**
@@ -156,7 +159,7 @@ public class BaliMap extends View {
 
         onSizeChanged(getWidth(), getHeight(), getWidth(), getHeight());
 
-        Log.i(TAG, "setDh() | this.getHeight() = " + getHeight());
+//        Log.i(TAG, "setDh() | this.getHeight() = " + getHeight());
     }
 
     public void setHintsVisiblePolicy(int hintsVisiblePolicy) {
@@ -189,8 +192,11 @@ public class BaliMap extends View {
 
         powerManager = (PowerManager) getContext().getSystemService(Context.POWER_SERVICE);
 
-        SurfSpots surfSpots = model.surfSpots;
-        surfSpotsList = surfSpots.getAll();
+        surfSpotsList = model.surfSpots.getAll();
+
+        for (int i = 0; i < surfSpotsList.size(); i++) {
+            spotsLabels.put(i, new Rect());
+        }
 
         scrollerHints = new Scroller(getContext());
 
@@ -219,6 +225,19 @@ public class BaliMap extends View {
         bmpMapZoomedOut = Bitmap.createBitmap(pathTerrainSize.x, pathTerrainSize.y, Bitmap.Config.ARGB_8888);
 
         parallaxHelper = new ParallaxHelper(this);
+    }
+
+
+    public void hideCircles() {
+        windCircle.setVisible(false, true);
+        swellCircle.setVisible(false, true);
+        tideCircle.setVisible(false, true);
+    }
+
+    public void showCircles() {
+        windCircle.setVisible(true, true);
+        swellCircle.setVisible(true, true);
+        tideCircle.setVisible(true, true);
     }
 
 
@@ -260,6 +279,10 @@ public class BaliMap extends View {
         public boolean onFling(MotionEvent e1, MotionEvent e2, float velocityX, float velocityY) {
             float s = dh * 2 / rIn;
             zoomedInV = new PointF(-velocityX / s, -velocityY / s);
+
+//            Log.i(TAG, "onFling() " + (int) (zoomedInV.x * 10f / 60f) + " " + (int) (zoomedInV.y * 10f / 60f));
+
+            actionDown = null;
             return true;
         }
 
@@ -273,6 +296,9 @@ public class BaliMap extends View {
     };
     private final GestureDetector gestureDetector = new GestureDetector(this.getContext(), gestureListener);
 
+    {
+        gestureDetector.setIsLongpressEnabled(false);
+    }
 
     @Override
     public boolean onTouchEvent(MotionEvent e) {
@@ -292,7 +318,7 @@ public class BaliMap extends View {
         }
 
         if (overviewState == 1f) {
-            if (gestureDetector.onTouchEvent(e)) { //If the user swipes
+            if (gestureDetector.onTouchEvent(e)) {
                 return true;
             }
             if (e.getAction() == MotionEvent.ACTION_DOWN) {
@@ -303,28 +329,31 @@ public class BaliMap extends View {
             } else if (e.getAction() == MotionEvent.ACTION_MOVE) {
                 if (!moved && Math.pow(-e.getX() + actionDown.x, 2) + Math.pow(-e.getY() + actionDown.y, 2) > dh)
                     moved = true;
-            } else if (e.getAction() == MotionEvent.ACTION_UP && !moved) {
-                for (Map.Entry<Integer, Rect> rect : spotsLabels.entrySet()) {
-                    if (rect.getValue().contains((int) e.getX(), (int) e.getY())) {
-                        model.setSelectedSpotI(rect.getKey());
+            } else if (e.getAction() == MotionEvent.ACTION_UP) {
+                actionDown = null;
+                if (!moved) {
+                    for (Map.Entry<Integer, Rect> rect : spotsLabels.entrySet()) {
+                        if (rect.getValue().contains((int) e.getX(), (int) e.getY())) {
+                            model.setSelectedSpotI(rect.getKey());
+                            model.mainActivity.performShowTide();
+                            return true;
+                        }
+                    }
+
+                    double min = dh * dh * 4;
+                    int minI = -1;
+                    for (Map.Entry<Integer, Rect> rect : spotsLabels.entrySet()) {
+                        double d = Math.pow(rect.getValue().centerX() - e.getX(), 2) + Math.pow(rect.getValue().centerY() - (int) e.getY(), 2);
+                        if (d < min) {
+                            min = d;
+                            minI = rect.getKey();
+                        }
+                    }
+                    if (minI != -1) {
+                        model.setSelectedSpotI(minI);
                         model.mainActivity.performShowTide();
                         return true;
                     }
-                }
-
-                double min = dh * dh * 4;
-                int minI = -1;
-                for (Map.Entry<Integer, Rect> rect : spotsLabels.entrySet()) {
-                    double d = Math.pow(rect.getValue().centerX() - e.getX(), 2) + Math.pow(rect.getValue().centerY() - (int) e.getY(), 2);
-                    if (d < min) {
-                        min = d;
-                        minI = rect.getKey();
-                    }
-                }
-                if (minI != -1) {
-                    model.setSelectedSpotI(minI);
-                    model.mainActivity.performShowTide();
-                    return true;
                 }
             }
         }
@@ -332,6 +361,8 @@ public class BaliMap extends View {
         return super.onTouchEvent(e);
     }
 
+
+    long prevMS = 0;
 
     @Override
     public void computeScroll() {
@@ -352,7 +383,14 @@ public class BaliMap extends View {
 
         zoomedInV.set(zoomedInV.x * 0.9f, zoomedInV.y * 0.9f);
 
-        zoomedInPoint.offset(zoomedInV.x / 60, zoomedInV.y / 60);
+        long currentTimeMillis = System.currentTimeMillis();
+        float d = currentTimeMillis - prevMS;
+        prevMS = currentTimeMillis;
+        float fd = d > 1000 / 20 ? 20f / 1000f : d / 1000f;
+
+        zoomedInPoint.offset(zoomedInV.x * fd, zoomedInV.y * fd);
+
+//        Log.i(TAG, "compScro() fps="+1000/d);
 
         if (b) repaint();
     }
@@ -492,8 +530,8 @@ public class BaliMap extends View {
         PointF pp = parallaxHelper.applyParallax(ox, oy, dh * MapCircle.subZ);
         float x = pp.x, y = pp.y;
 
-        float a = (float) (model.getSelectedSpot().waveDirection.ordinal() * Math.PI * 2 / 16 + Math.PI);
-        float aDegrees = (float) (-a * 180 / Math.PI);
+        float a = (float) (model.getSelectedSpot().waveDirection.ordinal() * PI * 2 / 16 + PI);
+        float aDegrees = (float) (-a * 180 / PI);
 
         pathSpotCircleClip.reset();
         pathSpotCircleClip.addCircle(x, y, r, Path.Direction.CCW);
@@ -617,9 +655,9 @@ public class BaliMap extends View {
             canvas.drawBitmap(bmpMapZoomedOut, null, rectFTemp, null);
         }
 
-        if (awakenedState != awakenedStatePrev) {
-            paintFont.setTextSize(awakenedState * metricsAndPaints.font);
-        }
+//        if (awakenedState != awakenedStatePrev) {
+//            paintFont.setTextSize(awakenedState * metricsAndPaints.font);
+//        }
 
         int selectedSpotI = model.getSelectedSpotI();
 
@@ -639,65 +677,63 @@ public class BaliMap extends View {
             paintFont.setTextAlign(Paint.Align.LEFT);
         }
 
-        spotsLabels.clear();
+        float rectXL = -dh * 2;
+        float rectXR = getWidth() + dh * 2;
+        float rectYT = -dh;
+        float rectYB = getHeight() - paddingBottom * dh;
+
+        float fx1 = dh * 2;
+        float fx2 = getWidth() - dh * 2;
+        float fy1 = paddingTop * dh;
+        float fy2 = getHeight() - paddingBottom * dh;
+
+        boolean justOneLabel = false;
 
         for (SurfSpot spot : surfSpotsList) {
+            float x = spot.pointOnSVG.x * scale + dx;
+            float y = spot.pointOnSVG.y * scale + dy;
+            float r = densityDHDep * 1.5f;
+
             float highlighted = isHighlighted(i);
             if (highlighted > 0 && i != selectedSpotI) {
                 float t = highlighted * (1f - awakenedState);
-                float x = spot.pointOnSVG.x * scale + dx;
-                float y = spot.pointOnSVG.y * scale + dy;
-                float r = densityDHDep * highlighted * 1.5f;
-
                 paintBG.setColor((int) (t * 0xff) * 0x1000000 + colorSpotDot);
-                canvas.drawCircle(x, y, r, paintBG);
+                canvas.drawCircle(x, y, r * highlighted, paintBG);
             }
+
             if (awakenedState == 1 && overviewState > 0) {
-                float x = spot.pointOnSVG.x * scale + dx;
-                float y = spot.pointOnSVG.y * scale + dy;
-                if (x > -dh * 2 && (y > paddingTop * dh || x > dh * 4) && x < getWidth() && y < getHeight() - paddingBottom * dh) {
-                    float r = densityDHDep * 1.5f;
-
+                if (x > rectXL && (y > paddingTop * dh || x > dh * 4 && y > rectYT) && x < rectXR && y < rectYB) {
                     RatedConditions best = model.rater.getBest(spot, plusDays);
-                    if (best != null) {
-                        paintBG.setColor(alpha(overviewState * (best.rating / 2f + 0.5f), 0x006281)); //colorSpotDot);
-                        canvas.drawCircle(x, y, r, paintBG);
+                    float bestRating = best != null ? best.rating : 0;
+                    paintBG.setColor(alpha(overviewState * (bestRating / 2f + 0.5f), 0x006281)); //colorSpotDot);
+                    canvas.drawCircle(x, y, r, paintBG);
 
-                        float size = best.rating >= 0.7 ? metricsAndPaints.fontBig : best.rating > 0.3 ? metricsAndPaints.font : metricsAndPaints.fontSmall;
+                    float size = bestRating >= 0.7 ? metricsAndPaints.fontBig : best.rating > 0.3 ? metricsAndPaints.font : metricsAndPaints.fontSmall;
 //                        RatingView.drawStatic(canvas, (int) x - dh, (int) y, dh / 4, best.rating, best.waveRating * best.tideRating, (int) (t * 255));
-                        paintFont.setColor(alpha(overviewState * (best.rating / 3f + 0.66f), 0x006281));
-                        paintFont.setTextSize(size);
+                    paintFont.setColor(alpha(overviewState * (bestRating / 3f + 0.66f), 0x006281));
+                    paintFont.setTextSize(size);
 
-                        y -= paintFont.getFontMetrics().ascent / 3;
+                    y -= paintFont.getFontMetrics().ascent / 3;
 
-                        if (spot.labelLeft) {
-                            x -= dh / 5;
-                            paintFont.setTextAlign(Paint.Align.RIGHT);
-                        } else {
-                            x += dh / 5;
-                            paintFont.setTextAlign(Paint.Align.LEFT);
-                        }
-
-                        canvas.drawText(spot.name.substring(0, 3) + " " + Math.round(best.rating * 7), x, y, paintFont);
-
-                        if (spot.labelLeft) x -= dh;
-
-                        Rect rect = spotsLabels.get(i);
-                        if (rect == null) {
-                            rect = new Rect((int) x - dh / 2, (int) (y + paintFont.getFontMetrics().ascent), (int) x + dh * 2, (int) y);
-                            spotsLabels.put(i, rect);
-                        } else {
-                            rect.set((int) x - dh / 2, (int) (y + paintFont.getFontMetrics().ascent), (int) x + dh * 2, (int) y);
-                        }
-                        //canvas.drawRect(rect, paintFont);
+                    if (spot.labelLeft) {
+                        x -= dh / 5;
+                        paintFont.setTextAlign(Paint.Align.RIGHT);
                     } else {
-                        canvas.drawCircle(x, y, r, paintBG);
                         x += dh / 5;
-                        y += dh / 5;
-                        canvas.drawText(spot.name.substring(0, 3), x, y, paintFont);
+                        paintFont.setTextAlign(Paint.Align.LEFT);
+                    }
+
+                    canvas.drawText(spot.name.substring(0, 3) + " " + Math.round(best.rating * 7), x, y, paintFont);
+
+                    if (spot.labelLeft) x -= dh;
+
+                    Rect rect = spotsLabels.get(i);
+                    rect.set((int) x - dh / 2, (int) (y + paintFont.getFontMetrics().ascent), (int) x + dh * 2, (int) y);
+
+                    if (x > fx1 && y > fy1 && x + dh < fx2 && y < fy2) {
+                        justOneLabel = true;
                     }
                 } else {
-                    float r = densityDHDep * 1.5f;
                     RatedConditions best = model.rater.getBest(spot, plusDays);
                     if (best != null) {
                         paintBG.setColor(alpha(overviewState * (best.rating / 2f + 0.5f), 0x006281));
@@ -705,11 +741,53 @@ public class BaliMap extends View {
                         paintBG.setColor(alpha(0.5f, 0x006281));
                     }
                     canvas.drawCircle(x, y, r, paintBG);
+
+                    spotsLabels.get(i).set(-1, -1, -1, -1);
                 }
             }
             i++;
         }
-        paintFont.setTextAlign(Paint.Align.CENTER);
+
+
+        if (!justOneLabel && actionDown == null && overviewState == 1) { // Map correction
+            SurfSpot magnetSpot = null;
+            double magnetDistance = Integer.MAX_VALUE;
+
+            float finalDX = scale * zoomedInV.x * 10f / 60f; // Consider velocity offset
+            float finalDY = scale * zoomedInV.y * 10f / 60f;
+            fx1 += finalDX;
+            fx2 += finalDX;
+            fy1 += finalDY;
+            fy2 += finalDY;
+
+            float fcx = (fx1 + fx2) / 2f;
+            float fcy = (fy1 + fy2) / 2f;
+
+            for (SurfSpot spot : surfSpotsList) {
+                float x = spot.pointOnSVG.x * scale + dx;
+                float y = spot.pointOnSVG.y * scale + dy;
+                double distance = distToRect(fx1, fy1, fx2, fy2, fcx, fcy, x, y);
+                if (distance < magnetDistance) {
+                    magnetSpot = spot;
+                    magnetDistance = distance;
+                }
+            }
+
+            float forceX = magnetSpot.pointOnSVG.x * scale + dx - getWidth() / 2;
+            float forceY = magnetSpot.pointOnSVG.y * scale + dy - getHeight() / 2;
+
+            float force = (float) sqrt(forceX * forceX + forceY * forceY);
+
+            float x = magnetSpot.pointOnSVG.x * scale + dx + finalDX;
+            float y = magnetSpot.pointOnSVG.y * scale + dy + finalDY;
+            magnetDistance = distToRect(fx1, fy1, fx2, fy2, fcx, fcy, x, y) / 5f;
+
+            forceX *= magnetDistance / force;
+            forceY *= magnetDistance / force;
+
+            zoomedInV.set(zoomedInV.x + forceX, zoomedInV.y + forceY);
+        }
+
 
         if (selectedSpotI != -1) {
             SurfSpot spot = model.getSelectedSpot();
@@ -741,12 +819,37 @@ public class BaliMap extends View {
     }
 
 
+    private double distToRect(float x1, float y1, float x2, float y2, float xc, float yc, float x, float y) {
+        float dx = xc - x;
+        float dy = yc - y;
+
+        double d = sqrt(dx * dx + dy * dy);
+
+        double k = 0;
+
+        if (x < x1) k = (x1 - x) / dx;
+        else if (x2 < x) k = (x2 - x) / dx;
+
+        if (y < y1) k = max(k, (y1 - y) / dy);
+        else if (y2 < y) k = max(k, (y2 - y) / dy);
+
+        return d * k;
+    }
+
+
+//    private double distance(double alpha, double beta) {
+//        double phi = Math.abs(beta - alpha) % (2 * PI);       // This is either the distance or 360 - distance
+//        double distance = phi > PI ? 2 * PI - phi : phi;
+//        return distance;
+//    }
+
+
     private void paintSelectedSpot(Canvas canvas, float x, float y, float r) {
         float windArrowVisible = windCircle.scrollerVisible.getValue();
 
         paintSpotCircle(canvas, x, y, r);
 
-        float k = windArrowVisible * (float) Math.max(0, (Math.PI - Math.abs(windCircle.getAngle() - Math.PI) - 2));
+        float k = windArrowVisible * (float) Math.max(0, (PI - abs(windCircle.getAngle() - PI) - 2));
         x -= awakenedState * Math.max(0, k * dh / 2f);
 
         x -= awakenedState * (1.5 + 1 + 0.75 + 0.33 * swellCircle.scrollerHints.getValue()) * dh;

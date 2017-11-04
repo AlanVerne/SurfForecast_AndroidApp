@@ -34,7 +34,7 @@ public class SurfConditionsOneDayBitmapsAsyncDrawer extends AsyncTask<Void, Void
 
 
     public SurfConditionsOneDayBitmapsAsyncDrawer(SurfSpot surfSpot, int step, List<Integer> daysToDraw, SurfConditionsForecastView view) {
-        Log.i(TAG, "SurfConditionsOneDayBitmapsAsyncDrawer() | surfSpot = " + surfSpot.name);
+//        Log.i(TAG, "SurfConditionsOneDayBitmapsAsyncDrawer() | surfSpot = " + surfSpot.name);
 
         this.surfSpot = surfSpot;
         this.step = step;
@@ -55,14 +55,14 @@ public class SurfConditionsOneDayBitmapsAsyncDrawer extends AsyncTask<Void, Void
     @Override
     protected void onCancelled() {
         super.onCancelled();
-        Log.i(TAG, "onCancelled() | " + daysToDraw.toString());
+//        Log.i(TAG, "onCancelled() | " + daysToDraw.toString());
     }
 
 
     @Override
     protected Map<Integer, SurfConditionsForecastView.SurfConditionsOneDayBitmaps> doInBackground(Void... params) {
         //Trace.beginSection("doInBackground");
-        Log.i(TAG, "doInBackground() | daysToDraw = " + daysToDraw.toString()); //surfSpot.name + " "
+//        Log.i(TAG, "doInBackground() | daysToDraw = " + daysToDraw.toString()); //surfSpot.name + " "
 
         Bitmap b = null;
         if (step == 0) b = drawer.getBitmapForWarming();
@@ -113,7 +113,7 @@ public class SurfConditionsOneDayBitmapsAsyncDrawer extends AsyncTask<Void, Void
     @Override
     protected void onPostExecute(Map<Integer, SurfConditionsForecastView.SurfConditionsOneDayBitmaps> forecastBitmaps) {
 //        Trace.beginSection("onPostExecute");
-        Log.i(TAG, "onPostExecute() | daysToDraw = " + daysToDraw.toString());
+//        Log.i(TAG, "onPostExecute() | daysToDraw = " + daysToDraw.toString());
         //Log.i(TAG, "onPostExecute() | " + surfSpot.name + " " + forecastBitmaps.size());
         view.newBitmaps(forecastBitmaps, step);
 

@@ -329,7 +329,7 @@ public class CommandsExecutor {
 //                    }
 //                }
 //            }
-            RatedConditions best = MainModel.instance.rater.getBest(plusDays);
+            RatedConditions best = MainModel.instance.rater.getBestForDay(plusDays);
             if (best != null) {
                 bestTime = best.time;
                 bestRate = best.rating;

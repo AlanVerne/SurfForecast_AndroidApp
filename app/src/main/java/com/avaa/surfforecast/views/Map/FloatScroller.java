@@ -41,7 +41,7 @@ public class FloatScroller {
 
 
     public boolean to(float to, boolean smooth) {
-        if (scroller.isFinished() && value == to) {
+        if (scroller.isFinished() && value == to || scroller.getFinalX() == (int) (to * 1000f)) {
             return false;
         } else {
             if (!scroller.isFinished()) scroller.abortAnimation();

@@ -21,6 +21,8 @@ public class MetricsAndPaints {
     public static int colorBlack = 0xff003545;
     public static int colorMinorBlack = 0x33000000;
 
+    public static int colorMidBlack = 0x66000000;
+
     public static int colorWindText = colorBlack;
     public static int colorWaveText = colorBlack;
     public static int colorTideText = colorWhite;
@@ -90,5 +92,48 @@ public class MetricsAndPaints {
 
     public static int getColorMinor(int color) {
         return color == colorWhite ? colorMinorWhite : colorMinorBlack;
+    }
+
+    public static int getTextColorForEnergy(int energy) {
+        return energy>1450?colorBlack:colorWhite;
+    }
+    public static int getColorForEnergy(int energy) {
+        int r, g, b;
+        if (energy <= 500) {
+            r = 0;
+            g = 0x17 * energy / 500;
+            b = 0xff * energy / 500;
+        } else if (energy <= 1000) {
+            r = 0;
+            g = 0x17 + (0xa1 - 0x17) * (energy - 500) / 500;
+            b = 0xff;
+        } else if (energy <= 1500) {
+            energy -= 1000;
+            r = 0x51 * energy / 500;
+            g = 0xa1 + (0xc1 - 0xa1) * energy / 500;
+            b = 0xff + (0xf6 - 0xff) * energy / 500;
+        } else if (energy <= 2000) {
+            energy -= 1500;
+            r = 0x51 + (0xc1 - 0x51) * energy / 500;
+            g = 0xc1 + (0xe9 - 0xc1) * energy / 500;
+            b = 0xf6 + (0xea - 0xf6) * energy / 500;
+        } else if (energy <= 2500) {
+            energy -= 2000;
+            r = 0xc1 + (0xff - 0xc1) * energy / 500;
+            g = 0xe9 + (0xff - 0xe9) * energy / 500;
+            b = 0xea + (0xd7 - 0xea) * energy / 500;
+        } else if (energy <= 5000) {
+            energy -= 2500;
+            r = 0xff;
+            g = 0xff;
+            b = 0xd7 + (0x98 - 0xd7) * energy / 2500;
+        } else {;// if (energy <= 10000) {
+            energy -= 5000;
+            r = 0xff;
+            g = 0xff + (0xa2 - 0xff) * energy / 5000;
+            b = 0x98 + (0x00 - 0x98) * energy / 5000;
+        }
+
+        return r *0x10000 + g * 0x100 + b;
     }
 }

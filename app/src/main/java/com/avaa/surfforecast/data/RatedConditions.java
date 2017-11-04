@@ -17,32 +17,70 @@ import static java.lang.Math.round;
 
 
 public class RatedConditions implements Comparable<RatedConditions> {
-    public final float rating;
+    public float waveRating;
+    public float windRating;
+    public float tideRating;
 
-    public final float waveRating;
-    public final float windRating;
-    public final float tideRating;
+    public float rating;
 
-    public final int time;
-    public final SurfConditions surfConditions;
-    public final int tide;
-    public final SurfSpot surfSpot;
+    public SurfSpot surfSpot;
+    public SurfConditions surfConditions;
+    public int time;
 
+
+    public RatedConditions() {
+        this(0, 0, 0, 0, null, null, 0);
+    }
 
     public RatedConditions(@NonNull SurfSpot surfSpot, int plusDays, int time, @NonNull SurfConditions surfConditions, @NonNull TideData tideData) {
-        waveRating = rateWave(surfConditions, surfSpot);
-        tideRating = rateTide(surfSpot, tideData, plusDays, time);
-//        if (windRating == -1)
-        windRating = rateWind(surfConditions, surfSpot);
+        init(surfSpot, plusDays, time, surfConditions, tideData);
+    }
 
-//        Log.i("SurfConditions", "rate(" + surfSpot.getShortName() + ", " + time / 60 + ":00), rated: " + waveRating + ", " + windRating + ", " + tideRating);
+    public RatedConditions(float waveRating, float windRating, float tideRating, float rating, SurfSpot surfSpot, SurfConditions surfConditions, int time) {
+        this.waveRating = waveRating;
+        this.windRating = windRating;
+        this.tideRating = tideRating;
+        this.rating = rating;
+        this.surfSpot = surfSpot;
+        this.surfConditions = surfConditions;
+        this.time = time;
+    }
 
-        rating = waveRating * windRating * tideRating;
+    private void reset(SurfSpot surfSpot, int time, SurfConditions surfConditions, TideData tideData) {
+        rating = 0;
+
+        waveRating = 0;
+        windRating = 0;
+        tideRating = 0;
 
         this.time = time;
         this.surfConditions = surfConditions;
-        this.tide = 0;
         this.surfSpot = surfSpot;
+    }
+
+    private void init(SurfSpot surfSpot, int plusDays, int time, SurfConditions surfConditions, TideData tideData) {
+        if (surfSpot == null || surfConditions == null || tideData == null) {
+            waveRating = 0;
+            windRating = 0;
+            tideRating = 0;
+            rating = 0;
+        } else {
+            waveRating = rateWave(surfConditions, surfSpot);
+            tideRating = rateTide(surfSpot, tideData, plusDays, time);
+            windRating = rateWind(surfConditions, surfSpot);
+            rating = waveRating * windRating * tideRating;
+        }
+
+        this.time = time;
+        this.surfConditions = surfConditions;
+        this.surfSpot = surfSpot;
+
+        //Log.i("SurfConditions", "rate(" + surfSpot.getShortName() + ", " + time / 60 + ":00), rated: " + waveRating + ", " + windRating + ", " + tideRating);
+    }
+
+
+    public RatedConditions clone() {
+        return new RatedConditions(waveRating, windRating, tideRating, rating, surfSpot, surfConditions, time);
     }
 
 
@@ -107,26 +145,18 @@ public class RatedConditions implements Comparable<RatedConditions> {
 
         float windRating = (float) cos(abs(spot.getWindRelativeAngle(surfConditions.windAngle) - PI)) / 2f + 0.5f;
         windRating = windRating * 0.8f + 0.1f;
-//        Log.i("SurfConditions", "rateWind() | " + windRating + " " + windAngle);
+        //Log.i("SurfConditions", "rateWind() | " + windRating + " " + windAngle);
         windRating = (float) pow(windRating, pow(10, ((surfConditions.windSpeed - 20) / 10)));
-//        Log.i("SurfConditions", "rateWind() | " + ((windSpeed - 20) / 10));
-//        Log.i("SurfConditions", "rateWind() | " + Math.pow(10, ((windSpeed - 20) / 10)));
+        //Log.i("SurfConditions", "rateWind() | " + ((windSpeed - 20) / 10));
+        //Log.i("SurfConditions", "rateWind() | " + Math.pow(10, ((windSpeed - 20) / 10)));
+
         return windRating;
     }
 
 
-    public static float rate(SurfConditions surfConditions, SurfSpot spot, TideData tideData, int plusDays, int time) {
-        if (tideData == null) return 0;
-
-//        if (waveRating == -1)
-        float waveRating = rateWave(surfConditions, spot);
-        float tideRating = rateTide(spot, tideData, plusDays, time);
-//        if (windRating == -1)
-        float windRating = rateWind(surfConditions, spot);
-
-//        Log.i("SurfConditions", "rate(" + spot.getShortName() + ", " + time / 60 + ":00), rated: " + waveRating + ", " + windRating + ", " + tideRating);
-
-        return waveRating * windRating * tideRating;
+    public static float rate(RatedConditions rc, SurfSpot spot, SurfConditions surfConditions, TideData tideData, int plusDays, int time) {
+        rc.init(spot, plusDays, time, surfConditions, tideData);
+        return rc.rating;
     }
 
 

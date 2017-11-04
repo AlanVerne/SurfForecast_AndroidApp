@@ -28,6 +28,7 @@ public class Common {
 
     public static final String STR_WIND_U = "Wind";
     public static final String STR_SWELL_U = "Swell";
+    public static final String STR_E_U = "Nrgy";
     public static final String STR_TIDE_U = "Tide";
 
     public static final String STR_NO_WIND_DATA = "No wind data";

@@ -49,6 +49,8 @@ import java.util.TreeMap;
 import me.zhanghai.android.materialprogressbar.MaterialProgressBar;
 
 import static com.avaa.surfforecast.ai.CommandsExecutor.capitalize;
+import static java.lang.Math.max;
+import static java.lang.Math.min;
 
 
 public class MainActivity extends AppCompatActivity {
@@ -144,7 +146,7 @@ public class MainActivity extends AppCompatActivity {
 //                TideData tideData = model.tideDataProvider.getTideData(surfSpot.tidePortID);
 //                if (tideData != null) { //!!!!!!!!!!!!!!!!!!
 //                    float rate = now.rate(surfSpot, tideData, 0, Common.getNowTimeInt(Common.TIME_ZONE));
-            //((TextView)findViewById(R.id.tvRatingDay)).setText("Rating: " + rate + "\nWave: " + now.waveRating + "\nWind: " + now.windRating + "\nTide: " + now.tideRating);
+        //((TextView)findViewById(R.id.tvRatingDay)).setText("Rating: " + rate + "\nWave: " + now.waveRating + "\nWind: " + now.windRating + "\nTide: " + now.tideRating);
 //                    rv.setRating(rate, now.waveRating * now.tideRating);
 //                }
 //            }
@@ -242,18 +244,30 @@ public class MainActivity extends AppCompatActivity {
         forecast.onScrollY = () -> {
             float v = forecast.getTideVisible();
 
-            listSpots.setAlpha(Math.max(0, v * 1.5f - 0.5f));
+            listSpots.setAlpha(max(0, v * 1.5f - 0.5f));
             listSpots.setVisibility(v == 0 ? View.INVISIBLE : View.VISIBLE);
             listSpots.setX((int) (dh * (1 - v) / 2));
 
             tvRatingTime.setAlpha(v);
             rv.setAlpha(v);
 
-            tvPlace.setAlpha(1f - Math.min(1, v * 1.5f));
+            tvPlace.setAlpha(1f - min(1, v * 1.5f));
             tvPlace.setPadding((int) (dh / 2 + dh * (1 - v) / 2), dh / 2, 0, 0);
 
-            baliMap.setInsetBottom(forecast.getHeight() - forecast.getContentTop());
+
             rlDays.setY(forecast.getContentTop() - rlDays.getHeight());
+
+            float smallViewsAlpha = max(0f, min(1f, 1f - (float) (forecast.scrollY - dh * 12.5f) / (dh)));
+            findViewById(R.id.rlDaysScroller).setAlpha(smallViewsAlpha);
+            findViewById(R.id.hllDays).setAlpha(smallViewsAlpha);
+
+            if (forecast.scrollY > dh * 12) {
+                baliMap.setInsetBottom(forecast.getHeight() - forecast.getContentTop(dh * 12));
+//                baliMap.hideCircles();
+            } else {
+                baliMap.setInsetBottom(forecast.getHeight() - forecast.getContentTop());
+//                baliMap.showCircles();
+            }
 
             ViewGroup.LayoutParams p = listSpots.getLayoutParams();
             p.height = forecast.getContentTop();
@@ -446,12 +460,12 @@ public class MainActivity extends AppCompatActivity {
             h = mainLayout.getHeight();
             Log.i(TAG, "onGlobalLayout: " + w + "x" + h);
 
-            dh = Math.max(w, h) - Math.min(w, h) * 14 / 15;
+            dh = max(w, h) - min(w, h) * 14 / 15;
             dh = (int) (dh / 10.7);
 
-            int minDH = (int) (Math.min(w, h) / 14f);
-            int maxDH = (int) (Math.min(w, h) / 13f);
-            dh = Math.min(maxDH, Math.max(minDH, dh));
+            int minDH = (int) (min(w, h) / 14f);
+            int maxDH = (int) (min(w, h) / 13f);
+            dh = min(maxDH, max(minDH, dh));
 
             model.metricsAndPaints = new MetricsAndPaints(density, dh);
 
@@ -523,9 +537,7 @@ public class MainActivity extends AppCompatActivity {
             menu.setOnMenuItemClickListener(item -> {
                 switch (item.getItemId()) {
                     case 0:
-                        spot.conditionsProvider.update();
-                        model.metarProvider.update(spot.metarName);
-                        model.tideDataProvider.fetchIfNeed(spot.tidePortID);
+                        model.updateSelectedSpotAll();
                         return true;
                     case 1:
                         model.surfSpots.swapFavorite(spot);
