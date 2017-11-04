@@ -17,10 +17,12 @@ public class Common {
     public static final double LONGITUDE = 115.1718322;
 
     public static final String STR_NOW = "now";
+
+    public static final String STR_KMH = "km/h";
     public static final String STR_FT = "ft";
     public static final String STR_S = "s";
+    public static final String STR_KJ = "kJ";
     public static final String STR_M = "m";
-    public static final String STR_KMH = "km/h";
 
     public static final String STR_WIND = "wind";
     public static final String STR_SWELL = "swell";
@@ -28,12 +30,14 @@ public class Common {
 
     public static final String STR_WIND_U = "Wind";
     public static final String STR_SWELL_U = "Swell";
-    public static final String STR_E_U = "Nrgy";
+    public static final String STR_ENERGY_U = "Energy";
     public static final String STR_TIDE_U = "Tide";
 
     public static final String STR_NO_WIND_DATA = "No wind data";
     public static final String STR_NO_SWELL_DATA = "No swell data";
     public static final String STR_NO_TIDE_DATA = "No tide data";
+
+    public static final String STR_DASH = "-";
 
 
     public static int strToInt(String s, int def) {

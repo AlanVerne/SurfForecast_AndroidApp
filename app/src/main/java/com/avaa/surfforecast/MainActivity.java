@@ -212,36 +212,33 @@ public class MainActivity extends AppCompatActivity {
             }
 
             private void changed(float awakeState) {
-                rlDays.setVisibility(awakeState == 0 ? View.INVISIBLE : View.VISIBLE);
+                int visibility = awakeState == 0 ? View.INVISIBLE : View.VISIBLE;
+
+                rlDays.setVisibility(visibility);
                 rlDays.setAlpha(awakeState);
-                btnMenu.setVisibility(awakeState == 0 ? View.INVISIBLE : View.VISIBLE);
+                btnMenu.setVisibility(visibility);
                 btnMenu.setAlpha(awakeState);
-                llRating.setVisibility(awakeState == 0 ? View.INVISIBLE : View.VISIBLE);
+                llRating.setVisibility(visibility);
                 llRating.setAlpha(awakeState);
             }
         };
 
-        model.init();
-
-        resetDates();
-
         findViewById(R.id.hllDays).setOnTouchListener((v, event) -> {
             float x = event.getX();
-            int k = 0;
+            int day = 0;
             for (OneDayConditionsSmallView v1 : smallViews) {
                 if (x < v1.getRight() + ((LinearLayout.LayoutParams) v1.getLayoutParams()).rightMargin) {
-//                    forecast.showDay(k);
-                    model.setSelectedDay(k);
+                    model.setSelectedDay(day);
                     break;
                 }
-                k++;
+                day++;
             }
             return true;
         });
 
         mainLayout.getViewTreeObserver().addOnGlobalLayoutListener(new OGLL()); //LayoutChangeListener(new OGLL());
 
-        forecast.onScrollY = () -> {
+        forecast.onScrollYChanged = () -> {
             float v = forecast.getTideVisible();
 
             listSpots.setAlpha(max(0, v * 1.5f - 0.5f));
@@ -253,7 +250,6 @@ public class MainActivity extends AppCompatActivity {
 
             tvPlace.setAlpha(1f - min(1, v * 1.5f));
             tvPlace.setPadding((int) (dh / 2 + dh * (1 - v) / 2), dh / 2, 0, 0);
-
 
             rlDays.setY(forecast.getContentTop() - rlDays.getHeight());
 
@@ -272,8 +268,12 @@ public class MainActivity extends AppCompatActivity {
             ViewGroup.LayoutParams p = listSpots.getLayoutParams();
             p.height = forecast.getContentTop();
             listSpots.setLayoutParams(p);
-            listSpots.updatePadding();
+//            listSpots.updatePadding();
         };
+
+        model.init();
+
+        resetDates();
 
         OrientationEventListener orientationListener = new
                 OrientationEventListener(getApplicationContext(), SensorManager.SENSOR_DELAY_NORMAL) {
@@ -362,7 +362,7 @@ public class MainActivity extends AppCompatActivity {
 
 
     private void setMetrics(MetricsAndPaints metrics) {
-        forecast.setDH(dh);
+        forecast.setMetrics(metrics);
 
         float fontRating = metrics.font;
         int starH = (int) (fontRating * 1.1);
@@ -435,11 +435,8 @@ public class MainActivity extends AppCompatActivity {
         baliMap.setDh(dh);
 
         initListSpots();
-        listSpots.updatePadding();//mainLayout.getHeight());// - h);
 
-        forecast.post(() -> {
-            forecast.showDay(0);
-        });
+        forecast.postDelayed(() -> forecast.showDay(model.getSelectedDayInt()), 100);
     }
 
 
@@ -458,12 +455,12 @@ public class MainActivity extends AppCompatActivity {
             if (w == mainLayout.getWidth() && h == mainLayout.getHeight()) return;
             w = mainLayout.getWidth();
             h = mainLayout.getHeight();
-            Log.i(TAG, "onGlobalLayout: " + w + "x" + h);
+//            Log.i(TAG, "onGlobalLayout: " + w + "x" + h);
 
             dh = max(w, h) - min(w, h) * 14 / 15;
             dh = (int) (dh / 10.7);
 
-            int minDH = (int) (min(w, h) / 14f);
+            int minDH = (int) (min(w, h) / 15f);
             int maxDH = (int) (min(w, h) / 13f);
             dh = min(maxDH, max(minDH, dh));
 
@@ -631,10 +628,6 @@ public class MainActivity extends AppCompatActivity {
 
         final View finalSelected = selected;
         listSpots.post(() -> listSpots.select(finalSelected));
-        forecast.post(() -> {
-            Log.i(TAG, "forecast.post 2");
-            forecast.showDay(0);
-        });
     }
 
 
@@ -680,7 +673,7 @@ public class MainActivity extends AppCompatActivity {
 
 
     public void performSelectSpot(SurfSpot spot, Runnable after) {
-//        Log.i(TAG, "performSelectSpot(" + spot.name + ")");
+        Log.i(TAG, "performSelectSpot(" + spot.name + ")");
         int spotI = model.surfSpots.indexOf(spot);
 
         if (model.getSelectedSpotI() != spotI) {

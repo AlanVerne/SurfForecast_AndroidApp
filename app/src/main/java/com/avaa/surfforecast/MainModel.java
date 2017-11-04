@@ -111,7 +111,7 @@ public class MainModel {
         surfSpots.init();
 
         setSelectedSpotI(willBeSelectedSpotI);
-        setSelectedDay(0);
+        setSelectedDay(-0.01f);
     }
 
 

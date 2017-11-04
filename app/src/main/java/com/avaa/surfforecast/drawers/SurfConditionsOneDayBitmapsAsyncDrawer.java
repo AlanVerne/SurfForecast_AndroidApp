@@ -39,7 +39,7 @@ public class SurfConditionsOneDayBitmapsAsyncDrawer extends AsyncTask<Void, Void
         this.surfSpot = surfSpot;
         this.step = step;
         this.daysToDraw = daysToDraw;
-        this.orientationF = view.orientation;
+        this.orientationF = view.getOrientation();
         this.view = view;
 
         for (Integer day : daysToDraw) {

@@ -16,7 +16,7 @@ import static com.avaa.surfforecast.data.Common.STR_WIND;
 import static com.avaa.surfforecast.drawers.MetricsAndPaints.colorWindText;
 import static com.avaa.surfforecast.views.ColorUtils.alpha;
 import static com.avaa.surfforecast.views.Map.Arrow.createArrow;
-import static com.avaa.surfforecast.views.Map.BaliMap.STR_DASH;
+import static com.avaa.surfforecast.data.Common.STR_DASH;
 
 
 /**

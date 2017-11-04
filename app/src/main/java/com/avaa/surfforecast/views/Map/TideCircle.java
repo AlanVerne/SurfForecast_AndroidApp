@@ -19,7 +19,7 @@ import static com.avaa.surfforecast.MainModel.Change.SELECTED_SPOT;
 import static com.avaa.surfforecast.data.Common.STR_M;
 import static com.avaa.surfforecast.data.Common.STR_TIDE;
 import static com.avaa.surfforecast.views.ColorUtils.alpha;
-import static com.avaa.surfforecast.views.Map.BaliMap.STR_DASH;
+import static com.avaa.surfforecast.data.Common.STR_DASH;
 
 
 /**

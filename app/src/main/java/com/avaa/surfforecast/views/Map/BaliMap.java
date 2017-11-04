@@ -14,7 +14,6 @@ import android.graphics.Region;
 import android.os.Build;
 import android.os.PowerManager;
 import android.util.AttributeSet;
-import android.util.Log;
 import android.view.GestureDetector;
 import android.view.MotionEvent;
 import android.view.View;
@@ -54,8 +53,6 @@ public class BaliMap extends View {
     private static final String TAG = "BaliMap";
 
     private static final android.view.animation.Interpolator FAST_OUT_SLOW_IN_INTERPOLATOR = new android.support.v4.view.animation.FastOutSlowInInterpolator();
-
-    public static final String STR_DASH = "-";
 
     private static final int colorSpotDot = 0xffffff;
 
@@ -126,7 +123,7 @@ public class BaliMap extends View {
     private final PointF zoomedInPoint = new PointF(0, 0);
     private PointF zoomedInV = new PointF(0, 0);
 
-    private static final float paddingTop = 4.5f;
+    private static final float paddingTop = 5f;
     private static final float paddingBottom = 4.8f;
 
     private static final float rOut = 200;
@@ -228,6 +225,22 @@ public class BaliMap extends View {
     }
 
 
+    public void showHints() {
+        boolean repaint = false;
+        repaint |= windCircle.setHintsVisible(true, !isPowerSavingMode());
+        repaint |= swellCircle.setHintsVisible(true, !isPowerSavingMode());
+        repaint |= tideCircle.setHintsVisible(true, !isPowerSavingMode());
+        if (repaint) repaint();
+    }
+
+    public void hideHints() {
+        boolean repaint = false;
+        repaint |= windCircle.setHintsVisible(false, !isPowerSavingMode());
+        repaint |= swellCircle.setHintsVisible(false, !isPowerSavingMode());
+        repaint |= tideCircle.setHintsVisible(false, !isPowerSavingMode());
+        if (repaint) repaint();
+    }
+
     public void hideCircles() {
         windCircle.setVisible(false, true);
         swellCircle.setVisible(false, true);
@@ -306,15 +319,7 @@ public class BaliMap extends View {
 
         if (hintsVisiblePolicy == 1) {
             rescheduleHintsHide();
-            if (windCircle.setHintsVisible(true, !isPowerSavingMode())) {
-                repaint();
-            }
-            if (swellCircle.setHintsVisible(true, !isPowerSavingMode())) {
-                repaint();
-            }
-            if (tideCircle.setHintsVisible(true, !isPowerSavingMode())) {
-                repaint();
-            }
+            showHints();
         }
 
         if (overviewState == 1f) {
@@ -377,8 +382,8 @@ public class BaliMap extends View {
         if (overviewState != 1) {
             SurfSpot spot = model.getSelectedSpot();
 
-            zoomedInPoint.x += (spot.pointOnSVG.x - zoomedInPoint.x) / 10;
-            zoomedInPoint.y += (spot.pointOnSVG.y - zoomedInPoint.y) / 10;
+            zoomedInPoint.x += (spot.pointOnSVG.x - zoomedInPoint.x) / 4;
+            zoomedInPoint.y += (spot.pointOnSVG.y - zoomedInPoint.y) / 4;
         }
 
         zoomedInV.set(zoomedInV.x * 0.9f, zoomedInV.y * 0.9f);
@@ -410,16 +415,7 @@ public class BaliMap extends View {
         timerHintsHide = new Timer();
         timerHintsHide.schedule(new TimerTask() {
             synchronized public void run() {
-                //Log.i(TAG, "start hiding");
-                if (windCircle.setHintsVisible(false, !isPowerSavingMode())) {
-                    repaint();
-                }
-                if (swellCircle.setHintsVisible(false, !isPowerSavingMode())) {
-                    repaint();
-                }
-                if (tideCircle.setHintsVisible(false, !isPowerSavingMode())) {
-                    repaint();
-                }
+                hideHints();
             }
         }, 7500);
     }
@@ -697,7 +693,7 @@ public class BaliMap extends View {
             float highlighted = isHighlighted(i);
             if (highlighted > 0 && i != selectedSpotI) {
                 float t = highlighted * (1f - awakenedState);
-                paintBG.setColor((int) (t * 0xff) * 0x1000000 + colorSpotDot);
+                paintBG.setColor(alpha(t, colorSpotDot));
                 canvas.drawCircle(x, y, r * highlighted, paintBG);
             }
 

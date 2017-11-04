@@ -11,6 +11,7 @@ import android.os.SystemClock;
 import android.util.AttributeSet;
 import android.view.MotionEvent;
 import android.view.View;
+import android.view.ViewGroup;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 
@@ -276,6 +277,8 @@ public class MyList extends FeaturedScrollView {
 
         selectedView = views.get(0);
 
+        updatePadding(getHeight());
+
         layout.invalidate();
         layout.requestLayout();
         invalidate();
@@ -315,21 +318,22 @@ public class MyList extends FeaturedScrollView {
     }
 
 
-    public void updatePadding() {
+    public void updatePadding(int h) {
         if (!views.isEmpty()) {
-            int pb = getHeight() - dh * 2 - paddingTop; //views.get(views.size() - 1).getHeight() - paddingTop*2;
+            int pb = h - dh * 2 - paddingTop;
             if (layout.getPaddingBottom() != pb) {
-                //layout.setPadding(90, 990, 90, 9990);
                 layout.setPadding(0, paddingTop, 0, pb);
             }
             onScrollChanged(getScrollX(), getScrollY(), getScrollX(), getScrollY());
         }
     }
-//    @Override
-//    protected void onSizeChanged(int w, int h, int oldw, int oldh) {
-//        super.onSizeChanged(w, h, oldw, oldh);
-//        if (views != null && !views.isEmpty()) updatePadding();
-//    }
+
+
+    @Override
+    public void setLayoutParams(ViewGroup.LayoutParams params) {
+        if (views != null && !views.isEmpty()) updatePadding(params.height);
+        super.setLayoutParams(params);
+    }
 
 
     protected void onScrollStart() {
