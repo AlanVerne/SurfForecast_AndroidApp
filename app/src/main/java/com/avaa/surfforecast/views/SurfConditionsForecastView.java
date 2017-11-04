@@ -9,6 +9,7 @@ import android.graphics.RectF;
 import android.os.AsyncTask;
 import android.os.Build;
 import android.util.AttributeSet;
+import android.util.Log;
 import android.view.GestureDetector;
 import android.view.MotionEvent;
 import android.widget.HorizontalScrollView;
@@ -644,7 +645,7 @@ public class SurfConditionsForecastView extends HorizontalScrollView {
     }
 
     public void scrollY(int y, int d) {
-//        Log.i(TAG, "scrollY " + y + " now " + scrollY + " " + scrollerY.getCurrY() + " " + scrollerY.getFinalY());
+        Log.i(TAG, "scrollY " + y + " now " + scrollY + " " + scrollerY.getCurrY() + " " + scrollerY.getFinalY());
         if (!scrollerY.isFinished()) {
             if (scrollerY.getFinalY() == y) return;
             scrollerY.abortAnimation();
