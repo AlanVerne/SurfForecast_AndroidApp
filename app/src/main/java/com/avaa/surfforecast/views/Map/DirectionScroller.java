@@ -1,7 +1,7 @@
 package com.avaa.surfforecast.views.Map;
 
 
-import android.content.Context;
+import android.view.View;
 
 
 /**
@@ -10,13 +10,14 @@ import android.content.Context;
 
 
 public class DirectionScroller extends FloatScroller {
-    public DirectionScroller(Context context) {
-        super(context);
+    public DirectionScroller(View view) {
+        super(view);
     }
 
-    public DirectionScroller(Context context, float value) {
-        super(context, value);
+    public DirectionScroller(View view, float value) {
+        super(view, value);
     }
+
 
     @Override
     public boolean to(float to, boolean smooth) {
@@ -29,9 +30,11 @@ public class DirectionScroller extends FloatScroller {
                 if (to - value < -Math.PI) value -= Math.PI * 2;
                 int dx = (int) ((to - value) * 1000f);
                 scroller.startScroll((int) (value * 1000f), 0, dx, 0, 1000);
+                repaint();
                 return false;
             } else {
                 value = to;
+                repaint();
                 return true;
             }
         }

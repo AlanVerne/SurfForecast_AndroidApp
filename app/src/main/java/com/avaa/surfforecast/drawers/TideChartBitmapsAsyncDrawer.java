@@ -3,7 +3,6 @@ package com.avaa.surfforecast.drawers;
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
 import android.os.AsyncTask;
-import android.util.Log;
 
 import com.avaa.surfforecast.MainActivity;
 import com.avaa.surfforecast.MainModel;
@@ -50,7 +49,7 @@ public class TideChartBitmapsAsyncDrawer extends AsyncTask<Void, Void, List<Bitm
     @Override
     protected List<Bitmap> doInBackground(Void... params) {
         //Trace.beginSection("doInBackground");
-        Log.i(TAG, "doInBackground() | startFromDay = " + startFromDay + " ");
+//        Log.i(TAG, "doInBackground() | startFromDay = " + startFromDay + " ");
 
         if (tideData == null) return null;
 

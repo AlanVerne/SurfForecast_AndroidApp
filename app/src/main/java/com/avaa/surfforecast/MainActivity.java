@@ -1,16 +1,18 @@
 package com.avaa.surfforecast;
 
+
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.content.res.ColorStateList;
 import android.graphics.PorterDuff;
 import android.hardware.SensorManager;
 import android.net.Uri;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.v7.app.AppCompatActivity;
-import android.util.Log;
 import android.util.TypedValue;
 import android.view.Gravity;
+import android.view.MotionEvent;
 import android.view.OrientationEventListener;
 import android.view.View;
 import android.view.ViewGroup;
@@ -33,7 +35,7 @@ import com.avaa.surfforecast.data.SurfConditionsProvider;
 import com.avaa.surfforecast.data.SurfSpot;
 import com.avaa.surfforecast.data.SurfSpots;
 import com.avaa.surfforecast.drawers.MetricsAndPaints;
-import com.avaa.surfforecast.views.Map.BaliMap;
+import com.avaa.surfforecast.views.Map.SurfSpotsMap;
 import com.avaa.surfforecast.views.MyList;
 import com.avaa.surfforecast.views.OneDayConditionsSmallView;
 import com.avaa.surfforecast.views.RatingView;
@@ -53,58 +55,61 @@ import static java.lang.Math.max;
 import static java.lang.Math.min;
 
 
+/**
+ * Created by Alan on 1 May 2016.
+ */
+
+
 public class MainActivity extends AppCompatActivity {
     private final static String TAG = "MainActivity";
 
     public final static int NDAYS = 7;
 
-    int colorBG;
-    int colorAccent;
+    private int colorConditionsPreviews = 0xffffff;
 
-    int colorTextSpotNames = 0xffffff;
-    int colorConditionsPreviews = 0xffffff;
+    private MainModel model;
 
-    MainModel model;
+    private Map<Integer, View> spotsTV = new TreeMap<>();
 
-    int dh = 0;
+    private float density;
 
-    Map<Integer, View> spotsTV = new TreeMap<>();
-
-    float density;
+    private int dhd2 = 0;
+    private int dh = 0;
+    private int dhx2 = 0;
 
     private List<OneDayConditionsSmallView> smallViews = new ArrayList<>();
 
-    VoiceInterfaceFragment vif;
-    View mainLayout;
-    BaliMap baliMap;
-    ImageView daysScroller;
-    MyList listSpots;
-    SurfConditionsForecastView forecast;
-    RelativeLayout rlDays;
-    FrameLayout btnMenu;
-    ProgressBar progressBar;
+    private VoiceInterfaceFragment vif;
+    private View mainLayout;
+    private SurfSpotsMap map;
+    private ImageView daysScroller;
+    private MyList listSpots;
+    private SurfConditionsForecastView forecast;
+    private RelativeLayout rlDays;
+    private FrameLayout flBtnMenu;
+    private FrameLayout flBtnAway;
+    private FrameLayout flBtnCam;
+    private ProgressBar progressBar;
 
-    LinearLayout llRating;
-    TextView tvRatingDay;
-    TextView tvRatingTime;
-    RatingView rv;
-    TextView tvPlace;
+    private LinearLayout llRating;
+    private TextView tvRatingDay;
+    private TextView tvRatingTime;
+    private RatingView rv;
+    private TextView tvPlace;
 
-    SharedPreferences sharedPreferences;
-
-    int busyCount = 0;
+    private int busyCount = 0;
 
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-        colorBG = getResources().getColor(R.color.colorWaterBG);
-        colorAccent = getResources().getColor(R.color.colorWater);
+        int colorBG = getResources().getColor(R.color.colorWaterBG);
+        int colorAccent = getResources().getColor(R.color.colorWater);
 
-        sharedPreferences = getSharedPreferences("com.avaa.surfforecast", MODE_PRIVATE);
+        final SharedPreferences sharedPreferences = getSharedPreferences("com.avaa.surfforecast", MODE_PRIVATE);
 
-        BusyStateListener bsl = busy -> {
+        final BusyStateListener bsl = busy -> {
             busyCount += busy ? 1 : -1;
             if (progressBar != null)
                 progressBar.setVisibility(busyCount > 0 ? View.VISIBLE : View.INVISIBLE);
@@ -113,31 +118,32 @@ public class MainActivity extends AppCompatActivity {
 
         model = MainModel.getInstance(this, sharedPreferences, bsl);
 
-        model.addChangeListener(changes -> {
+        model.addChangeListener(Change.SELECTED_SPOT, changes -> {
             listSpots.select(spotsTV.get(model.getSelectedSpotI()));
-        }, Change.SELECTED_SPOT);
+            flBtnCam.setVisibility(model.getSelectedSpot().urlCam != null ? View.VISIBLE : View.INVISIBLE);
+        });
 
-        model.addChangeListener(changes -> {
+        model.addChangeListener(Change.ALL_CONDITIONS, changes -> {
             updateSurfConditionsImages();
-        }, Change.ALL_CONDITIONS);
+        });
 
-        model.addChangeListener(changes -> {
+        model.addChangeListener(Change.SELECTED_DAY, changes -> {
             int day = Math.round(model.getSelectedDay());
             tvRatingDay.setText(capitalize(CommandsExecutor.intDayToNL(day)));
-        }, Change.SELECTED_DAY);
+        });
 
-        model.addChangeListener(changes -> {
-            tvRatingTime.setText(capitalize(CommandsExecutor.intTimeToNL(model.getSelectedTime(), false)));
-        }, Change.SELECTED_TIME);
+        model.addChangeListener(Change.SELECTED_TIME, changes -> {
+            tvRatingTime.setText(capitalize(model.isSelectedNow() ? "Right now" : CommandsExecutor.intTimeToNL(model.getSelectedTime(), false)));
+        });
 
-        model.addChangeListener(changes -> {
+        model.addChangeListener(Change.SELECTED_RATING, changes -> {
             RatedConditions ratedConditions = model.getSelectedRatedConditions();
             if (ratedConditions == null) {
                 rv.setRating(0, 0);
             } else {
                 rv.setRating(ratedConditions.rating, ratedConditions.waveRating);
             }
-        }, Change.SELECTED_RATING);
+        });
 
 //            SurfSpot surfSpot = model.getSelectedSpot();
 //            SurfConditions now = surfSpot.conditionsProvider.getNow();
@@ -163,18 +169,20 @@ public class MainActivity extends AppCompatActivity {
 
         vif = (VoiceInterfaceFragment) getSupportFragmentManager().findFragmentById(R.id.vif);
         mainLayout = findViewById(R.id.mainlayout);
-        baliMap = (BaliMap) findViewById(R.id.balimap);
+        map = (SurfSpotsMap) findViewById(R.id.map);
         daysScroller = (ImageView) findViewById(R.id.ivDaysScroller);
         listSpots = (MyList) findViewById(R.id.svSpots);
         forecast = (SurfConditionsForecastView) findViewById(R.id.scfv);
         progressBar = (MaterialProgressBar) findViewById(R.id.progressBar);
         rlDays = (RelativeLayout) findViewById(R.id.rlDays);
-        btnMenu = (FrameLayout) findViewById(R.id.flBtnMenu);
+        flBtnMenu = (FrameLayout) findViewById(R.id.flBtnMenu);
+        flBtnAway = (FrameLayout) findViewById(R.id.flBtnAway);
+        flBtnCam = (FrameLayout) findViewById(R.id.flBtnCam);
 
         llRating = (LinearLayout) findViewById(R.id.llRating);
-        tvRatingDay = ((TextView) findViewById(R.id.tvRatingDay));
-        tvRatingTime = ((TextView) findViewById(R.id.tvRatingTime));
-        rv = ((RatingView) findViewById(R.id.ratingView));
+        tvRatingDay = (TextView) findViewById(R.id.tvRatingDay);
+        tvRatingTime = (TextView) findViewById(R.id.tvRatingTime);
+        rv = (RatingView) findViewById(R.id.ratingView);
         tvPlace = (TextView) findViewById(R.id.tvPlace);
 
         vif.commandsExecutor = new CommandsExecutor(model);
@@ -183,13 +191,15 @@ public class MainActivity extends AppCompatActivity {
         progressBar.setVisibility(busyCount > 0 ? View.VISIBLE : View.INVISIBLE);
 
         initMenuButton();
+        initAwayButton();
+        initCamButton();
 
         mainLayout.setBackgroundColor(colorBG);
-        baliMap.setAccentColor(colorAccent);
+        map.setAccentColor(colorAccent);
 
         //baliMap.surfSpotsList = surfSpots.getAll();
 
-        daysScroller.setLayoutParams(new RelativeLayout.LayoutParams(0, (int) (density * 2)));
+        daysScroller.setLayoutParams(new RelativeLayout.LayoutParams(0, (int) (2 * density)));
         daysScroller.setBackgroundColor(0xdd000000 | colorConditionsPreviews);
 
         forecast.onTouchActionDown = () -> listSpots.sleep();
@@ -200,30 +210,35 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void scrolled(float shownI, float firstI, float lastI, float awakeState) {
                 awakeState = 1f - awakeState;
-                baliMap.highlightSpots(shownI, firstI, lastI, awakeState);
+                map.highlightSpots(shownI, firstI, lastI, awakeState);
                 changed(awakeState);
             }
 
             @Override
             public void scrolled(float awakeState) {
                 awakeState = 1f - awakeState;
-                baliMap.setAwakenedState(awakeState);
+                map.setAwakenedState(awakeState);
                 changed(awakeState);
             }
 
             private void changed(float awakeState) {
+                awakeState = awakeState * 2 - 1;
+                if (awakeState < 0) awakeState = 0;
+
                 int visibility = awakeState == 0 ? View.INVISIBLE : View.VISIBLE;
 
                 rlDays.setVisibility(visibility);
                 rlDays.setAlpha(awakeState);
-                btnMenu.setVisibility(visibility);
-                btnMenu.setAlpha(awakeState);
+
+                flBtnMenu.setVisibility(visibility);
+                flBtnMenu.setAlpha(awakeState);
+
                 llRating.setVisibility(visibility);
                 llRating.setAlpha(awakeState);
             }
         };
 
-        findViewById(R.id.hllDays).setOnTouchListener((v, event) -> {
+        rlDays.setOnTouchListener((v, event) -> {
             float x = event.getX();
             int day = 0;
             for (OneDayConditionsSmallView v1 : smallViews) {
@@ -236,39 +251,49 @@ public class MainActivity extends AppCompatActivity {
             return true;
         });
 
-        mainLayout.getViewTreeObserver().addOnGlobalLayoutListener(new OGLL()); //LayoutChangeListener(new OGLL());
+        mainLayout.getViewTreeObserver().addOnGlobalLayoutListener(new OGLL());
 
+        forecast.underview = rlDays;
         forecast.onScrollYChanged = () -> {
-            float v = forecast.getTideVisible();
+            float v = forecast.getTideVisibility();
 
+            ViewGroup.LayoutParams p = listSpots.getLayoutParams();
+            p.height = Math.max(forecast.getContentTop(), forecast.getHeight() - (int) (forecast.scrollY - 1.5f * dh));
+            listSpots.setLayoutParams(p);
             listSpots.setAlpha(max(0, v * 1.5f - 0.5f));
             listSpots.setVisibility(v == 0 ? View.INVISIBLE : View.VISIBLE);
             listSpots.setX((int) (dh * (1 - v) / 2));
 
             tvRatingTime.setAlpha(v);
+
             rv.setAlpha(v);
 
-            tvPlace.setAlpha(1f - min(1, v * 1.5f));
+            tvPlace.setAlpha(1f - min(1, 1.5f * v));
             tvPlace.setPadding((int) (dh / 2 + dh * (1 - v) / 2), dh / 2, 0, 0);
 
+            float alpha = max(0f, min(1f, 1f - (forecast.scrollY - dh * 12.5f) / (dh)));
+            rlDays.setAlpha(alpha);
             rlDays.setY(forecast.getContentTop() - rlDays.getHeight());
 
-            float smallViewsAlpha = max(0f, min(1f, 1f - (float) (forecast.scrollY - dh * 12.5f) / (dh)));
-            findViewById(R.id.rlDaysScroller).setAlpha(smallViewsAlpha);
-            findViewById(R.id.hllDays).setAlpha(smallViewsAlpha);
+            alpha = max(0f, min(1f, 1f - (forecast.scrollY - dh * 5f) / (dh * 3f)));
+            flBtnAway.setAlpha(alpha);
+            flBtnAway.setVisibility(alpha == 0 ? View.INVISIBLE : View.VISIBLE);
 
-            if (forecast.scrollY > dh * 12) {
-                baliMap.setInsetBottom(forecast.getHeight() - forecast.getContentTop(dh * 12));
-//                baliMap.hideCircles();
+            if (model.getSelectedSpot().urlCam == null) alpha = 0;
+            else if (forecast.getTideVisibility() < 1f) alpha = forecast.getTideVisibility();
+            flBtnCam.setAlpha(alpha);
+            flBtnCam.setVisibility(alpha == 0f ? View.INVISIBLE : View.VISIBLE);
+
+            if (forecast.scrollY > forecast.getWindSwellScrollY()) {
+                map.setInsets(5 * dh, forecast.getHeight() - forecast.getContentTop(forecast.getWindSwellScrollY()));
+                map.setOverviewState(0f);
+//                1baliMap.hideCircles();
             } else {
-                baliMap.setInsetBottom(forecast.getHeight() - forecast.getContentTop());
+                float tideVisibility = forecast.getTideVisibility();
+                map.setInsets((int) (4 * dh + 1 * dh * tideVisibility), forecast.getHeight() - forecast.getContentTop());
+                map.setOverviewState(1f - tideVisibility);
 //                baliMap.showCircles();
             }
-
-            ViewGroup.LayoutParams p = listSpots.getLayoutParams();
-            p.height = forecast.getContentTop();
-            listSpots.setLayoutParams(p);
-//            listSpots.updatePadding();
         };
 
         model.init();
@@ -318,15 +343,16 @@ public class MainActivity extends AppCompatActivity {
         super.onResume();
         resetDates();
         model.updateCurrentConditions();
-        baliMap.resume();
+        map.resume();
     }
+
 
     @Override
     protected void onStop() {
         model.userStat.save();
         model.metarProvider.save();
         super.onStop();
-        baliMap.stop();
+        map.stop();
     }
 
 
@@ -340,11 +366,17 @@ public class MainActivity extends AppCompatActivity {
     @Override
     public void onBackPressed() {
         if (vif.onBackPressed()) return;
-        super.onBackPressed();
+        if (forecast.scrollY > forecast.getTideScrollY()) {
+            performShowTide();
+        } else if (forecast.scrollY > 0) {
+            performHideForecast();
+        } else {
+            super.onBackPressed();
+        }
     }
 
 
-    Calendar c = null;
+    private Calendar c = null;
 
     private void resetDates() {
         Calendar c = Common.getCalendarToday(Common.TIME_ZONE);
@@ -364,17 +396,19 @@ public class MainActivity extends AppCompatActivity {
     private void setMetrics(MetricsAndPaints metrics) {
         forecast.setMetrics(metrics);
 
+        final int dhx25 = (int) (2.5f * dh);
+
         float fontRating = metrics.font;
-        int starH = (int) (fontRating * 1.1);
-        LinearLayout.LayoutParams rvlp = new LinearLayout.LayoutParams(starH * 10, starH);
+        int starH = (int) (1.1f * fontRating);
+        LinearLayout.LayoutParams rvlp = new LinearLayout.LayoutParams(10 * starH, starH);
         rvlp.gravity = Gravity.CENTER_VERTICAL;
-        rvlp.topMargin = dh / 2;
+        rvlp.topMargin = dhd2;
         rvlp.bottomMargin = dh / 8;
         rv.setLayoutParams(rvlp);
 
-        RelativeLayout.LayoutParams llRatingLP = new RelativeLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, (int) (dh * 2.5f));
-        llRatingLP.topMargin = (int) (dh * 2.5);
-        llRatingLP.leftMargin = (int) (dh);
+        RelativeLayout.LayoutParams llRatingLP = new RelativeLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, dhx25);
+        llRatingLP.topMargin = dhx25;
+        llRatingLP.leftMargin = dh;
         llRating.setLayoutParams(llRatingLP);
 
         View ivBtnMenu = findViewById(R.id.ivBtnMenu);
@@ -386,64 +420,70 @@ public class MainActivity extends AppCompatActivity {
         tvRatingDay.setTextSize(TypedValue.COMPLEX_UNIT_PX, fontRating);
         tvRatingTime.setTextSize(TypedValue.COMPLEX_UNIT_PX, fontRating);
 
-        tvPlace.setLayoutParams(new RelativeLayout.LayoutParams(FrameLayout.LayoutParams.MATCH_PARENT, (int) (dh * 2.5)) {{
+        tvPlace.setLayoutParams(new RelativeLayout.LayoutParams(FrameLayout.LayoutParams.MATCH_PARENT, dhx25) {{
             setMargins(0, 0, 0, 0);
         }});
-        tvPlace.setPadding(dh, dh / 2, 0, 0);
+        tvPlace.setPadding(dh, dhd2, 0, 0);
         tvPlace.setTextSize(TypedValue.COMPLEX_UNIT_PX, metrics.fontHeader);
         tvPlace.setGravity(Gravity.CENTER_VERTICAL);
-        tvPlace.setTextColor(metrics.colorWhite);
+        tvPlace.setTextColor(MetricsAndPaints.colorWhite);
 
-//        spotsRL.invalidate();
         forecast.invalidate();
         mainLayout.invalidate();
 
-        int daysBottom = (int) (dh * 0.75);
+        int daysBottom = (int) (0.75f * dh);
 
         RelativeLayout.LayoutParams vllDaysLayoutParams = (RelativeLayout.LayoutParams) rlDays.getLayoutParams();
-        vllDaysLayoutParams.height = dh * 3 + daysBottom;
+        vllDaysLayoutParams.height = 3 * dh + daysBottom;
 
         View rlDaysScroller = findViewById(R.id.rlDaysScroller);
         RelativeLayout.LayoutParams rlDaysScrollerLayoutParams = (RelativeLayout.LayoutParams) rlDaysScroller.getLayoutParams();
         rlDaysScrollerLayoutParams.bottomMargin = (int) (daysBottom - density);
-        rlDaysScrollerLayoutParams.height = (int) (metrics.densityDHDependent * 3.5f);
+        rlDaysScrollerLayoutParams.height = (int) (3.5f * metrics.densityDHDependent);
         rlDaysScroller.setLayoutParams(rlDaysScrollerLayoutParams);
 
-        RelativeLayout.LayoutParams lp = new RelativeLayout.LayoutParams(dh * 2, (int) (dh * 3));
+        RelativeLayout.LayoutParams lp = new RelativeLayout.LayoutParams(dhx2, 3 * dh);
         lp.addRule(RelativeLayout.ALIGN_PARENT_RIGHT);
-        //lp.addRule(RelativeLayout.LEFT_OF, R.id.id_to_be_left_of);
-        //btnMenu.setPadding(dh, 0, dh, 0);
-        btnMenu.setLayoutParams(lp);
-        //btnMenu.setTextSize(TypedValue.COMPLEX_UNIT_PX, dh);
+        flBtnMenu.setLayoutParams(lp);
+
+        lp = new RelativeLayout.LayoutParams(dhx2, dhx2);
+        lp.addRule(RelativeLayout.ALIGN_PARENT_RIGHT);
+        flBtnAway.setLayoutParams(lp);
+        flBtnAway.setY(dhx25);
+
+        lp = new RelativeLayout.LayoutParams(dhx2, dhx2);
+        lp.addRule(RelativeLayout.ALIGN_PARENT_RIGHT);
+        flBtnCam.setLayoutParams(lp);
+        flBtnCam.setY(4.5f * dh);
 
         int i = 2;
         for (OneDayConditionsSmallView scv : smallViews) {
             LinearLayout.LayoutParams params = (LinearLayout.LayoutParams) scv.getLayoutParams();
             params.width = (int) (dh * MetricsAndPaints.TEXT_K);
             if (i == 2) {
-                params.setMargins(dh / 2, 0, 0, daysBottom + dh / 2);
-                params.width = dh * 2;
+                params.setMargins(dhd2, 0, 0, daysBottom + dhd2);
+                params.width = dhx2;
             } else if (i == 1) {
-                params.setMargins(0, 0, 0, daysBottom + dh / 2);
-                params.width = dh * 2;
-            } else params.setMargins(0, 0, 0, daysBottom + dh / 2);
+                params.setMargins(0, 0, 0, daysBottom + dhd2);
+                params.width = dhx2;
+            } else params.setMargins(0, 0, 0, daysBottom + dhd2);
 
             scv.setLayoutParams(params);
             scv.setMetrics(model.metricsAndPaints);
             i--;
         }
-        baliMap.setDh(dh);
+        map.setMetrics(metrics);
 
         initListSpots();
 
         forecast.postDelayed(() -> forecast.showDay(model.getSelectedDayInt()), 100);
     }
 
+    //private boolean olclWorked = false;
 
-    //    private boolean olclWorked = false;
-    private int w, h;
+    private final class OGLL implements ViewTreeObserver.OnGlobalLayoutListener {
+        private int w, h;
 
-    private class OGLL implements ViewTreeObserver.OnGlobalLayoutListener {
         @Override
         public void onGlobalLayout() {
 //            if (olclWorked) {
@@ -464,13 +504,12 @@ public class MainActivity extends AppCompatActivity {
             int maxDH = (int) (min(w, h) / 13f);
             dh = min(maxDH, max(minDH, dh));
 
+            dhd2 = dh / 2;
+            dhx2 = dh * 2;
+
             model.metricsAndPaints = new MetricsAndPaints(density, dh);
 
             setMetrics(model.metricsAndPaints);
-
-//            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN) {
-//                mainLayout.getViewTreeObserver().removeOnGlobalLayoutListener(this);
-//            }
         }
     }
 
@@ -488,7 +527,7 @@ public class MainActivity extends AppCompatActivity {
             smallView.setColorText(colorConditionsPreviews);
         }
 
-        model.addChangeListener(changes -> {
+        model.addChangeListener(Change.SELECTED_DAY_FLOAT, changes -> {
             float offset = model.getSelectedDay();
 
             int j = (int) offset;
@@ -521,58 +560,82 @@ public class MainActivity extends AppCompatActivity {
             layoutParams.width = w;
             daysScroller.setLayoutParams(layoutParams);
             daysScroller.setX((int) (x - w / 2));
-        }, Change.SELECTED_DAY_FLOAT);
+        });
     }
 
 
+    private void initCamButton() {
+        flBtnCam.setOnClickListener(v -> {
+            if (forecast.getTideVisibility() > 0.5f) {
+                Intent browserIntent = new Intent(Intent.ACTION_VIEW, Uri.parse(model.getSelectedSpot().urlCam));
+                startActivity(browserIntent);
+            }
+        });
+    }
+
+
+    private final PopupMenu.OnMenuItemClickListener onMenuItemClickListener = item -> {
+        SurfSpot spot = model.getSelectedSpot();
+        switch (item.getItemId()) {
+            case 0:
+                model.updateSelectedSpotAll();
+                return true;
+            case 1:
+                model.surfSpots.swapFavorite(spot);
+                listSpots.getView(model.getSelectedSpotI()).setText(spot.name + (spot.favorite ? "   " + "\u2605" : ""));
+                return true;
+            case 2:
+                Intent geoIntent = new Intent(Intent.ACTION_VIEW, Uri.parse("geo:" + spot.la + "," + spot.lo + "?q=" + spot.la + "," + spot.lo + "(" + spot.name + ")"));
+                startActivity(geoIntent);
+                return true;
+            case 3:
+                startActivity(new Intent(Intent.ACTION_VIEW, Uri.parse(spot.urlMSW)));
+                return true;
+            case 4:
+                startActivity(new Intent(Intent.ACTION_VIEW, Uri.parse(spot.getSFURL())));
+                return true;
+            case 5:
+                flBtnCam.performClick();
+                return true;
+            default:
+                return true;
+        }
+    };
+
+
     private void initMenuButton() {
-        btnMenu.setOnClickListener(v2 -> {
+        flBtnMenu.setOnClickListener(v -> {
             SurfSpot spot = model.getSelectedSpot();
 
-            PopupMenu menu = new PopupMenu(this, btnMenu);
+            PopupMenu menu = new PopupMenu(this, flBtnMenu);
 
-            menu.setOnMenuItemClickListener(item -> {
-                switch (item.getItemId()) {
-                    case 0:
-                        model.updateSelectedSpotAll();
-                        return true;
-                    case 1:
-                        model.surfSpots.swapFavorite(spot);
-                        listSpots.getView(model.getSelectedSpotI()).setText(spot.name + (spot.favorite ? "   " + "\u2605" : ""));
-                        return true;
-                    case 2: {
-                        Intent geoIntent = new Intent(Intent.ACTION_VIEW, Uri.parse("geo:" + spot.la + "," + spot.lo + "?q=" + spot.la + "," + spot.lo + "(" + spot.name + ")"));
-                        startActivity(geoIntent);
-                        return true;
-                    }
-                    case 3: {
-                        Intent browserIntent = new Intent(Intent.ACTION_VIEW, Uri.parse(spot.urlMSW));
-                        startActivity(browserIntent);
-                        return true;
-                    }
-                    case 4: {
-                        Intent browserIntent = new Intent(Intent.ACTION_VIEW, Uri.parse(spot.getSFURL()));
-                        startActivity(browserIntent);
-                        return true;
-                    }
-                    case 5: {
-                        Intent browserIntent = new Intent(Intent.ACTION_VIEW, Uri.parse(spot.urlCam));
-                        startActivity(browserIntent);
-                        return true;
-                    }
-                    default:
-                        return true;
-                }
-            });
+            menu.setOnMenuItemClickListener(onMenuItemClickListener);
 
             menu.getMenu().add(0, 0, 0, "Update");
-            menu.getMenu().add(0, 1, 0, spot.favorite ? "Remove star" : "Star");
-            menu.getMenu().add(0, 2, 0, "Show on map");
+            menu.getMenu().add(0, 1, 0, spot.favorite ? "Remove star" : "Mark with a star");
 
-            menu.getMenu().add(1, 3, 0, "MSW.com");
-            menu.getMenu().add(1, 4, 0, "SF.com");
+            if (forecast.scrollY > forecast.getTideScrollY()) {
+                menu.getMenu().add(1, 2, 0, "Open in Maps");
+                menu.getMenu().add(1, 3, 0, "Open Magicseaweed");
+                menu.getMenu().add(1, 4, 0, "Open Surf-forecast");
 
-            if (spot.urlCam != null) menu.getMenu().add(2, 5, 0, "Camera");
+                if (spot.urlCam != null) menu.getMenu().add(2, 5, 0, "Camera");
+            }
+
+            menu.show();
+        });
+    }
+
+
+    private void initAwayButton() {
+        flBtnAway.setOnClickListener(v -> {
+            PopupMenu menu = new PopupMenu(this, flBtnAway);
+
+            menu.setOnMenuItemClickListener(onMenuItemClickListener);
+
+            menu.getMenu().add(0, 2, 0, "Open in Maps");
+            menu.getMenu().add(1, 3, 0, "Open Magicseaweed");
+            menu.getMenu().add(1, 4, 0, "Open Surf-forecast");
 
             menu.show();
         });
@@ -588,14 +651,16 @@ public class MainActivity extends AppCompatActivity {
 
         MetricsAndPaints metricsAndPaints = model.metricsAndPaints;
 
+        ColorStateList colorStateList = getResources().getColorStateList(R.color.text_color_white);
+
         for (com.avaa.surfforecast.data.SurfSpot SurfSpot : surfSpots.getAll()) {
             if (surfSpots.areas.containsKey(i)) {
                 TextView textView = new TextView(this);
-                FrameLayout.LayoutParams lparams = new FrameLayout.LayoutParams(FrameLayout.LayoutParams.MATCH_PARENT, dh * 2);
-                lparams.setMargins(0, 0, 0, 0);
-                textView.setLayoutParams(lparams);
+                FrameLayout.LayoutParams layoutParams = new FrameLayout.LayoutParams(FrameLayout.LayoutParams.MATCH_PARENT, dhx2);
+                layoutParams.setMargins(0, 0, 0, 0);
+                textView.setLayoutParams(layoutParams);
                 textView.setTextSize(TypedValue.COMPLEX_UNIT_PX, metricsAndPaints.font);
-                textView.setTextColor(0x99000000 | colorTextSpotNames);
+                textView.setTextColor(0x99000000 | MetricsAndPaints.colorWhite);
                 textView.setText(surfSpots.areas.get(i).name);
                 textView.setAlpha(0);
                 textView.setVisibility(View.INVISIBLE);
@@ -604,15 +669,24 @@ public class MainActivity extends AppCompatActivity {
             }
 
             TextView textView = new TextView(this);
-            FrameLayout.LayoutParams lparams = new FrameLayout.LayoutParams(FrameLayout.LayoutParams.MATCH_PARENT, dh * 2);
-            lparams.setMargins(0, 0, 0, 0);
-            textView.setLayoutParams(lparams);
+            FrameLayout.LayoutParams layoutParams = new FrameLayout.LayoutParams(FrameLayout.LayoutParams.MATCH_PARENT, dhx2);
+            layoutParams.setMargins(0, 0, 0, 0);
+            textView.setLayoutParams(layoutParams);
             textView.setTextSize(TypedValue.COMPLEX_UNIT_PX, metricsAndPaints.fontHeader);
-            textView.setTextColor(0xff000000 | colorTextSpotNames); //0x003343); //0x006281); //colorTextSpotNames);
+            textView.setTextColor(colorStateList);
             textView.setText(SurfSpot.name + (SurfSpot.favorite ? "   " + "\u2605" : "")); //2605");
             textView.setAlpha(i == ssi ? 1 : 0);
             textView.setGravity(Gravity.CENTER_VERTICAL);
             textView.setVisibility(i == ssi ? View.VISIBLE : View.INVISIBLE);
+            textView.setOnTouchListener((v, event) -> {
+                switch (event.getActionMasked()) {
+                    case MotionEvent.ACTION_DOWN: {
+                        v.setPressed(true);
+                        break;
+                    }
+                }
+                return false; //we return false so that the click listener will process the event
+            });
 
             if (i == ssi) selected = textView;
 
@@ -673,31 +747,60 @@ public class MainActivity extends AppCompatActivity {
 
 
     public void performSelectSpot(SurfSpot spot, Runnable after) {
-        Log.i(TAG, "performSelectSpot(" + spot.name + ")");
+//        Log.i(TAG, "performSelectSpot(" + spot.name + ")");
         int spotI = model.surfSpots.indexOf(spot);
 
         if (model.getSelectedSpotI() != spotI) {
-            View view = spotsTV.get(spotI);
-            listSpots.awake(() -> listSpots.scrollTo(view, () -> {
-                forecast.scrollY(dh * 4);
-                listSpots.select(view, after);
-            }));
+            if (forecast.getTideVisibility() > 0) {
+                performHideForecast();
+                map.postDelayed(() -> {
+                    model.setSelectedSpotI(spotI);
+                    performShowTide();
+                    if (after != null) {
+                        map.postDelayed(() -> {
+                            after.run();
+                        }, 250);
+                    }
+                }, 250);
+            } else {
+                model.setSelectedSpotI(spotI);
+                performShowTide();
+                if (after != null) {
+                    map.postDelayed(() -> {
+                        after.run();
+                    }, 250);
+                }
+            }
+//            View view = spotsTV.get(spotI);
+//            listSpots.awake(() -> listSpots.scrollTo(view, () -> {
+//                performShowTide();
+//                listSpots.select(view, after);
+//            }));
         } else {
-            forecast.scrollY(dh * 4);
+            performShowTide();
             if (after != null) {
-                after.run();
+                map.postDelayed(() -> {
+                    after.run();
+                }, 250);
             }
         }
     }
 
 
-    public void performSelectDay(int day, Runnable after) {
-//        Log.i(TAG, "performSelectDay(" + day + ")");
+    public void performSelectDay(int day) {
         forecast.showDaySmooth(day);
     }
 
 
+    public void performHideForecast() {
+        forecast.scrollY(0, 500);
+    }
+
     public void performShowTide() {
-        forecast.scrollY(dh * 4, 333);
+        forecast.scrollY(forecast.getTideScrollY(), 500);
+    }
+
+    public void performShowWindSwell() {
+        forecast.scrollY(forecast.getWindSwellScrollY(), 500);
     }
 }

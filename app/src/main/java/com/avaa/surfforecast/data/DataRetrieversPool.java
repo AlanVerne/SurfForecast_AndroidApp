@@ -1,5 +1,6 @@
 package com.avaa.surfforecast.data;
 
+
 import android.os.AsyncTask;
 import android.support.annotation.NonNull;
 
@@ -17,6 +18,7 @@ public class DataRetrieversPool {
 
     public static AsyncTask getTask(String id, Class c) {
         AsyncTask asyncTask = POOL.get(id + c.getName());
+//        Log.i("DR POOL", "getTask(" + id + " " + c.getName() + ")" + (asyncTask == null ? "NO" : "YES"));
         if (asyncTask != null) {
             if (!asyncTask.getStatus().equals(AsyncTask.Status.FINISHED)) {
                 return asyncTask;
@@ -33,6 +35,7 @@ public class DataRetrieversPool {
             asyncTask.cancel(true);
         }
         POOL.put(id + t.getClass().getName(), t);
+//        Log.i("DR POOL", "addTask(" + id + " " + t.getClass().getName() + ")");
         t.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
     }
 }

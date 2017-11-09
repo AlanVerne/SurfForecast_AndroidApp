@@ -1,11 +1,14 @@
 package com.avaa.surfforecast.drawers;
 
+
 import android.graphics.Path;
 import android.graphics.Point;
+
 
 /**
  * Created by Alan on 5 Oct 2016.
  */
+
 
 public class SVGPathToAndroidPath {
     public static Path convert(String data, Point size) {

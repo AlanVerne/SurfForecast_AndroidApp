@@ -1,10 +1,12 @@
 <resources>
+
     <style name="AppTheme" parent="Theme.AppCompat.Light.DarkActionBar">
         <!--<item name="colorPrimary">@color/colorPrimary</item>-->
         <item name="colorPrimary">@color/colorPrimary</item>
         <item name="colorPrimaryDark">@color/colorPrimaryDark</item>
         <item name="colorAccent">@color/colorAccent</item>
 
+        <item name="android:windowBackground">@color/colorWaterBG</item>
         <!--<item name="android:windowContentOverlay">@null</item>-->
         <!--<item name="windowActionBarOverlay">true</item>-->
     </style>
@@ -15,6 +17,7 @@
     </style>
 
     <style name="AppTheme.AppBarOverlay" parent="ThemeOverlay.AppCompat.Dark.ActionBar" />
+
     <style name="AppTheme.PopupOverlay" parent="ThemeOverlay.AppCompat.Light" />
 
 
@@ -46,6 +49,7 @@
 
         <item name="android:background">@drawable/opt_bg</item>
     </style>
+
     <style name="OptRed" parent="Opt">
         <item name="android:textColor">@color/opt_text_color_red</item>
         <item name="android:background">@drawable/opt_bg_red</item>

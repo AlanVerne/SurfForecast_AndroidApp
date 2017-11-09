@@ -1,11 +1,14 @@
 package com.avaa.surfforecast.drawers;
 
+
 import android.graphics.Paint;
 import android.graphics.Rect;
+
 
 /**
  * Created by Alan on 25 Jan 2017.
  */
+
 
 public class MetricsAndPaints {
     public static final float TEXT_K = 1.33333f;
@@ -95,8 +98,9 @@ public class MetricsAndPaints {
     }
 
     public static int getTextColorForEnergy(int energy) {
-        return energy>1450?colorBlack:colorWhite;
+        return energy > 1450 ? colorBlack : colorWhite;
     }
+
     public static int getColorForEnergy(int energy) {
         int r, g, b;
         if (energy <= 500) {
@@ -127,13 +131,14 @@ public class MetricsAndPaints {
             r = 0xff;
             g = 0xff;
             b = 0xd7 + (0x98 - 0xd7) * energy / 2500;
-        } else {;// if (energy <= 10000) {
+        } else {
+            ;// if (energy <= 10000) {
             energy -= 5000;
             r = 0xff;
             g = 0xff + (0xa2 - 0xff) * energy / 5000;
             b = 0x98 + (0x00 - 0x98) * energy / 5000;
         }
 
-        return r *0x10000 + g * 0x100 + b;
+        return r * 0x10000 + g * 0x100 + b;
     }
 }

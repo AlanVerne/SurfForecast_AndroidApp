@@ -1,6 +1,6 @@
 package com.avaa.surfforecast.views.Map;
 
-import android.content.Context;
+import android.view.View;
 import android.widget.Scroller;
 
 
@@ -10,16 +10,18 @@ import android.widget.Scroller;
 
 
 public class FloatScroller {
+    protected final View view;
     protected final Scroller scroller;
     protected float value = 0f;
 
 
-    public FloatScroller(Context context) {
-        scroller = new Scroller(context);
+    public FloatScroller(View view) {
+        this.view = view;
+        scroller = new Scroller(view.getContext());
     }
 
-    public FloatScroller(Context context, float value) {
-        scroller = new Scroller(context);
+    public FloatScroller(View view, float value) {
+        this(view);
         this.value = value;
     }
 
@@ -48,11 +50,18 @@ public class FloatScroller {
             if (smooth) {
                 int dx = (int) ((to - value) * 1000f);
                 scroller.startScroll((int) (value * 1000f), 0, dx, 0, 1000);
+                repaint();
                 return false;
             } else {
                 value = to;
+                repaint();
                 return true;
             }
         }
+    }
+
+
+    protected void repaint() {
+        ((SurfSpotsMap) view).repaint();
     }
 }

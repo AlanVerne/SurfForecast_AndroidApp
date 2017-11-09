@@ -6,17 +6,18 @@ import android.graphics.Canvas;
 import android.graphics.Paint;
 import android.graphics.Path;
 import android.graphics.PointF;
+import android.view.View;
 
 import com.avaa.surfforecast.MainModel;
 import com.avaa.surfforecast.drawers.MetricsAndPaints;
 import com.avaa.surfforecast.views.ParallaxHelper;
 
+import static com.avaa.surfforecast.data.Common.STR_DASH;
 import static com.avaa.surfforecast.data.Common.STR_KMH;
 import static com.avaa.surfforecast.data.Common.STR_WIND;
 import static com.avaa.surfforecast.drawers.MetricsAndPaints.colorWindText;
 import static com.avaa.surfforecast.views.ColorUtils.alpha;
 import static com.avaa.surfforecast.views.Map.Arrow.createArrow;
-import static com.avaa.surfforecast.data.Common.STR_DASH;
 
 
 /**
@@ -35,15 +36,15 @@ public class WindCircle extends MapCircle {
     private final FloatScroller vbr;
 
 
-    public WindCircle(Context context) {
-        super(context);
+    public WindCircle(View view) {
+        super(view);
 
-        angle = new DirectionScroller(context);
-        vbr = new FloatScroller(context);
+        angle = new DirectionScroller(view);
+        vbr = new FloatScroller(view);
 
         MainModel model = MainModel.instance;
 
-        model.addChangeListener(changes -> {
+        model.addChangeListener(MainModel.Change.SELECTED_CONDITIONS, changes -> {
             int windSpeed = model.getSelectedWindSpeed();
 
             strWindSpeed = windSpeed == -1 ? STR_DASH : String.valueOf(windSpeed);
@@ -61,7 +62,9 @@ public class WindCircle extends MapCircle {
             } else {
                 setVisible(false, true);
             }
-        }, MainModel.Change.SELECTED_CONDITIONS);
+        });
+
+        setVisible(false, false);
     }
 
 
@@ -78,7 +81,7 @@ public class WindCircle extends MapCircle {
 
         float alpha = getAlpha(visible);
 
-        int dh = metricsAndPaints.dh;
+        float dh = metricsAndPaints.dh;
         paintFont.setTextSize(visible * metricsAndPaints.font);
         paintHintsFont.setTextSize(visible * metricsAndPaints.fontSmall);
 
@@ -91,9 +94,11 @@ public class WindCircle extends MapCircle {
         double sinA = Math.sin(a);
 
         float windR = r * (1 + (1 - this.vbr.getValue()) * (2 - visible * 2)) - visible * hintsVisible * dh / 4;
-        float windArrowR = visible * (dh * 0.7f + hintsVisible * dh / 4);
+        float windArrowR = (dh * 0.7f + dh * 0.25f * hintsVisible) * visible;
         float ax = ox + (float) (cosA * windR);
         float ay = oy - (float) (sinA * windR);
+
+        setLocation(ax, ay);
 
         PointF pp = parallaxHelper.applyParallax(ax, ay, dh * z);
         ax = pp.x;
@@ -118,6 +123,7 @@ public class WindCircle extends MapCircle {
                 float by = ay + (float) Math.sin(a) * windArrowR;
 
                 paintArrow.setColor(paintHintsFont.getColor());
+                paintArrow.setStrokeWidth(metricsAndPaints.densityDHDependent);
 
                 //float size = windArrowR*(SQRT_2-1)/SQRT_2; //hintsVisible*dh/4*SQRT_2;
                 Path pathLinedArrow = LinedArrow.get(bx, by, a, additionalArrowSize);

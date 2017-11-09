@@ -78,7 +78,7 @@ public class OneDayConditionsSmallView extends LinearLayout {
         tvDate.setTextSize(TypedValue.COMPLEX_UNIT_PX, metrics.font);
         tvDayOfWeek.setTextSize(TypedValue.COMPLEX_UNIT_PX, metrics.fontSmall);
 
-        Log.i(TAG, "setMetrics " + metrics.density + " " + metrics.dh);
+//        Log.i(TAG, "setMetrics " + metrics.density + " " + metrics.dh);
 
         d = (int) (3.5 * metrics.densityDHDependent);
         s = (int) (1.5 * metrics.densityDHDependent);

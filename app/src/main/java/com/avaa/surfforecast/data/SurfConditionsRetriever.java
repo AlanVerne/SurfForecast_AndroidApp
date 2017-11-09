@@ -15,6 +15,7 @@ import java.util.List;
 import java.util.TreeMap;
 
 import static com.avaa.surfforecast.data.Common.TIME_ZONE;
+import static java.lang.Math.PI;
 
 /**
  * Created by Alan on 10 Nov 2016.
@@ -44,12 +45,12 @@ public class SurfConditionsRetriever extends AsyncTask<String, Void, TreeMap<Lon
 
     @Override
     protected void onPreExecute() {
-        Log.i(TAG, "onPreExecute() | " + surfConditionsProvider.url);
+//        Log.i(TAG, "onPreExecute() | " + surfConditionsProvider.url);
         surfConditionsProvider.bsl.busyStateChanged(true);
     }
 
     protected TreeMap<Long, SurfConditions> doInBackground(String... addr) {
-        Log.i(TAG, "doInBackground() | " + url);
+//        Log.i(TAG, "doInBackground() | " + url);
         TreeMap<Long, SurfConditions> newConditions = null;
         BufferedReader reader = null;
 
@@ -63,15 +64,15 @@ public class SurfConditionsRetriever extends AsyncTask<String, Void, TreeMap<Lon
             reader = new BufferedReader(new InputStreamReader(connection.getInputStream()));
             newConditions = readPage(reader);
         } catch (Exception e) {
-            Log.i(TAG, "doInBackground() | forecast update failed");
-            //e.printStackTrace();
+//            Log.i(TAG, "doInBackground() | forecast update failed");
+            e.printStackTrace();
         } finally {
             if (reader != null) {
                 try {
                     reader.close();
                 } catch (IOException ioe) {
-                    Log.i(TAG, "doInBackground() | forecast update failed");
-                    //ioe.printStackTrace();
+//                    Log.i(TAG, "doInBackground() | forecast update failed");
+                    ioe.printStackTrace();
                 }
             }
         }
@@ -113,7 +114,7 @@ public class SurfConditionsRetriever extends AsyncTask<String, Void, TreeMap<Lon
                 }
             }
         }
-        Log.i(TAG, "readPage() | " + toParce);
+//        Log.i(TAG, "readPage() | " + toParce);
 
         if (toParce == null) return null;
         line = toParce;
@@ -126,7 +127,7 @@ public class SurfConditionsRetriever extends AsyncTask<String, Void, TreeMap<Lon
         int tri = 0;
         int tdi = 0;
 
-        Log.i(TAG, "readPage() | " + line);
+//        Log.i(TAG, "readPage() | " + line);
 
         Calendar calendar = new GregorianCalendar(TIME_ZONE);
         calendar.set(Calendar.MINUTE, 0);
@@ -229,19 +230,22 @@ public class SurfConditionsRetriever extends AsyncTask<String, Void, TreeMap<Lon
                 }
 
                 for (String td : tds) {
-                    int iSwell = td.indexOf("/swell.");
-                    if (iSwell > 0) {
-                        int i1 = iSwell + "/swell.".length();
-                        int i2 = td.indexOf(".", i1);
-                        Direction dir = Direction.valueOf(td.substring(i1, i2));
-                        i2++;
-                        String height = td.substring(i2, td.indexOf(".", i2));
-
-                        sc[tdi].waveAngle = Direction.directionToAngle(dir);
-                        sc[tdi++].waveHeight = Integer.valueOf(height);
+                    int iRotate = td.indexOf("rotate(");
+                    if (iRotate > 0) {
+                        int i1 = iRotate + "rotate(".length();
+                        int i2 = td.indexOf(")", i1);
+                        sc[tdi].waveAngle = (float) ((float) ((720 - 90 - Integer.valueOf(td.substring(i1, i2))) % 360) / 180 * PI);
                     } else {
                         sc[tdi].waveAngle = 0;
+                    }
+                    int iHeight = td.indexOf("</text>");
+                    if (iHeight > 0) {
+                        int i1 = td.indexOf(">", iHeight - 6) + 1;
+                        int i2 = iHeight;
+                        sc[tdi++].waveHeight = (int) (Float.valueOf(td.substring(i1, i2)) * 10);
+                    } else {
                         sc[tdi++].waveHeight = 0;
+
                     }
                 }
             } else if (trn == 6) for (String td : tds) {
@@ -259,10 +263,22 @@ public class SurfConditionsRetriever extends AsyncTask<String, Void, TreeMap<Lon
                 }
             } else if (trn == 9) {
                 for (String td : tds) {
-                    int i1 = td.indexOf("alt=") + 5;
-                    int i2 = td.indexOf(" ", i1);
-                    sc[tdi].windSpeed = Integer.valueOf(td.substring(i1, i2));
-                    sc[tdi++].windAngle = Direction.directionToAngle(Direction.valueOf(td.substring(i2 + 1, td.indexOf("\"", i1))));
+                    int iRotate = td.indexOf("rotate(");
+                    if (iRotate > 0) {
+                        int i1 = iRotate + "rotate(".length();
+                        int i2 = td.indexOf(")", i1);
+                        sc[tdi].windAngle = (float) ((float) ((720 - 90 - Integer.valueOf(td.substring(i1, i2))) % 360) / 180 * PI);
+                    } else {
+                        sc[tdi].windAngle = 0;
+                    }
+                    int iHeight = td.indexOf("</text>");
+                    if (iHeight > 0) {
+                        int i1 = td.indexOf(">", iHeight - 6) + 1;
+                        int i2 = iHeight;
+                        sc[tdi++].windSpeed = Integer.valueOf(td.substring(i1, i2));
+                    } else {
+                        sc[tdi++].windSpeed = 0;
+                    }
                 }
             }
         }
@@ -270,17 +286,17 @@ public class SurfConditionsRetriever extends AsyncTask<String, Void, TreeMap<Lon
         TreeMap<Long, SurfConditions> newSC = new TreeMap<>();
 
         if (forWeek) {
-            Log.i(TAG, "readPage() | week for " + surfConditionsProvider.url);
+//            Log.i(TAG, "readPage() | week for " + surfConditionsProvider.url);
             for (SurfConditions surfConditions : sc) {
-                Log.i(TAG, calendar.getTime().toString() + " " + surfConditions.toString());
+//                Log.i(TAG, calendar.getTime().toString() + " " + surfConditions.toString());
                 newSC.put(calendar.getTime().getTime(), surfConditions);
                 int hour = calendar.get(Calendar.HOUR);
                 calendar.add(Calendar.HOUR, hour == 2 ? 9 : hour == 11 ? 6 : 9);
             }
         } else {
-            Log.i(TAG, "readPage() | latest for " + surfConditionsProvider.url);
+//            Log.i(TAG, "readPage() | latest for " + surfConditionsProvider.url);
             for (SurfConditions surfConditions : sc) {
-                Log.i(TAG, calendar.getTime().toString() + " " + surfConditions.toString());
+//                Log.i(TAG, calendar.getTime().toString() + " " + surfConditions.toString());
                 newSC.put(calendar.getTime().getTime(), surfConditions);
                 calendar.add(Calendar.HOUR, 3);
             }

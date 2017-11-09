@@ -5,7 +5,7 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="#FFFFFFFF"
+    android:background="@color/colorWater"
     android:fitsSystemWindows="true"
     tools:context="com.avaa.surfforecast.MainActivity">
 
@@ -31,8 +31,8 @@
                 app:mpb_progressStyle="horizontal"
                 app:mpb_useIntrinsicPadding="false" />
 
-            <com.avaa.surfforecast.views.Map.BaliMap
-                android:id="@+id/balimap"
+            <com.avaa.surfforecast.views.Map.SurfSpotsMap
+                android:id="@+id/map"
                 android:layout_width="match_parent"
                 android:layout_height="match_parent" />
 
@@ -58,8 +58,7 @@
                     android:id="@+id/tvRatingDay"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:gravity="left|center_vertical"
-                    android:text="Today "
+                    android:gravity="start|center_vertical"
                     android:textColor="#ddffffff" />
 
                 <TextView
@@ -67,8 +66,7 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:alpha="0"
-                    android:gravity="left|center_vertical"
-                    android:text="Now "
+                    android:gravity="start|center_vertical"
                     android:textColor="#ddffffff" />
 
                 <com.avaa.surfforecast.views.RatingView
@@ -85,11 +83,7 @@
                 android:layout_height="100dp"
                 android:layout_alignParentEnd="true"
                 android:layout_alignParentRight="true"
-                android:background="?android:attr/selectableItemBackground"
-                android:paddingTop="4dp"
-                android:text="&#8926;"
-                android:textColor="#ffffff">
-
+                android:background="?android:attr/selectableItemBackground">
                 <ImageView
                     android:id="@+id/ivBtnMenu"
                     android:layout_width="wrap_content"
@@ -98,12 +92,37 @@
                     android:src="@drawable/ic_more_vert_black_24dp" />
             </FrameLayout>
 
-            <!--<HorizontalScrollView-->
-            <!--android:id="@+id/hsvDays"-->
-            <!--android:layout_width="match_parent"-->
-            <!--android:layout_height="wrap_content"-->
-            <!--android:layout_alignParentBottom="true"-->
-            <!--android:scrollbars="none">-->
+            <FrameLayout
+                android:id="@+id/flBtnAway"
+                android:layout_width="50dp"
+                android:layout_height="100dp"
+                android:layout_alignParentEnd="true"
+                android:layout_alignParentRight="true"
+                android:background="?android:attr/selectableItemBackground">
+                <ImageView
+                    android:id="@+id/ivBtnAway"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="center"
+                    android:src="@drawable/ic_away_white_24dp" />
+            </FrameLayout>
+
+            <FrameLayout
+                android:id="@+id/flBtnCam"
+                android:layout_width="50dp"
+                android:layout_height="100dp"
+                android:layout_alignParentEnd="true"
+                android:layout_alignParentRight="true"
+                android:visibility="invisible"
+                android:background="?android:attr/selectableItemBackground">
+                <ImageView
+                    android:id="@+id/ivBtnCam"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="center"
+                    android:src="@drawable/ic_videocam_white_24dp" />
+            </FrameLayout>
+
             <RelativeLayout
                 android:id="@+id/rlDays"
                 android:layout_width="match_parent"
@@ -167,18 +186,18 @@
                         android:background="#ffffff" />
                 </RelativeLayout>
             </RelativeLayout>
-            <!--</HorizontalScrollView>-->
         </RelativeLayout>
     </LinearLayout>
+
 
     <com.avaa.surfforecast.views.SurfConditionsForecastView
         android:id="@+id/scfv"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:layout_weight="0"
         android:background="#00ffffff">
         <!--android:elevation="4dp"-->
     </com.avaa.surfforecast.views.SurfConditionsForecastView>
+
 
     <FrameLayout
         android:id="@+id/flVoiceInterface"
@@ -190,6 +209,7 @@
             android:name="com.avaa.surfforecast.ai.VoiceInterfaceFragment"
             android:layout_width="match_parent"
             android:layout_height="match_parent" />
+
     </FrameLayout>
 
 </RelativeLayout>

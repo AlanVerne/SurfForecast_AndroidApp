@@ -1,5 +1,6 @@
 package com.avaa.surfforecast.data;
 
+
 import android.os.AsyncTask;
 import android.util.Log;
 
@@ -10,19 +11,25 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 
+
 /**
  * Created by Alan on 30 Nov 2016.
  */
+
+
 public class METARRetriever extends AsyncTask<Object, Void, METAR> {
     private static final String TAG = "metarRetriever";
 
     private final METARProvider metarProvider;
     private final String name;
 
+
     public METARRetriever(METARProvider metarProvider, String name) {
+//        Log.i(TAG, "METARRetriever(" + name + ")");
         this.metarProvider = metarProvider;
         this.name = name;
     }
+
 
     @Override
     protected void onPreExecute() {

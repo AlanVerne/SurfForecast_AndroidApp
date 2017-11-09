@@ -3,7 +3,6 @@ package com.avaa.surfforecast.drawers;
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
 import android.os.AsyncTask;
-import android.util.Log;
 
 import com.avaa.surfforecast.MainModel;
 import com.avaa.surfforecast.data.SurfConditions;

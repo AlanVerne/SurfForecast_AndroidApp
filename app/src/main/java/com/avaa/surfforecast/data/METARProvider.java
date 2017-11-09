@@ -17,11 +17,11 @@ import java.util.Map;
 
 public class METARProvider {
     public METAR get(String id) {
-//        Log.i(TAG, "get() " + toString(id, metar));
-
         if (id == null) return null;
 
         METAR metar = metars.get(id);
+
+//        Log.i(TAG, "get() " + toString(id, metar));
 
         if (metar == null) {
             update(id);
@@ -47,10 +47,10 @@ public class METARProvider {
         if (id == null) return;
 
         if (DataRetrieversPool.getTask(id, METARRetriever.class) == null) {
+            DataRetrieversPool.addTask(id, new METARRetriever(this, id));
+        } else {
 //            Log.i(TAG, "UPDATE IS ALREADY RUNNING");
-            return;
         }
-        DataRetrieversPool.addTask(id, new METARRetriever(this, id));
     }
 
 

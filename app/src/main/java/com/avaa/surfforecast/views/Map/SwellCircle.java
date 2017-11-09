@@ -1,25 +1,25 @@
 package com.avaa.surfforecast.views.Map;
 
 
-import android.content.Context;
 import android.graphics.Canvas;
 import android.graphics.Paint;
 import android.graphics.Path;
 import android.graphics.PointF;
 import android.graphics.Typeface;
+import android.view.View;
 
 import com.avaa.surfforecast.MainModel;
 import com.avaa.surfforecast.data.SurfConditions;
 import com.avaa.surfforecast.drawers.MetricsAndPaints;
 import com.avaa.surfforecast.views.ParallaxHelper;
 
+import static com.avaa.surfforecast.data.Common.STR_DASH;
 import static com.avaa.surfforecast.data.Common.STR_FT;
 import static com.avaa.surfforecast.data.Common.STR_S;
 import static com.avaa.surfforecast.data.Common.STR_SWELL;
 import static com.avaa.surfforecast.drawers.MetricsAndPaints.colorWaveText;
 import static com.avaa.surfforecast.views.ColorUtils.alpha;
 import static com.avaa.surfforecast.views.Map.Arrow.createArrow;
-import static com.avaa.surfforecast.data.Common.STR_DASH;
 
 
 /**
@@ -42,14 +42,14 @@ public class SwellCircle extends MapCircle {
     private final FloatScroller angle;
 
 
-    public SwellCircle(Context context) {
-        super(context);
+    public SwellCircle(View view) {
+        super(view);
 
-        angle = new DirectionScroller(context);
+        angle = new DirectionScroller(view);
 
         MainModel model = MainModel.instance;
 
-        model.addChangeListener(changes -> {
+        model.addChangeListener(MainModel.Change.SELECTED_CONDITIONS, changes -> {
             final SurfConditions conditions = model.selectedConditions;
 
             if (conditions != null) {
@@ -59,16 +59,17 @@ public class SwellCircle extends MapCircle {
                 angle.to(conditions.waveAngle, scrollerVisible.getValue() != 0);
                 setVisible(true, true);
             } else {
-                strWaveHeight = STR_DASH;
-                strWavePeriod = STR_DASH;
-                strWaveAngleAbbr = STR_DASH;
                 setVisible(false, true);
             }
-        }, MainModel.Change.SELECTED_CONDITIONS);
+        });
+
+        setVisible(false, false);
     }
 
 
     public void paint(Canvas c, float ox, float oy, float visible, ParallaxHelper parallaxHelper) {
+        setLocation(ox, oy);
+
         MetricsAndPaints metricsAndPaints = MainModel.instance.metricsAndPaints;
 
         visible *= scrollerVisible.getValue();
@@ -123,6 +124,7 @@ public class SwellCircle extends MapCircle {
             pathLinedArrow.lineTo(dx, dy);
 
             paintArrow.setColor(paintHintsFont.getColor());
+            paintArrow.setStrokeWidth(metricsAndPaints.densityDHDependent);
             c.drawPath(pathLinedArrow, paintArrow);
 
             float strWaveHeightWidth = paintFontBig.measureText(strWaveHeight);
@@ -155,5 +157,13 @@ public class SwellCircle extends MapCircle {
         boolean repaint = super.computeScroll();
         repaint |= angle.compute();
         return repaint;
+    }
+
+
+    public boolean hit(float x, float y) {
+        x -= this.x;
+        y -= this.y;
+        MetricsAndPaints metricsAndPaints = MainModel.instance.metricsAndPaints;
+        return (x * x + y * y < metricsAndPaints.dh * metricsAndPaints.dh * 2);
     }
 }

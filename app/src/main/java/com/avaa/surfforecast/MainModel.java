@@ -2,11 +2,11 @@ package com.avaa.surfforecast;
 
 import android.content.SharedPreferences;
 import android.support.annotation.NonNull;
-import android.util.Log;
 
 import com.avaa.surfforecast.ai.CommandsExecutor;
 import com.avaa.surfforecast.ai.VoiceRecognitionHelper;
 import com.avaa.surfforecast.data.BusyStateListener;
+import com.avaa.surfforecast.data.Common;
 import com.avaa.surfforecast.data.METAR;
 import com.avaa.surfforecast.data.METARProvider;
 import com.avaa.surfforecast.data.RatedConditions;
@@ -94,9 +94,10 @@ public class MainModel {
         metarProvider.addUpdateListener((name, metar) -> {
             SurfSpot selectedSpot = getSelectedSpot();
             if (selectedSpot == null) return;
-            if (name.equals(selectedSpot.metarName) && selectedMETAR != metar) {
-                selectedMETAR = metar;
-                fireChanged(SELECTED_CONDITIONS);
+            if (name.equals(selectedSpot.metarName) && selectedNow && selectedMETAR != metar) {
+                Changes changes = updateSelectedConditions(false);
+                changes.add(updateSelectedConditionsRating(false));
+                fireChanged(changes);
             }
         });
 
@@ -117,17 +118,16 @@ public class MainModel {
 
     // --
 
+
     private int selectedSpotI = -1;
     private SurfSpot selectedSpot = null;
     private float selectedDay = -1; // plus days
     private int selectedTime = -1; // 24*60
+    private boolean selectedNow = true;
 
     public SurfConditions selectedConditions = null;
     public METAR selectedMETAR = null;
     public TideData selectedTideData = null;
-
-    private SurfConditions nowConditions = null;
-    private METAR nowMETAR = null;
 
     public float nowH;
 
@@ -153,11 +153,14 @@ public class MainModel {
         } else {
             selectedTideData = tideDataProvider.getTideData(selectedSpot.tidePortID);
 
-            changes.add(selectBestTime(false));
-            changes.add(updateSelectedConditions(false));
+            if (selectedNow) {
+                changes.add(setSelectedTime(Common.getNowTimeInt(Common.TIME_ZONE), false));
+            } else {
+                changes.add(selectBestTime(false));
+            }
 
-//            updateCurrentConditions(false);
-            //Log.i("SurfSpots", "setSelectedSpotI() 2");
+            changes.add(updateSelectedConditions(false));
+            changes.add(updateSelectedConditionsRating(false));
 
             userStat.incrementSpotsShownCount();
 
@@ -165,6 +168,10 @@ public class MainModel {
 
             sharedPreferences.edit().putInt(SPKEY_SELECTED_SPOT, selectedSpotI).apply();
         }
+    }
+
+    public boolean isSelectedNow() {
+        return selectedNow;
     }
 
     public int getSelectedTime() {
@@ -181,6 +188,11 @@ public class MainModel {
 
     public Change setSelectedTime(int selectedTime, boolean fire) {
         if (this.selectedTime != selectedTime) {
+            if (getSelectedDayInt() == 0 && Math.abs(this.selectedTime - selectedTime) <= 30) {
+                selectedNow = true;
+            } else {
+                selectedNow = false;
+            }
             this.selectedTime = selectedTime;
             if (fire) {
                 fireChanged(new Changes(SELECTED_TIME).add(updateSelectedConditions(false)));
@@ -205,8 +217,10 @@ public class MainModel {
 
     private final SurfConditionsProvider.UpdateListener scpul = surfConditionsProvider -> {
         if (getSelectedSpot().conditionsProvider == surfConditionsProvider) {
-            nowConditions = surfConditionsProvider.getNow();
-            fireChanged(new Changes(ALL_CONDITIONS).add(updateSelectedConditions(false)));
+            Changes changes = new Changes(ALL_CONDITIONS);
+            changes.add(updateSelectedConditions(false));
+            changes.add(updateSelectedConditionsRating(false));
+            fireChanged(changes);
         }
     };
 
@@ -251,50 +265,72 @@ public class MainModel {
 //        Log.i(TAG, "selected day int changed");
 
         SurfSpot spot = getSelectedSpot();
-        SurfConditionsOneDay conditionsOneDay = spot.conditionsProvider.get(getSelectedDayInt());
-        SurfConditions newSC; // = null;
 
 //        int nowTimeInt = Common.getNowTimeInt(TIME_ZONE);
 
-        if (conditionsOneDay == null) {
-//            selectedTime = -1; //nowTimeInt;
-            newSC = null;
+        if (getSelectedDayInt() == 0) {
+            selectedNow = true;
+            selectedTime = Common.getNowTimeInt(Common.TIME_ZONE);
+            changes.add(SELECTED_TIME);
+
+            changes.add(updateSelectedConditions(false));
+            changes.add(updateSelectedConditionsRating(false));
         } else {
-            RatedConditions best = rater.getBest(spot, getSelectedDayInt());
-            if (best != null) {
-                selectedTime = best.time;
-                changes.add(SELECTED_TIME);
+            SurfConditionsOneDay conditionsOneDay = spot.conditionsProvider.get(getSelectedDayInt());
+            SurfConditions newSC; // = null;
 
-                selectedRatedConditions = best;
-                changes.add(SELECTED_RATING);
+            selectedNow = false;
 
-//                Log.i(TAG, "best time " + best.time / 60 + "  " + best.surfConditions.getWaveHeightInFt() + "  " + best.surfConditions.windSpeed);
-                newSC = best.surfConditions;
-            } else {
-                newSC = conditionsOneDay.get(selectedTime);
+            if (selectedMETAR != null) {
+                selectedMETAR = null;
+                changes.add(SELECTED_CONDITIONS);
             }
-        }
 
-        if (selectedConditions != newSC) {
-            selectedConditions = newSC;
-            changes.add(SELECTED_CONDITIONS);
+            if (conditionsOneDay == null) {
+//            selectedTime = -1; //nowTimeInt;
+                newSC = null;
+            } else {
+                RatedConditions best = rater.getBest(spot, getSelectedDayInt());
+                if (best != null) {
+                    selectedTime = best.time;
+                    changes.add(SELECTED_TIME);
+
+                    selectedRatedConditions = best;
+                    changes.add(SELECTED_RATING);
+
+//                    Log.i(TAG, "rate " + best.rating + " best time " + best.time / 60 + "  " + best.surfConditions.getWaveHeightInFt() + "  " + best.surfConditions.windSpeed);
+                    newSC = best.surfConditions;
+                } else {
+                    newSC = conditionsOneDay.get(selectedTime);
+                }
+            }
+
+            if (selectedConditions != newSC) {
+                selectedConditions = newSC;
+                changes.add(SELECTED_CONDITIONS);
+            }
         }
 
         fireChanged(changes);
     }
 
 
-    public Set<Change> updateSelectedConditions(boolean fire) {
+    public Changes updateSelectedConditions(boolean fire) {
         SurfConditionsOneDay conditionsOneDay = selectedSpot.conditionsProvider.get(getSelectedDayInt());
         SurfConditions newConditions = conditionsOneDay == null ? null : conditionsOneDay.get(selectedTime);
 
-        if (!SurfConditions.equals(selectedConditions, newConditions)) {
+        METAR newMetar = selectedNow ? metarProvider.get(selectedSpot.metarName) : null;
+
+        if (!SurfConditions.equals(selectedConditions, newConditions) || selectedMETAR != newMetar) {
             selectedConditions = newConditions;
+            selectedMETAR = newMetar;
 
             Changes changes = new Changes(SELECTED_CONDITIONS);
-            changes.add(updateSelectedConditionsRating(false));
 
-            if (fire) fireChanged(changes);
+            if (fire) {
+                changes.add(updateSelectedConditionsRating(false));
+                fireChanged(changes);
+            }
             return changes;
         }
 
@@ -312,6 +348,10 @@ public class MainModel {
     }
 
     public Set<Change> updateCurrentConditions(boolean fire) {
+        if (!selectedNow) return null;
+
+        selectedTime = Common.getNowTimeInt(Common.TIME_ZONE);
+
         if (selectedSpot == null) return null;
 
         selectedSpot.conditionsProvider.updateIfNeed();
@@ -319,19 +359,18 @@ public class MainModel {
         SurfConditions newCC = selectedSpot.conditionsProvider.getNow();
         METAR newMETAR = metarProvider.get(selectedSpot.metarName);
 
-        if (newCC == nowConditions && newMETAR == nowMETAR) return null;
+        if (newCC == selectedConditions && newMETAR == selectedMETAR) return null;
 
-        nowConditions = newCC;
-        nowMETAR = newMETAR;
+        selectedConditions = newCC;
+        selectedMETAR = newMETAR;
 
-        Change ratingChanged = null; //updateSelectedConditionsRating(false);
+        Change ratingChanged = updateSelectedConditionsRating(false);
 
         if (fire) {
-            if (ratingChanged != null) fireChanged(SELECTED_CONDITIONS, ratingChanged);
-            else fireChanged(SELECTED_CONDITIONS);
+            fireChanged(SELECTED_CONDITIONS, SELECTED_TIME, ratingChanged);
         }
 
-        return new Changes(SELECTED_CONDITIONS);
+        return new Changes(SELECTED_CONDITIONS, SELECTED_TIME, ratingChanged);
 //        Log.i(TAG, newMETAR == null ? "null" : newMETAR.toString());
     }
 
@@ -339,7 +378,15 @@ public class MainModel {
     public Change updateSelectedConditionsRating(boolean fire) {
         RatedConditions old = selectedRatedConditions;
 
-        selectedRatedConditions = RatedConditions.create(getSelectedSpot(), getSelectedDayInt(), selectedTime, selectedConditions, selectedTideData);
+        SurfConditions surfConditions = this.selectedConditions;
+
+        if (selectedNow && selectedMETAR != null) {
+            surfConditions = new SurfConditions(surfConditions);
+            surfConditions.windSpeed = selectedMETAR.windSpeed;
+            surfConditions.waveAngle = selectedMETAR.windAngle;
+        }
+
+        selectedRatedConditions = RatedConditions.create(getSelectedSpot(), getSelectedDayInt(), selectedTime, surfConditions, selectedTideData);
 
         if (!RatedConditions.sameEstimate(old, selectedRatedConditions)) {
             if (fire) fireChanged(SELECTED_RATING);
@@ -412,19 +459,19 @@ public class MainModel {
         changeListeners.put(l, null);
     }
 
-    public void addChangeListener(ChangeListener l, Change change) {
+    public void addChangeListener(Change change, ChangeListener l) {
         changeListeners.put(l, new Changes(change));
     }
 
-    public void addChangeListener(ChangeListener l, Change change, Change change2) { // if change or change2 occured
+    public void addChangeListener(Change change, Change change2, ChangeListener l) { // if change or change2 occur
         changeListeners.put(l, new Changes(change, change2));
     }
 
-    public void addChangeListener(ChangeListener l, Change change, Change change2, Change change3) {
+    public void addChangeListener(Change change, Change change2, Change change3, ChangeListener l) {
         changeListeners.put(l, new Changes(change, change2, change3));
     }
 
-    public void addChangeListener(ChangeListener l, Set<Change> changes) {
+    public void addChangeListener(Set<Change> changes, ChangeListener l) {
         changeListeners.put(l, changes);
     }
 
@@ -442,7 +489,7 @@ public class MainModel {
     }
 
     private void fireChanged(Set<Change> changes) {
-        Log.i(TAG, "fire");
+//        Log.i(TAG, "fire");
         for (Map.Entry<ChangeListener, Set<Change>> e : changeListeners.entrySet()) {
             if (e.getValue() == null || hasIntersection(e.getValue(), changes))
                 e.getKey().onChange(changes);

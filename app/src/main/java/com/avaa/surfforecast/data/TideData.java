@@ -163,7 +163,6 @@ public class TideData {
         long day = Common.getDay(plusDays, TIME_ZONE);
 
         int[] values = precise.get(day);
-        if (values == null) return null;
 
         Path p = new Path();
         p.moveTo(0, h * 2);
@@ -173,6 +172,8 @@ public class TideData {
             c.setTime(new Date(day * 1000));
             c.add(Calendar.DATE, 1);
             int[] values2 = precise.get(c.getTime().getTime() / 1000);
+
+            if (values2 == null && values == null) return null;
 
             hStart *= 6;
             hEnd *= 6;
@@ -186,13 +187,19 @@ public class TideData {
                         p.lineTo(w * (i - hStart) / hWidth, h * (1f - ((float) values2[i - 24 * 6] / 10.0f - min) / minMaxH));
                     }
                 } else if (i >= 0) {
-                    p.lineTo(w * (i - hStart) / hWidth, h * (1f - ((float) values[i] / 10.0f - min) / minMaxH));
+                    if (values != null) {
+                        p.lineTo(w * (i - hStart) / hWidth, h * (1f - ((float) values[i] / 10.0f - min) / minMaxH));
+                    } else {
+                        p.lineTo(w * (i - hStart) / hWidth, h * (1f - ((float) values2[0] / 10.0f - min) / minMaxH));
+                    }
                 }
             }
 
             p.lineTo(w, h * 2);
             p.close();
         } else {
+            if (values == null) return null;
+
             hStart *= 6;
             hEnd *= 6;
 

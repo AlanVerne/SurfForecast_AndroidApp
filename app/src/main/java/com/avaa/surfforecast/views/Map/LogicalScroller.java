@@ -2,6 +2,7 @@ package com.avaa.surfforecast.views.Map;
 
 
 import android.content.Context;
+import android.view.View;
 
 
 /**
@@ -10,12 +11,12 @@ import android.content.Context;
 
 
 public class LogicalScroller extends FloatScroller {
-    public LogicalScroller(Context context) {
-        super(context);
+    public LogicalScroller(View view) {
+        super(view);
     }
 
-    public LogicalScroller(Context context, float value) {
-        super(context, value);
+    public LogicalScroller(View view, float value) {
+        super(view, value);
     }
 
 
@@ -28,9 +29,11 @@ public class LogicalScroller extends FloatScroller {
             if (smooth) {
                 int dx = (int) ((to - value) * 1000f);
                 scroller.startScroll((int) (value * 1000f), 0, dx, 0, to == 1 ? 500 : 1000);
+                repaint();
                 return false;
             } else {
                 value = to;
+                repaint();
                 return true;
             }
         }

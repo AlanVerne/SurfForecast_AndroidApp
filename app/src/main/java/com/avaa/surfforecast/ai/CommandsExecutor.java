@@ -2,7 +2,6 @@ package com.avaa.surfforecast.ai;
 
 import android.content.Intent;
 import android.net.Uri;
-import android.text.format.DateUtils;
 import android.util.Log;
 
 import com.avaa.surfforecast.MainModel;
@@ -68,17 +67,20 @@ public class CommandsExecutor {
     }
 
     private void initSToDay() {
-        String today = DateUtils.getRelativeTimeSpanString(
-                0, 0, DateUtils.DAY_IN_MILLIS,
-                DateUtils.FORMAT_SHOW_WEEKDAY).toString().toLowerCase();
+        String today = "today";
+//                DateUtils.getRelativeTimeSpanString(
+//                0, 0, DateUtils.DAY_IN_MILLIS,
+//                DateUtils.FORMAT_SHOW_WEEKDAY).toString().toLowerCase();
 
-        String tomorrow = DateUtils.getRelativeTimeSpanString(
-                DateUtils.DAY_IN_MILLIS, 0, DateUtils.DAY_IN_MILLIS,
-                DateUtils.FORMAT_SHOW_WEEKDAY).toString().toLowerCase();
+        String tomorrow = "tomorrow";
+//                DateUtils.getRelativeTimeSpanString(
+//                DateUtils.DAY_IN_MILLIS, 0, DateUtils.DAY_IN_MILLIS,
+//                DateUtils.FORMAT_SHOW_WEEKDAY).toString().toLowerCase();
 
-        String afterTomorrow = DateUtils.getRelativeTimeSpanString(
-                2 * DateUtils.DAY_IN_MILLIS, 0, DateUtils.DAY_IN_MILLIS,
-                DateUtils.FORMAT_SHOW_WEEKDAY).toString().toLowerCase();
+        String afterTomorrow = "after tomorrow";
+//                DateUtils.getRelativeTimeSpanString(
+//                2 * DateUtils.DAY_IN_MILLIS, 0, DateUtils.DAY_IN_MILLIS,
+//                DateUtils.FORMAT_SHOW_WEEKDAY).toString().toLowerCase();
 
         sToDay.put(" " + today + " ", 0);
         sToDay.put(" " + tomorrow + " ", 1);
@@ -88,7 +90,7 @@ public class CommandsExecutor {
         Calendar c = Common.getCalendarToday(Common.TIME_ZONE);
         for (int i = 0; i < 7; i++) {
             int dayOfWeek = c.get(Calendar.DAY_OF_WEEK);
-            String s = c.getDisplayName(Calendar.DAY_OF_WEEK, Calendar.LONG, Locale.getDefault()).toLowerCase();
+            String s = c.getDisplayName(Calendar.DAY_OF_WEEK, Calendar.LONG, Locale.ENGLISH).toLowerCase();
             sToDay.put(" " + s + " ", i);
             if (i > 1 && dayOfWeek == Calendar.SATURDAY) sToDay.put(" weekend ", i);
             c.add(Calendar.DATE, 1);
@@ -464,7 +466,7 @@ public class CommandsExecutor {
 
         if (day != null) {
             Integer finalDay = day;
-            rDay = () -> mainModel.mainActivity.performSelectDay(finalDay, null);
+            rDay = () -> mainModel.mainActivity.performSelectDay(finalDay);
         }
 
         if (surfSpot != null) {

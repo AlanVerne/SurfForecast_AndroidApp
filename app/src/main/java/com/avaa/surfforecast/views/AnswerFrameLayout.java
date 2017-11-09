@@ -29,7 +29,7 @@ import java.util.Map;
  */
 
 public class AnswerFrameLayout extends FrameLayout {
-    private final MetricsAndPaints metricsAndPaints;
+    private MetricsAndPaints metricsAndPaints;
 
     private ScrollView sv;
     private LinearLayout ll;
@@ -48,29 +48,32 @@ public class AnswerFrameLayout extends FrameLayout {
 
         setLayoutParams(new LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT));
 
+        int den60 = (int) (60 * metricsAndPaints.density);
+        int den90 = (int) (90 * metricsAndPaints.density);
+
         sv = new ScrollView(context);
         sv.setLayoutParams(new ScrollView.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT));
         ll = new LinearLayout(context);
         ll.setOrientation(LinearLayout.VERTICAL);
         ll.setLayoutParams(new LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT));
-        ll.setPadding(0, 0, 0, 60 * 3);
+        ll.setPadding(0, 0, 0, den60);
 
         tvHeader1 = new TextView(context);
         tvHeader1.setTextColor(0xffffffff);
         tvHeader1.setTextSize(TypedValue.COMPLEX_UNIT_PX, metricsAndPaints.fontHeader);
-        tvHeader1.setPadding(60 * 3, 60 * 3, 90 * 3, 23 * 3);
+        tvHeader1.setPadding(den60, den60, den90, (int) (23 * metricsAndPaints.density));
         tvHeader1.setLayoutParams(new LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT));
 
         tvHeader2 = new TextView(context);
         tvHeader2.setTextColor(0xffffffff);
         tvHeader2.setTextSize(TypedValue.COMPLEX_UNIT_PX, metricsAndPaints.fontBig);
-        tvHeader2.setPadding(60 * 3, 0 * 3, 90 * 3, 43 * 3);
+        tvHeader2.setPadding(den60, 0, den90, (int) (43 * metricsAndPaints.density));
         tvHeader2.setLayoutParams(new LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT));
 
         tvText = new TextView(context);
         tvText.setTextColor(0xff000000);
         tvText.setTextSize(TypedValue.COMPLEX_UNIT_PX, metricsAndPaints.fontBig);
-        tvText.setPadding(60 * 3, 43 * 3, 90 * 3, 23 * 3);
+        tvText.setPadding(den60, (int) (43 * metricsAndPaints.density), den90, (int) (23 * metricsAndPaints.density));
         tvText.setLayoutParams(new LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT));
 
         ll.addView(tvHeader1);
@@ -105,8 +108,8 @@ public class AnswerFrameLayout extends FrameLayout {
         tvHeader1.setText(a.forCommand);
 
         tvHeader2.setText(a.clarification);
-        final int padding2 = a.clarification == null ? 13 * 3 : 60 * 3;
-        tvHeader2.setPadding(60 * 3, 0 * 3, 90 * 3, padding2);
+        final int padding2 = (int) (a.clarification == null ? 13 * metricsAndPaints.density : 60 * metricsAndPaints.density);
+        tvHeader2.setPadding((int) (60 * metricsAndPaints.density), 0, (int) (90 * metricsAndPaints.density), padding2);
 
         tvText.setText(a.toShow);
 
@@ -114,8 +117,8 @@ public class AnswerFrameLayout extends FrameLayout {
             tvText.setTextSize(TypedValue.COMPLEX_UNIT_PX, metricsAndPaints.fontBig);
         else tvText.setTextSize(TypedValue.COMPLEX_UNIT_PX, metricsAndPaints.fontHeader);
 
-        final int padding = a.waitForReply ? 23 * 3 : 43 * 3;
-        tvText.setPadding(60 * 3, 63 * 3, 90 * 3, padding);
+        final int padding = (int) (a.waitForReply ? 23 * metricsAndPaints.density : 43 * metricsAndPaints.density);
+        tvText.setPadding((int) (60 * metricsAndPaints.density), (int) (63 * metricsAndPaints.density), (int) (90 * metricsAndPaints.density), padding);
 
         if (a.replyVariants != null) {
             rlOpts = new RelativeLayout[a.replyVariants.length];
@@ -232,7 +235,7 @@ public class AnswerFrameLayout extends FrameLayout {
                 onShown.run();
                 onShown = null;
             }
-            canvas.drawRect(0, 0, getWidth(), tvText.getTop() + 200 * 3, bgHeader);
+            canvas.drawRect(0, 0, getWidth(), tvText.getTop() + 200 * metricsAndPaints.density, bgHeader);
             canvas.drawCircle(state == 2 ? width * (1 - i * 2 / 3) : x, y, r2, bgMain);
             super.draw(canvas);
         } else {

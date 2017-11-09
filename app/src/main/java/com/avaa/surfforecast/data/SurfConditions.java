@@ -21,6 +21,16 @@ public class SurfConditions {
     public SurfConditions() {
     }
 
+    public SurfConditions(SurfConditions c) {
+        if (c == null) return;
+        this.waveHeight = c.waveHeight;
+        this.waveAngle = c.waveAngle;
+        this.wavePeriod = c.wavePeriod;
+        this.waveEnergy = c.waveEnergy;
+        this.windSpeed = c.windSpeed;
+        this.windAngle = c.windAngle;
+    }
+
     public SurfConditions(int waveHeight, Direction waveDirection, int wavePeriod, int waveEnergy, int windSpeed, Direction windDirection) {
         this.waveHeight = waveHeight;
         this.waveAngle = Direction.directionToAngle(waveDirection);
@@ -101,8 +111,8 @@ public class SurfConditions {
 
 
     public static boolean equals(SurfConditions a, SurfConditions b) {
-        if (a==b) return true;
-        if (a==null) return false;
+        if (a == b) return true;
+        if (a == null || b == null) return false;
         if (a.waveHeight != b.waveHeight) return false;
         if (Float.compare(a.waveAngle, b.waveAngle) != 0) return false;
         if (a.wavePeriod != b.wavePeriod) return false;

@@ -8,18 +8,20 @@ import android.graphics.Paint;
 import android.graphics.Path;
 import android.graphics.PointF;
 import android.os.Build;
+import android.view.View;
 
 import com.avaa.surfforecast.MainModel;
 import com.avaa.surfforecast.data.TideData;
 import com.avaa.surfforecast.drawers.MetricsAndPaints;
 import com.avaa.surfforecast.views.ParallaxHelper;
 
-import static com.avaa.surfforecast.MainModel.Change.SELECTED_CONDITIONS;
+import static com.avaa.surfforecast.MainModel.Change.SELECTED_DAY;
 import static com.avaa.surfforecast.MainModel.Change.SELECTED_SPOT;
+import static com.avaa.surfforecast.MainModel.Change.SELECTED_TIME;
+import static com.avaa.surfforecast.data.Common.STR_DASH;
 import static com.avaa.surfforecast.data.Common.STR_M;
 import static com.avaa.surfforecast.data.Common.STR_TIDE;
 import static com.avaa.surfforecast.views.ColorUtils.alpha;
-import static com.avaa.surfforecast.data.Common.STR_DASH;
 
 
 /**
@@ -32,7 +34,7 @@ public class TideCircle extends MapCircle {
 
     public int colorWaterColor = 0xffacb5b8; //0xffa3b1b6; //0xff819faa; //0xff2e393d;
 
-    public final Paint paintPathTide = new Paint() {{
+    private final Paint paintPathTide = new Paint() {{
         setAntiAlias(true);
         setColor(colorWaterColor);
         setStyle(Paint.Style.FILL);
@@ -44,20 +46,23 @@ public class TideCircle extends MapCircle {
     private Path pathTide;
 
 
-    public TideCircle(Context context) {
-        super(context);
+    public TideCircle(View view) {
+        super(view);
 
         paintFont.setColor(MetricsAndPaints.colorWhite);
         paintHintsFont.setColor(MetricsAndPaints.colorWhite);
 
         MainModel model = MainModel.instance;
 
-        model.addChangeListener(changes -> {
+        model.addChangeListener(SELECTED_TIME, SELECTED_DAY, SELECTED_SPOT, changes -> {
+//            Log.i(TAG, "change " + changes.toString());
             if (changes.contains(SELECTED_SPOT)) updateTideData();
-            else updateNowTide();
-        }, SELECTED_SPOT, SELECTED_CONDITIONS);
+            updateNowTide();
+//            Log.i(TAG, "change " + model.getSelectedTime() + " " + (tideData != null) + " " + tide);
+        });
 
         updateTideData();
+        updateNowTide();
     }
 
 
@@ -68,7 +73,6 @@ public class TideCircle extends MapCircle {
     private void updateTideData() {
         MainModel model = MainModel.instance;
         tideData = model.selectedTideData; //tideDataProvider.getTideData(model.getSelectedSpot().tidePortID);
-        updateNowTide();
     }
 
 
@@ -90,7 +94,7 @@ public class TideCircle extends MapCircle {
 
         checkNowTide();
 
-        float r = (dh - DENSITY_DH_DEP) * visible + DENSITY_DH_DEP;
+        float r = dh * visible; //(dh - DENSITY_DH_DEP) * visible + DENSITY_DH_DEP;
 
         PointF pp = parallaxHelper.applyParallax(ox, oy, dh * subZ);
         float x = pp.x, y = pp.y;
@@ -98,6 +102,8 @@ public class TideCircle extends MapCircle {
         float py = (float) (r / Math.sqrt(2));
         float nowy = py - py * 2 * tide / 250;
         float nowx = (float) (-Math.cos(Math.asin(nowy / r)) * r);
+
+        setLocation(ox + nowx, oy + nowy);
 
         if (pathTide != null) {
             paintPathTide.setColor(alpha(alpha, colorWaterColor));
@@ -149,6 +155,11 @@ public class TideCircle extends MapCircle {
     }
 
 
+    public void updateMetrics() {
+        updateNowTide();
+    }
+
+
     private void updateNowTide() {
         MainModel model = MainModel.instance;
 
@@ -162,6 +173,7 @@ public class TideCircle extends MapCircle {
             newTide = tideData.getTide(model.getSelectedDayInt(), time);
             if (newTide != null) tide = newTide;
         }
+
 //        if (model != null) Log.i(TAG, "updateNowTide " + model.selectedTime);
 
         if (tideData != null && tide != null && model.metricsAndPaints != null) {
@@ -188,6 +200,8 @@ public class TideCircle extends MapCircle {
                 }
             }
         }
+
+        ((SurfSpotsMap) view).repaint();
 
         if (newTide == null) {
             setVisible(false, true);

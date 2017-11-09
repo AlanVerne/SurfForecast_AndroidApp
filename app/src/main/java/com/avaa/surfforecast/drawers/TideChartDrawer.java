@@ -4,18 +4,15 @@ import android.graphics.Bitmap;
 import android.graphics.Canvas;
 import android.graphics.Paint;
 import android.os.AsyncTask;
-import android.util.Log;
 
 import com.avaa.surfforecast.MainActivity;
 import com.avaa.surfforecast.MainModel;
 import com.avaa.surfforecast.data.Common;
-import com.avaa.surfforecast.data.DateTimeHelper;
 import com.avaa.surfforecast.data.SurfSpot;
 import com.avaa.surfforecast.data.TideData;
 import com.avaa.surfforecast.data.TideDataProvider;
 import com.avaa.surfforecast.views.SurfConditionsForecastView;
 
-import java.util.Calendar;
 import java.util.List;
 
 import static com.avaa.surfforecast.data.Common.STR_M;
@@ -88,7 +85,7 @@ public class TideChartDrawer {
 
         updateDrawer();
 
-        mainModel.addChangeListener(changes -> setPortID(mainModel.getSelectedSpot().tidePortID), MainModel.Change.SELECTED_SPOT);
+        mainModel.addChangeListener(MainModel.Change.SELECTED_SPOT, changes -> setPortID(mainModel.getSelectedSpot().tidePortID));
     }
 
 
@@ -194,13 +191,13 @@ public class TideChartDrawer {
         tidePortID = surfSpot.tidePortID;
 
         if (tideDataProvider.getTideData(surfSpot.tidePortID) == null) {
-            Log.i(TAG, "updateBitmaps() | " + "cancelled. tideDataProvider.get() == null");
+//            Log.i(TAG, "updateBitmaps() | " + "cancelled. tideDataProvider.get() == null");
             return false;
         }
 
         if (tideChartBitmapsAsyncDrawer != null && tideChartBitmapsAsyncDrawer.getStatus() != AsyncTask.Status.FINISHED) {
             tideChartBitmapsAsyncDrawer.cancel(true);
-            Log.i(TAG, "updateBitmaps() | " + "cancelled async drawer");
+//            Log.i(TAG, "updateBitmaps() | " + "cancelled async drawer");
         }
 
 //        Calendar todaysStartTime = DateTimeHelper.getTodaysStartTime();

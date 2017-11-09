@@ -75,7 +75,7 @@ public class RatedConditions implements Comparable<RatedConditions> {
         this.surfConditions = surfConditions;
         this.surfSpot = surfSpot;
 
-        //Log.i("SurfConditions", "rate(" + surfSpot.getShortName() + ", " + time / 60 + ":00), rated: " + waveRating + ", " + windRating + ", " + tideRating);
+//        Log.i("SurfConditions", "rate(" + surfSpot.getShortName() + ", " + time / 60 + ":00), rated: " + waveRating + ", " + windRating + ", " + tideRating);
     }
 
 
@@ -103,7 +103,7 @@ public class RatedConditions implements Comparable<RatedConditions> {
 //            Log.i(TAG, "waveRating " + waveRating);
             return waveRating;
         }
-        return -1;
+        return 0;
     }
 
     private static float rateTide(SurfSpot spot, TideData tideData, int plusDays, int time) {
@@ -137,7 +137,7 @@ public class RatedConditions implements Comparable<RatedConditions> {
 //            Log.i(TAG, "tideRating " + tideRating);
             return tideRating;
         }
-        return -1;
+        return 0;
     }
 
     private static float rateWind(SurfConditions surfConditions, SurfSpot spot) {

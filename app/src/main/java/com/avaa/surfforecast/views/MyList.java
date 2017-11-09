@@ -161,8 +161,13 @@ public class MyList extends FeaturedScrollView {
                     if (view != selectedView) view.setVisibility(INVISIBLE);
                 }
             } else {
+                float a = awakeState * 2 - 1;
+                if (a < 0) a = 0;
+                a *= 0.999f;
                 for (final View view : views) {
-                    if (view != selectedView) view.setAlpha(awakeState * 0.99f);
+                    if (view != selectedView) {
+                        view.setAlpha(a);
+                    }
                 }
             }
 
@@ -406,7 +411,7 @@ public class MyList extends FeaturedScrollView {
     public boolean onInterceptTouchEvent(MotionEvent ev) {
         if (ev.getAction() == MotionEvent.ACTION_DOWN) {
             //Log.i(TAG, "onInterceptTouchEvent() | " + awake + " " + prevTime + " " + awakeState);
-            if (awakeState == 0 && ev.getY() > dh * 3.5) return false;
+            if (awakeState == 0 && ev.getY() > dh * 3) return false;
             if (!awake) {
                 ignoreSelectedViewSelection = true;
             }
@@ -420,7 +425,7 @@ public class MyList extends FeaturedScrollView {
         pointers = ev.getPointerCount();
 
         if (ev.getAction() == MotionEvent.ACTION_DOWN) {
-            if (awakeState == 0 && ev.getY() > dh * 3.5) return false;
+            if (awakeState == 0 && ev.getY() > dh * 3) return false;
             awake();
         }
         if (ev.getAction() == MotionEvent.ACTION_MOVE) awake();

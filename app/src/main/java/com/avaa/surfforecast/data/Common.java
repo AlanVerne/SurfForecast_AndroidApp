@@ -24,9 +24,9 @@ public class Common {
     public static final String STR_KJ = "kJ";
     public static final String STR_M = "m";
 
-    public static final String STR_WIND = "wind";
-    public static final String STR_SWELL = "swell";
-    public static final String STR_TIDE = "tide";
+    public static final String STR_WIND = "Wind";
+    public static final String STR_SWELL = "Swell";
+    public static final String STR_TIDE = "Tide";
 
     public static final String STR_WIND_U = "Wind";
     public static final String STR_SWELL_U = "Swell";

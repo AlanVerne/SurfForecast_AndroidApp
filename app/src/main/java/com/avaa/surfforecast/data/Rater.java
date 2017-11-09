@@ -69,7 +69,7 @@ public class Rater {
 
 
     public void updateBest() {
-        Log.i(TAG, "updateBest");
+//        Log.i(TAG, "updateBest");
         initBestByDay();
         for (SurfSpot surfSpot : MainModel.instance.surfSpots.getAll()) {
             TreeMap<Long, RatedConditions> map = updateBest(surfSpot);
