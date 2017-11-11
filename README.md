@@ -1,14 +1,21 @@
-# Bali Surf Forecast
-Android App
+# Bali Surf - Where and When
+Android app / <a href='https://play.google.com/store/apps/details?id=com.avaa.surfforecast'>In Play store</a>
 
-<a href='https://play.google.com/store/apps/details?id=com.avaa.surfforecast'>In Play store</a>
+- Surf spots on map
+- Rating
+- 7 days forecast
+	- Swell (with swell energy!)
+	- Wind
+	- Tide hourly
+	- Live wind from airport weather station
+
 
 TODO
-- refactor initial circled frame layout
-- sketch cropped tide chart
-- show conditions with components
-- sketch shrinked wind
-- shrink wind and add energy
-- show 'ft' and 's' for newbies
-- process 'except smth' construction
-- animation easings impr
+- add: forecast: choose time
+- add: map: show energy
+- add: ai: process 'except ***' construction
+- ref: ai: circled frame layout
+- add: map: animate waves
+- add: spotinfo
+- add: surf dairy
+- add: tracks and tricks log
