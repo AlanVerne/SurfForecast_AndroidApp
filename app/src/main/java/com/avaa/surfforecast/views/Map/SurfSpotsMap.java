@@ -336,6 +336,7 @@ public class SurfSpotsMap extends View {
 
     private PointF actionDown = null;
     private boolean moved;
+    private int spotIDown = -1;
 
     private final GestureDetector.OnGestureListener gestureListener = new GestureDetector.SimpleOnGestureListener() {
         @Override
@@ -345,6 +346,7 @@ public class SurfSpotsMap extends View {
 //            Log.i(TAG, "onFling() " + (int) (zoomedInV.x * 10f / 60f) + " " + (int) (zoomedInV.y * 10f / 60f));
 
             actionDown = null;
+            spotIDown = -1;
             repaint();
 
             return true;
@@ -355,6 +357,7 @@ public class SurfSpotsMap extends View {
 //            if (!moved && Math.pow(-e.getX() + actionDown.x, 2) + Math.pow(-e.getY() + actionDown.y, 2) > dh) {
             if (!moved) {
                 moved = true;
+                spotIDown = -1;
 
                 if (overviewState < 1f) {
                     model.mainActivity.performHideForecast();
@@ -388,32 +391,22 @@ public class SurfSpotsMap extends View {
                 actionDown = new PointF(e.getX(), e.getY());
                 zoomedInV.set(0, 0);
                 moved = false;
+                if (overviewState > 0.75f && toOverview) {
+                    spotIDown = hit((int) e.getX(), (int) e.getY());
+                }
                 return true;
             } else if (e.getAction() == MotionEvent.ACTION_UP) {
                 actionDown = null;
-                if (!moved && overviewState > 0.75f) {
-                    for (Map.Entry<Integer, Rect> rect : spotsLabels.entrySet()) {
-                        if (rect.getValue().contains((int) e.getX(), (int) e.getY())) {
-                            model.setSelectedSpotI(rect.getKey());
-                            model.mainActivity.performShowTide();
-                            return true;
-                        }
-                    }
-
-                    double min = dh * dh * 4;
-                    int minI = -1;
-                    for (Map.Entry<Integer, Rect> rect : spotsLabels.entrySet()) {
-                        double d = Math.pow(rect.getValue().centerX() - e.getX(), 2) + Math.pow(rect.getValue().centerY() - (int) e.getY(), 2);
-                        if (d < min) {
-                            min = d;
-                            minI = rect.getKey();
-                        }
-                    }
-                    if (minI != -1) {
-                        model.setSelectedSpotI(minI);
+                if (!moved && overviewState > 0.75f && toOverview) {
+                    if (spotIDown >= 0) {
+                        model.setSelectedSpotI(spotIDown);
                         model.mainActivity.performShowTide();
+                        spotIDown = -1;
                         return true;
                     }
+                } else if (!moved && !toOverview) {
+                    model.mainActivity.onBackPressed();
+                    return true;
                 } else {
                     moved = false;
                 }
@@ -429,6 +422,7 @@ public class SurfSpotsMap extends View {
                 moved = false;
                 return true;
             } else if (e.getAction() == MotionEvent.ACTION_UP) {
+                spotIDown = -1;
                 actionDown = null;
                 if (!moved) {
                     if (tideCircle != null) {
@@ -467,6 +461,27 @@ public class SurfSpotsMap extends View {
         }
 
         return super.onTouchEvent(e);
+    }
+
+
+    private int hit(int x, int y) {
+        for (Map.Entry<Integer, Rect> rect : spotsLabels.entrySet()) {
+            if (rect.getValue().contains(x, y)) {
+                return rect.getKey();
+            }
+        }
+
+        double min = dh * dh * 4;
+        int minI = -1;
+        for (Map.Entry<Integer, Rect> rect : spotsLabels.entrySet()) {
+            double d = Math.pow(rect.getValue().centerX() - x, 2) + Math.pow(rect.getValue().centerY() - y, 2);
+            if (d < min) {
+                min = d;
+                minI = rect.getKey();
+            }
+        }
+
+        return minI;
     }
 
 
@@ -727,7 +742,7 @@ public class SurfSpotsMap extends View {
 
         int mapCenterY = getHeight() / 2 - insetBottom / 2;
 
-        PointF pp = parallaxHelper.applyParallax(getWidth() / 2, mapCenterY, -dh * 1.0f);
+        PointF pp = parallaxHelper.applyParallax(getWidth() / 2, mapCenterY, -dh * 1.0f + dh * 0.75f * overviewState);
         pp.offset(-getWidth() / 2, -mapCenterY);
 
         if (awakenedState == 0) {
@@ -811,9 +826,11 @@ public class SurfSpotsMap extends View {
         float dx2 = dx / scalesRatio;
         float dy2 = dy / scalesRatio;
 
-        float r = densityDHDep * 1.5f;
+        float r = densityDHDep * 3; //1.5f;
 
         Drawable star = ContextCompat.getDrawable(getContext(), R.drawable.ic_star_white_24dp);
+
+        float labelsAlpha = Math.max(0f, overviewState - 0.33f) / 0.67f;
 
         for (SurfSpot spot : surfSpotsList) {
             float x = spot.pointOnSVG.x * scaleOverview;
@@ -821,11 +838,15 @@ public class SurfSpotsMap extends View {
             float x2 = x + dx2;
             float y2 = y + dy2;
 
-            float highlighted = isHighlighted(i);
+            float highlighted = isHighlighted(i); // TODO!!! scale bug
             if (highlighted > 0 && i != selectedSpotI) {
                 float t = highlighted * (1f - awakenedState);
                 paintBG.setColor(alpha(t, colorSpotDot));
                 canvas.drawCircle(x, y, r * highlighted, paintBG);
+            }
+
+            if (spotIDown == i) {
+                labelsAlpha *= 0.5f;
             }
 
             if (awakenedState == 1 && overviewState > 0f) {
@@ -840,7 +861,7 @@ public class SurfSpotsMap extends View {
                     float size = metrics.font; // / ((overviewState * MAP_OVERVIEW + (1f - overviewState) * MAP_SPOT_SELECTED) / MAP_OVERVIEW); // bestRating >= 0.7 ? metrics.fontBig : bestRating > 0.3 ? metrics.font : metrics.fontSmall;
 //                    RatingView.drawStatic(canvas, (int) x - dh, (int) y, dh / 4, best.rating, best.waveRating * best.tideRating, (int) (t * 255));
 //                    paintFont.setColor(alpha(Math.max(0f, overviewState - 0.33f) / 0.67f * (bestRating / 3f + 0.66f), 0x006281));
-                    paintFont.setColor(alpha(Math.max(0f, overviewState - 0.33f) / 0.67f, 0x006281));
+                    paintFont.setColor(alpha(labelsAlpha, 0x006281));
                     paintFont.setTextSize(size);
 
                     y -= paintFont.getFontMetrics().ascent / 3;
@@ -869,12 +890,12 @@ public class SurfSpotsMap extends View {
                     }
 
                     y += paintFont.getFontMetrics().ascent * 1.5f;
-                    star.setAlpha((int) (overviewState * (bestRating >= 0.7 ? 255 : bestRating > 0.3 ? 150 : 100)));
+                    star.setAlpha((int) (labelsAlpha * (bestRating >= 0.7 ? 255 : bestRating > 0.3 ? 150 : 100)));
                     star.setBounds((int) x, (int) y, (int) (x + dh), (int) (y + dh));
                     star.draw(canvas);
 
-                    y -= paintFont.getFontMetrics().ascent * 1.4f;
-                    paintFont.setColor(alpha(overviewState, bestRating >= 0.7 ? 0xff8ae3fc : 0xff4ac3ec));//paintBG.getColor());
+                    y -= paintFont.getFontMetrics().ascent * 1.425f;
+                    paintFont.setColor(alpha(labelsAlpha, bestRating >= 0.7 ? 0xff8ae3fc : 0xff4ac3ec));//paintBG.getColor());
                     paintFont.setTextAlign(Paint.Align.CENTER);
                     paintFont.setTextSize(metrics.fontSmall);
                     canvas.drawText(String.valueOf(Math.round(bestRating * 7)), x + dh / 2, y, paintFont);
@@ -886,6 +907,11 @@ public class SurfSpotsMap extends View {
                     spotsLabels.get(i).set(-1000, -1000, -1, -1);
                 }
             }
+
+            if (spotIDown == i) {
+                labelsAlpha *= 2f;
+            }
+
             i++;
         }
 
@@ -899,8 +925,8 @@ public class SurfSpotsMap extends View {
 
             float t = awakenedState * (1f - overviewState);
 
-            RatedConditions best = model.rater.getBest(spot, plusDays);
-            float bestRating = best != null ? best.rating : 0;
+//            RatedConditions best = model.rater.getBest(spot, plusDays);
+//            float bestRating = best != null ? best.rating : 0;
 //            float r = densityDHDep * (bestRating >= 0.7 ? 2f : bestRating > 0.3 ? 1.5f : 1f);
             r = (dh * 1.5f - r) * t + r;
 
@@ -909,7 +935,8 @@ public class SurfSpotsMap extends View {
             }
 
             if (t < 0.5f) {
-                paintBG.setColor(alpha(overviewState * (bestRating / 2f + 0.5f) * (1f - t / 0.5f), 0x006281));
+//                paintBG.setColor(alpha(overviewState * (bestRating / 2f + 0.5f) * (1f - t / 0.5f), 0x006281));
+                paintBG.setColor(alpha(overviewState * (1f - t / 0.5f), 0x006281));
                 canvas.drawCircle(x, y, r, paintBG);
             }
         }

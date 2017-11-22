@@ -6,7 +6,6 @@ import android.graphics.Canvas;
 import android.graphics.Paint;
 import android.graphics.Typeface;
 import android.util.AttributeSet;
-import android.util.Log;
 import android.util.TypedValue;
 import android.view.Gravity;
 import android.view.MotionEvent;
@@ -34,8 +33,8 @@ public class OneDayConditionsSmallView extends LinearLayout {
     private static final String TAG = "OneDayCSV";
     private static final SimpleDateFormat DAY_FORMAT = new SimpleDateFormat("EEE");
 
-    private static final int LONG_DELAY = 500;
-    private static final int SHORT_DELAY = 50;
+    private static final int DELAY_BEFORE_CHANGES = 500;
+    private static final int DELAY_FOR_FRAME = 50;
 
 
     private final Paint p = new Paint();
@@ -128,7 +127,7 @@ public class OneDayConditionsSmallView extends LinearLayout {
                         timerHAnimataion = null;
                     }
                 }
-            }, isVisible() ? 100 : LONG_DELAY, SHORT_DELAY);
+            }, DELAY_BEFORE_CHANGES, DELAY_FOR_FRAME); //isVisible() ? 100 :
         }
     }
 

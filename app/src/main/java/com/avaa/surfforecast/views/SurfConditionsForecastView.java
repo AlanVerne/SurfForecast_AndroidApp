@@ -53,6 +53,9 @@ import static com.avaa.surfforecast.drawers.MetricsAndPaints.colorMidBlack;
 import static com.avaa.surfforecast.drawers.MetricsAndPaints.getColorForEnergy;
 import static com.avaa.surfforecast.drawers.MetricsAndPaints.getTextColorForEnergy;
 import static com.avaa.surfforecast.views.ColorUtils.alpha;
+import static java.lang.Math.abs;
+import static java.lang.Math.max;
+import static java.lang.Math.min;
 import static java.lang.Math.pow;
 import static java.lang.Math.round;
 
@@ -134,7 +137,7 @@ public class SurfConditionsForecastView extends HorizontalScrollView {
 
 
     private static final int SWIPE_MIN_DISTANCE = 5;
-    private static final int SWIPE_THRESHOLD_VELOCITY = 300;
+    private static final int SWIPE_THRESHOLD_VELOCITY = 150; //300;
     private int mActiveFeature = -1;
 
     private float fx, fy;
@@ -149,8 +152,17 @@ public class SurfConditionsForecastView extends HorizontalScrollView {
         int contentTop = getContentTop();
 
         if (event.getAction() == MotionEvent.ACTION_DOWN) {
-            if (event.getY() < contentTop - (underview.getAlpha() > 0.25f ? dh * 5 : 0)) {
+            if (event.getY() < contentTop - (underview.getAlpha() > 0.25f ? dh * 4.5f : 0)) {
                 return false;
+            } else if (event.getY() < contentTop) {
+//                float x = event.getX();
+//                for (OneDayConditionsSmallView v1 : model.mainActivity.smallViews) {
+//                    if (x < v1.getRight() + ((LinearLayout.LayoutParams) v1.getLayoutParams()).rightMargin) {
+//                        v1.setAlpha(0.5f);
+//                        break;
+//                    }
+//                }
+                underview.dispatchTouchEvent(event);
             }
 
             fx = event.getX();
@@ -176,6 +188,10 @@ public class SurfConditionsForecastView extends HorizontalScrollView {
                     isScrollDirectionDetermined = true;
                     if (!isScrollY && event.getY() < contentTop) {
                         isScrollX = false;
+                    }
+
+                    if (isScrollX || isScrollY) {
+                        underview.dispatchTouchEvent(MotionEvent.obtain(0, 0, MotionEvent.ACTION_CANCEL, 0, 0, 0));
                     }
                 }
             }
@@ -203,7 +219,7 @@ public class SurfConditionsForecastView extends HorizontalScrollView {
     }
 
     private int xToDay(int x) {
-        return Math.max(0, Math.min(MainActivity.NDAYS - 1, (x + getWidth() / 2) / dh / 16));
+        return max(0, min(MainActivity.NDAYS - 1, (x + getWidth() / 2) / dh / 16));
     }
 
     private final GestureDetector.OnGestureListener gestureListener = new GestureDetector.SimpleOnGestureListener() {
@@ -225,12 +241,13 @@ public class SurfConditionsForecastView extends HorizontalScrollView {
                 }
                 if (Math.abs(velocityY) > SWIPE_THRESHOLD_VELOCITY) {
                     if (velocityY < 0) {
-                        if (scrollY > getTideScrollY()) scrollY(getWindSwellScrollY());
-                        else scrollY(getTideScrollY());
+                        if (scrollY > getTideScrollY()) scrollY(getWindSwellScrollY(), velocityY);
+                        else scrollY(getTideScrollY(), velocityY);
                     } else {
-                        if (scrollY < getTideScrollY()) scrollY(0);
-                        else if (scrollY < getWindSwellScrollY()) scrollY(getTideScrollY());
-                        else scrollY(getWindSwellScrollY());
+                        if (scrollY < getTideScrollY()) scrollY(0, velocityY);
+                        else if (scrollY < getWindSwellScrollY())
+                            scrollY(getTideScrollY(), velocityY);
+                        else scrollY(getWindSwellScrollY(), velocityY);
                     }
                     return true;
                 }
@@ -426,7 +443,7 @@ public class SurfConditionsForecastView extends HorizontalScrollView {
             canvas.drawText(STR_S, dh * 4.5f, rightPaneX, paintLabels);
         }
 
-        float alpha = scrollY > dh * 12.5 ? Math.min(1, (scrollY - dh * 12.5f) / (dh)) : 0;
+        float alpha = scrollY > dh * 12.5 ? min(1, (scrollY - dh * 12.5f) / (dh)) : 0;
         if (alpha > 0) {
             paintLabels.setColor(alpha(alpha, 0xff006283));
             canvas.drawText(STR_ENERGY_U, dh * 3f, 0, paintLabels);
@@ -481,7 +498,7 @@ public class SurfConditionsForecastView extends HorizontalScrollView {
                     canvas.drawText(STR_NO_SWELL_DATA, textX, swellY + dh * 1.5f + fontH / 2, paintLabels);
 
                 if (scrollY > dh * 12.5) {
-                    alpha = Math.min(1, (scrollY - dh * 12.5f) / (dh));
+                    alpha = min(1, (scrollY - dh * 12.5f) / (dh));
 
 //                    paintBGs.setAlpha((int) (alpha * 255));
 //                    canvas.drawRect(x, swellY + dh * 5f, x + dh * 16, swellY + dh * 9f, paintBGs);
@@ -515,7 +532,7 @@ public class SurfConditionsForecastView extends HorizontalScrollView {
                         }
                     }
 
-                    alpha = Math.min(1, (scrollY - dh * 14.5f) / (dh));
+                    alpha = min(1, (scrollY - dh * 14.5f) / (dh));
                     if (alpha > 0) {
                         paintLabels.setColor(alpha(scrollY > 16f * dh ? alpha : alpha * 0x66 / 0xff, colorBlack));
 
@@ -531,7 +548,7 @@ public class SurfConditionsForecastView extends HorizontalScrollView {
 
                         canvas.drawText(scrollY > 16f * dh ? "RELEASE TO UPDATE" : "Updated " + time + " ago", textX, updateDY + fontH / 2, paintLabels);
 
-                        alpha = Math.min(1, (scrollY - dh * 15.5f) / (dh));
+                        alpha = min(1, (scrollY - dh * 15.5f) / (dh));
                         float updateDW = dh * 12 * (alpha);
                         updateDY += dh * 0.5f + model.metricsAndPaints.density / 2;
                         canvas.drawRect(textX - updateDW, updateDY, textX + updateDW, updateDY + Math.round(model.metricsAndPaints.density), paintLabels);
@@ -572,14 +589,14 @@ public class SurfConditionsForecastView extends HorizontalScrollView {
 
         canvas.translate(0, -getHeight() + scrollY - dh * 2);
 
-        canvas.translate(0, Math.min(tideChartDrawer.h, Math.max(0, -scrollY + tideChartDrawer.h)));
+        canvas.translate(0, min(tideChartDrawer.h, max(0, -scrollY + tideChartDrawer.h)));
 
         if (tideChartDrawer != null)
             tideChartDrawer.draw(canvas, getWidth(), getHeight(), getScrollX(), orientation);
 
         int ddd = (dh * 16 - getWidth()) / 2;
         int k = Math.abs((sx - ddd + dh * 8) % (dh * 16) - dh * 8);
-        float visible = Math.max(0f, Math.min(1f, (dh - k) / (dh / 2f)));
+        float visible = max(0f, min(1f, (dh - k) / (dh / 2f)));
         if (visible > 0) {  // TODO move to TideChartDrawer
             canvas.save();
             canvas.translate(dh + getScrollX() - labelsY, getHeight());
@@ -680,6 +697,10 @@ public class SurfConditionsForecastView extends HorizontalScrollView {
         scrollY(y, 333);
     }
 
+    public void scrollY(int y, float vy) {
+        scrollY(y, max(333, min(666, (int) (1322 * abs(y - scrollY) / abs(vy)))));
+    }
+
     public void scrollY(int y, int d) {
 //        Log.i(TAG, "scrollY " + y + " now " + scrollY + " " + scrollerY.getCurrY() + " " + scrollerY.getFinalY());
         if (!scrollerY.isFinished()) {
@@ -707,9 +728,9 @@ public class SurfConditionsForecastView extends HorizontalScrollView {
         if (scrollY >= 16 * dh) model.updateSelectedSpotAll();
 
         if (scrollY > (getWindSwellScrollY() - getTideScrollY()) / 2 + getTideScrollY())
-            scrollY(getWindSwellScrollY());
-        else if (scrollY > getTideScrollY() / 2) scrollY(getTideScrollY());
-        else scrollY(0);
+            scrollY(getWindSwellScrollY(), 666);
+        else if (scrollY > getTideScrollY() / 2) scrollY(getTideScrollY(), 666);
+        else scrollY(0, 666);
     }
 
 
@@ -723,7 +744,7 @@ public class SurfConditionsForecastView extends HorizontalScrollView {
 
 
     public float getTideVisibility() {
-        return Math.max(0f, Math.min(1f, scrollY / getTideScrollY()));
+        return max(0f, min(1f, scrollY / getTideScrollY()));
     }
 
 

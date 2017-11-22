@@ -142,7 +142,7 @@ public class MainModel {
     public void setSelectedSpotI(int i) {
         if (selectedSpotI == i) return;
 
-        Log.i(TAG, "setSelectedSpotI() " + i);
+//        Log.i(TAG, "setSelectedSpotI() " + i);
 
         Changes changes = new Changes(SELECTED_SPOT);
         changes.add(ALL_CONDITIONS); //TODO

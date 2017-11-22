@@ -1,5 +1,6 @@
 package com.avaa.surfforecast.views;
 
+
 import android.animation.Animator;
 import android.animation.AnimatorListenerAdapter;
 import android.animation.ObjectAnimator;
@@ -20,12 +21,14 @@ import java.util.List;
 import java.util.Timer;
 import java.util.TimerTask;
 
+
 /**
  * Created by Alan on 7 Jul 2016.
  */
 
-public class MyList extends FeaturedScrollView {
-    private static final String TAG = "MyList";
+
+public class HeaderList extends FeaturedScrollView {
+    private static final String TAG = "HeaderList";
 
     private static final int DELAY_BEFORE_SLEEP = 60000;
     private static final int FALLING_ASLEEP_TIME = 160;
@@ -87,19 +90,19 @@ public class MyList extends FeaturedScrollView {
     boolean ignoreSelectedViewSelection = false;
 
 
-    public MyList(Context context, AttributeSet attrs, int defStyleAttr) {
+    public HeaderList(Context context, AttributeSet attrs, int defStyleAttr) {
         super(context, attrs, defStyleAttr);
         layout = new LinearLayout(context);
         init();
     }
 
-    public MyList(Context context, AttributeSet attrs) {
+    public HeaderList(Context context, AttributeSet attrs) {
         super(context, attrs);
         layout = new LinearLayout(context);
         init();
     }
 
-    public MyList(Context context) {
+    public HeaderList(Context context) {
         this(context, null);
     }
 

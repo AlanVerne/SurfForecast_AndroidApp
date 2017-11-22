@@ -36,8 +36,8 @@ import com.avaa.surfforecast.data.SurfConditionsProvider;
 import com.avaa.surfforecast.data.SurfSpot;
 import com.avaa.surfforecast.data.SurfSpots;
 import com.avaa.surfforecast.drawers.MetricsAndPaints;
+import com.avaa.surfforecast.views.HeaderList;
 import com.avaa.surfforecast.views.Map.SurfSpotsMap;
-import com.avaa.surfforecast.views.MyList;
 import com.avaa.surfforecast.views.OneDayConditionsSmallView;
 import com.avaa.surfforecast.views.RatingView;
 import com.avaa.surfforecast.views.SurfConditionsForecastView;
@@ -78,13 +78,13 @@ public class MainActivity extends AppCompatActivity {
     private int dh = 0;
     private int dhx2 = 0;
 
-    private List<OneDayConditionsSmallView> smallViews = new ArrayList<>();
+    public List<OneDayConditionsSmallView> smallViews = new ArrayList<>(); // TODO: Separate small views to custom forecastBriefView
 
     private VoiceInterfaceFragment vif;
     private View mainLayout;
     private SurfSpotsMap map;
     private ImageView daysScroller;
-    private MyList listSpots;
+    private HeaderList listSpots;
     private SurfConditionsForecastView forecast;
     private RelativeLayout rlDays;
     private FrameLayout flBtnMenu;
@@ -174,7 +174,7 @@ public class MainActivity extends AppCompatActivity {
         mainLayout = findViewById(R.id.mainlayout);
         map = (SurfSpotsMap) findViewById(R.id.map);
         daysScroller = (ImageView) findViewById(R.id.ivDaysScroller);
-        listSpots = (MyList) findViewById(R.id.svSpots);
+        listSpots = (HeaderList) findViewById(R.id.svSpots);
         forecast = (SurfConditionsForecastView) findViewById(R.id.scfv);
         progressBar = (MaterialProgressBar) findViewById(R.id.progressBar);
         rlDays = (RelativeLayout) findViewById(R.id.rlDays);
@@ -209,7 +209,7 @@ public class MainActivity extends AppCompatActivity {
 
         initSmallForecastViews();
 
-        listSpots.scrollListener = new MyList.ScrollListener() {
+        listSpots.scrollListener = new HeaderList.ScrollListener() {
             @Override
             public void scrolled(float shownI, float firstI, float lastI, float awakeState) {
                 awakeState = 1f - awakeState;
@@ -245,11 +245,22 @@ public class MainActivity extends AppCompatActivity {
             float x = event.getX();
             int day = 0;
             for (OneDayConditionsSmallView v1 : smallViews) {
-                if (x < v1.getRight() + ((LinearLayout.LayoutParams) v1.getLayoutParams()).rightMargin) {
-                    model.setSelectedDay(day);
-                    break;
+                if (day >= 0) {
+                    if (x < v1.getRight() + ((LinearLayout.LayoutParams) v1.getLayoutParams()).rightMargin) {
+                        if (event.getAction() == MotionEvent.ACTION_MOVE || event.getAction() == MotionEvent.ACTION_UP) {
+                            model.setSelectedDay(day);
+                        }
+                        if (event.getAction() == MotionEvent.ACTION_MOVE || event.getAction() == MotionEvent.ACTION_DOWN) {
+                            v1.setAlpha(0.5f);
+                        } else {
+                            v1.setAlpha(1f);
+                        }
+                        day = Integer.MIN_VALUE;
+                        continue;
+                    }
+                    day++;
                 }
-                day++;
+                v1.setAlpha(1);
             }
             return true;
         });
@@ -688,11 +699,11 @@ public class MainActivity extends AppCompatActivity {
             textView.setOnTouchListener((v, event) -> {
                 switch (event.getActionMasked()) {
                     case MotionEvent.ACTION_DOWN: {
-                        v.setPressed(true);
+                        v.setPressed(true); // to apply color form ColorStateList immediately
                         break;
                     }
                 }
-                return false; //we return false so that the click listener will process the event
+                return false; // we return false so that the click listener will process the event
             });
 
             if (i == ssi) selected = textView;
@@ -766,16 +777,16 @@ public class MainActivity extends AppCompatActivity {
                     if (after != null) {
                         map.postDelayed(() -> {
                             after.run();
-                        }, 250);
+                        }, 333);
                     }
-                }, 250);
+                }, 333);
             } else {
                 model.setSelectedSpotI(spotI);
                 performShowTide();
                 if (after != null) {
                     map.postDelayed(() -> {
                         after.run();
-                    }, 250);
+                    }, 333);
                 }
             }
 //            View view = spotsTV.get(spotI);
@@ -788,7 +799,7 @@ public class MainActivity extends AppCompatActivity {
             if (after != null) {
                 map.postDelayed(() -> {
                     after.run();
-                }, 250);
+                }, 333);
             }
         }
     }
@@ -800,14 +811,14 @@ public class MainActivity extends AppCompatActivity {
 
 
     public void performHideForecast() {
-        forecast.scrollY(0, 500);
+        forecast.scrollY(0, 666);
     }
 
     public void performShowTide() {
-        forecast.scrollY(forecast.getTideScrollY(), 500);
+        forecast.scrollY(forecast.getTideScrollY(), 666);
     }
 
     public void performShowWindSwell() {
-        forecast.scrollY(forecast.getWindSwellScrollY(), 500);
+        forecast.scrollY(forecast.getWindSwellScrollY(), 666);
     }
 }
