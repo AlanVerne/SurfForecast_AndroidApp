@@ -1,7 +1,6 @@
 package com.avaa.surfforecast.views.Map;
 
 
-import android.content.Context;
 import android.graphics.Canvas;
 import android.graphics.Paint;
 import android.graphics.Path;
@@ -42,29 +41,34 @@ public class WindCircle extends MapCircle {
         angle = new DirectionScroller(view);
         vbr = new FloatScroller(view);
 
+        MainModel.instance.addChangeListener(
+                MainModel.Change.SELECTED_CONDITIONS,
+                changes -> update());
+
+        update();
+    }
+
+
+    private void update() {
         MainModel model = MainModel.instance;
 
-        model.addChangeListener(MainModel.Change.SELECTED_CONDITIONS, changes -> {
-            int windSpeed = model.getSelectedWindSpeed();
+        int windSpeed = model.getSelectedWindSpeed();
 
-            strWindSpeed = windSpeed == -1 ? STR_DASH : String.valueOf(windSpeed);
+        strWindSpeed = windSpeed == -1 ? STR_DASH : String.valueOf(windSpeed);
 
-            if (windSpeed != -1) {
-                setVisible(true, true);
+        if (windSpeed != -1) {
+            setVisible(true, true);
 
-                float a = model.getSelectedWindAngle();
-                boolean vbr = a < 0 || windSpeed <= 0;
+            float a = model.getSelectedWindAngle();
+            boolean vbr = a < 0 || windSpeed <= 0;
 
-                if (a < 0) a = DEFAULT_WIND_ANGLE;
+            if (a < 0) a = DEFAULT_WIND_ANGLE;
 
-                angle.to(a, true);
-                this.vbr.to(vbr ? 1 : 0, true);
-            } else {
-                setVisible(false, true);
-            }
-        });
-
-        setVisible(false, false);
+            angle.to(a, true);
+            this.vbr.to(vbr ? 1 : 0, true);
+        } else {
+            setVisible(false, true);
+        }
     }
 
 

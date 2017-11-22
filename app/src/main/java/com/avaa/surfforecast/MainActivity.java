@@ -10,6 +10,7 @@ import android.net.Uri;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.v7.app.AppCompatActivity;
+import android.util.Log;
 import android.util.TypedValue;
 import android.view.Gravity;
 import android.view.MotionEvent;
@@ -102,6 +103,8 @@ public class MainActivity extends AppCompatActivity {
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
+        Log.i(TAG, "\\/ start constructor");
+
         super.onCreate(savedInstanceState);
 
         int colorBG = getResources().getColor(R.color.colorWaterBG);
@@ -296,7 +299,9 @@ public class MainActivity extends AppCompatActivity {
             }
         };
 
+        Log.i(TAG, "\\/ before init");
         model.init();
+        Log.i(TAG, "/\\ after init");
 
         resetDates();
 
@@ -335,6 +340,8 @@ public class MainActivity extends AppCompatActivity {
                     }
                 };
         orientationListener.enable();
+
+        Log.i(TAG, "/\\ end constructor");
     }
 
 

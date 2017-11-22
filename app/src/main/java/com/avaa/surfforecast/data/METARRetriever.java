@@ -18,7 +18,7 @@ import java.io.InputStreamReader;
 
 
 public class METARRetriever extends AsyncTask<Object, Void, METAR> {
-    private static final String TAG = "metarRetriever";
+    private static final String TAG = "METARRetriever";
 
     private final METARProvider metarProvider;
     private final String name;

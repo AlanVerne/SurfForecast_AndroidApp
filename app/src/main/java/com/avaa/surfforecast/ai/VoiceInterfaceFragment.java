@@ -61,10 +61,12 @@ public class VoiceInterfaceFragment extends Fragment {
 
     public CommandsExecutor commandsExecutor = null;
 
-    public TextToSpeech tts;
+    private TextToSpeech tts;
+
+    private boolean recognitionAvailable = false;
 
     private SpeechRecognizer speech;
-    final RecognitionListener rl = new RecognitionListener() {
+    private final RecognitionListener rl = new RecognitionListener() {
         @Override
         public void onReadyForSpeech(Bundle params) {
         }
@@ -141,7 +143,10 @@ public class VoiceInterfaceFragment extends Fragment {
                 }
             }
 
-            speech.destroy();
+            if (speech != null) {
+                speech.destroy();
+                speech = null;
+            }
             speech = SpeechRecognizer.createSpeechRecognizer(getActivity().getApplicationContext());
             speech.setRecognitionListener(rl);
         }
@@ -166,7 +171,7 @@ public class VoiceInterfaceFragment extends Fragment {
     View.OnClickListener clHintOpt = v -> {
         TextView tvHintOpt = ((TextView) v);
 
-        speech.cancel();
+        if (speech != null) speech.cancel();
         uiNotListening();
 
         //uiApprove(tvHintOpt);
@@ -181,6 +186,43 @@ public class VoiceInterfaceFragment extends Fragment {
 
 
     public VoiceInterfaceFragment() {
+    }
+
+
+    private SpeechRecognizer getSpeech() {
+        if (speech == null) {
+            speech = SpeechRecognizer.createSpeechRecognizer(getActivity().getApplicationContext());
+            speech.setRecognitionListener(rl);
+        }
+        return speech;
+    }
+
+
+    private TextToSpeech getTextToSpeech() {
+        tts = new TextToSpeech(getActivity().getApplicationContext(), status -> {
+            tts.setLanguage(Locale.UK);
+            tts.setOnUtteranceProgressListener(new UtteranceProgressListener() {
+                @Override
+                public void onStart(String utteranceId) {
+                }
+
+                @Override
+                public void onDone(String utteranceId) {
+                    flHint.post(() -> {
+                        if (!waitingForAnswer) {
+                            //flHint.postDelayed(() -> uiHideHint(), 6000);
+                        } else {
+                            flHint.postDelayed(() -> startListening(), 250);
+                        }
+                    });
+                }
+
+                @Override
+                public void onError(String utteranceId) {
+                }
+            });
+        });
+        return tts;
     }
 
 
@@ -363,14 +405,15 @@ public class VoiceInterfaceFragment extends Fragment {
     private void say(Answer a) {
         HashMap<String, String> map = new HashMap<>();
         map.put(TextToSpeech.Engine.KEY_PARAM_UTTERANCE_ID, "id");
-        tts.speak(a.toSay, TextToSpeech.QUEUE_FLUSH, map);
+        getTextToSpeech().speak(a.toSay, TextToSpeech.QUEUE_FLUSH, map);
     }
 
 
     public void stopListening() {
-        speech.cancel();
+        if (speech != null) speech.cancel();
         uiNotListening();
     }
+
 
     public void startListening() {
         if (!circleVoiceIndicator.isAwakened() && recognitionAvailable) {
@@ -397,48 +440,16 @@ public class VoiceInterfaceFragment extends Fragment {
             intent.putExtra(RecognizerIntent.EXTRA_LANGUAGE_MODEL, RecognizerIntent.LANGUAGE_MODEL_WEB_SEARCH); //FREE_FORM);
             intent.putExtra(RecognizerIntent.EXTRA_MAX_RESULTS, 100);
 
-            speech.startListening(intent);
+            getSpeech().startListening(intent);
         }
     }
 
-
-    boolean recognitionAvailable = false;
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
         recognitionAvailable = SpeechRecognizer.isRecognitionAvailable(getActivity().getApplicationContext());
-
-        speech = SpeechRecognizer.createSpeechRecognizer(getActivity().getApplicationContext());
-        speech.setRecognitionListener(rl);
-
-        tts = new TextToSpeech(getActivity().getApplicationContext(), new TextToSpeech.OnInitListener() {
-            @Override
-            public void onInit(int status) {
-                tts.setLanguage(Locale.UK);
-                tts.setOnUtteranceProgressListener(new UtteranceProgressListener() {
-                    @Override
-                    public void onStart(String utteranceId) {
-                    }
-
-                    @Override
-                    public void onDone(String utteranceId) {
-                        flHint.post(() -> {
-                            if (!waitingForAnswer) {
-                                //flHint.postDelayed(() -> uiHideHint(), 6000);
-                            } else {
-                                flHint.postDelayed(() -> startListening(), 250);
-                            }
-                        });
-                    }
-
-                    @Override
-                    public void onError(String utteranceId) {
-                    }
-                });
-            }
-        });
     }
 
 
@@ -518,6 +529,9 @@ public class VoiceInterfaceFragment extends Fragment {
     @Override
     public void onDestroy() {
         super.onDestroy();
-        speech.destroy();
+        if (speech != null) {
+            speech.destroy();
+            speech = null;
+        }
     }
 }

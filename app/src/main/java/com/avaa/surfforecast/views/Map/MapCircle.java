@@ -2,6 +2,7 @@ package com.avaa.surfforecast.views.Map;
 
 
 import android.graphics.Paint;
+import android.util.Log;
 import android.view.View;
 
 import com.avaa.surfforecast.MainModel;
@@ -60,6 +61,7 @@ public class MapCircle {
 
 
     public boolean setVisible(boolean visible, boolean smooth) {
+//        Log.i("MapCircle", this.getClass().getName() + " " + visible);
         return scrollerVisible.to(visible ? 1 : 0, smooth);
     }
 

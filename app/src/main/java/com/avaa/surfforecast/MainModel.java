@@ -2,6 +2,7 @@ package com.avaa.surfforecast;
 
 import android.content.SharedPreferences;
 import android.support.annotation.NonNull;
+import android.util.Log;
 
 import com.avaa.surfforecast.ai.CommandsExecutor;
 import com.avaa.surfforecast.ai.VoiceRecognitionHelper;
@@ -112,7 +113,7 @@ public class MainModel {
         surfSpots.init();
 
         setSelectedSpotI(willBeSelectedSpotI);
-        setSelectedDay(-0.01f);
+//        setSelectedDay(-0.01f);
     }
 
 
@@ -140,13 +141,20 @@ public class MainModel {
 
     public void setSelectedSpotI(int i) {
         if (selectedSpotI == i) return;
-        //Log.i("SurfSpots", "setSelectedSpotI() 1");
+
+        Log.i(TAG, "setSelectedSpotI() " + i);
 
         Changes changes = new Changes(SELECTED_SPOT);
         changes.add(ALL_CONDITIONS); //TODO
 
         selectedSpotI = i;
         selectedSpot = getSelectedSpot();
+
+        if (selectedDay == -1) {
+            selectedDay = -0.01f;
+            changes.add(SELECTED_DAY);
+            changes.add(SELECTED_DAY_FLOAT);
+        }
 
         if (selectedSpotI == -1) {
             selectedTime = -1;

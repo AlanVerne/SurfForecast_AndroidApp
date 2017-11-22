@@ -47,23 +47,26 @@ public class SwellCircle extends MapCircle {
 
         angle = new DirectionScroller(view);
 
-        MainModel model = MainModel.instance;
+        MainModel.instance.addChangeListener(
+                MainModel.Change.SELECTED_CONDITIONS,
+                changes -> update());
 
-        model.addChangeListener(MainModel.Change.SELECTED_CONDITIONS, changes -> {
-            final SurfConditions conditions = model.selectedConditions;
+        update();
+    }
 
-            if (conditions != null) {
-                strWaveHeight = String.valueOf(conditions.getWaveHeightInFt());
-                strWavePeriod = String.valueOf(conditions.wavePeriod);
-                strWaveAngleAbbr = conditions.getWaveAngleAbbr();
-                angle.to(conditions.waveAngle, scrollerVisible.getValue() != 0);
-                setVisible(true, true);
-            } else {
-                setVisible(false, true);
-            }
-        });
 
-        setVisible(false, false);
+    private void update() {
+        final SurfConditions conditions = MainModel.instance.selectedConditions;
+
+        if (conditions != null) {
+            strWaveHeight = String.valueOf(conditions.getWaveHeightInFt());
+            strWavePeriod = String.valueOf(conditions.wavePeriod);
+            strWaveAngleAbbr = conditions.getWaveAngleAbbr();
+            angle.to(conditions.waveAngle, scrollerVisible.getValue() != 0);
+            setVisible(true, true);
+        } else {
+            setVisible(false, true);
+        }
     }
 
 

@@ -1,5 +1,6 @@
 package com.avaa.surfforecast.data;
 
+
 import android.content.SharedPreferences;
 import android.support.annotation.NonNull;
 import android.util.Log;
@@ -12,9 +13,11 @@ import java.util.Set;
 import java.util.SortedMap;
 import java.util.TreeMap;
 
+
 /**
  * Created by Alan on 20 May 2016.
  */
+
 
 public class TideDataProvider {
     private static final String TAG = "TideDataProv";
@@ -24,7 +27,7 @@ public class TideDataProvider {
 
     public static final Long ONE_DAY = 1000 * 60 * 60 * 24 * 1L;
 
-    protected final SortedMap<String, TideData> portIDToTideData = new TreeMap<>();
+    private final SortedMap<String, TideData> portIDToTideData = new TreeMap<>();
 
     public interface TideDataProviderListener {
         void updated(String portID);
@@ -55,7 +58,7 @@ public class TideDataProvider {
     }
 
     public void fetch(@NonNull String portID) {
-        Log.i(TAG, "fetch() | " + portID);
+//        Log.i(TAG, "fetch() | " + portID);
 
         TideData tideData = portIDToTideData.get(portID);
         if (tideData != null) {
@@ -103,7 +106,7 @@ public class TideDataProvider {
 //    }
     public TideData getTideData(String portID) {
         TideData tideData = portIDToTideData.get(portID);
-        //Log.i(TAG, "getTideData() " + tideData==null?"null":tideData.toString());
+//        Log.i(TAG, "getTideData() " + tideData==null?"null":tideData.toString());
         if (tideData == null || tideData.needAndCanUpdate()) fetch(portID);
         if (tideData != null && tideData.isEmpty()) tideData = null;
         return tideData;
@@ -114,6 +117,8 @@ public class TideDataProvider {
 
 
     private void load() {
+//        Log.i(TAG, "load()");
+
         SharedPreferences sp = MainModel.instance.sharedPreferences;
 
         Set<String> portIDs = sp.getStringSet(SPKEY_SAVED_PORT_IDS, null);

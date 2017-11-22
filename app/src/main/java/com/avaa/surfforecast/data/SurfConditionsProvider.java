@@ -2,14 +2,13 @@ package com.avaa.surfforecast.data;
 
 import android.content.SharedPreferences;
 import android.os.AsyncTask;
+import android.util.Log;
 
 import com.avaa.surfforecast.MainModel;
 
 import java.util.ArrayList;
 import java.util.Calendar;
-import java.util.Date;
 import java.util.GregorianCalendar;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -42,7 +41,7 @@ public class SurfConditionsProvider {
     public final String urlfullweek;
 
     public TreeMap<Long, SurfConditions> conditions = null;
-//    public HashMap<Integer, TreeMap<Long, SurfConditions>> allconditions = null;
+    //    public HashMap<Integer, TreeMap<Long, SurfConditions>> allconditions = null;
     public long lastUpdate = 0;
     private List<UpdateListener> uls = new ArrayList<>();
     public BusyStateListener bsl = null;
@@ -186,6 +185,8 @@ public class SurfConditionsProvider {
 
 
     private boolean load() {
+        Log.i(TAG, "load() " + url);
+
         SharedPreferences sp = MainModel.instance.sharedPreferences;
 
         lastUpdate = sp.getLong(SPKEY_SF_LAST_UPDATE + url, 0);

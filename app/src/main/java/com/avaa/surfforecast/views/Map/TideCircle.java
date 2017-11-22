@@ -8,6 +8,7 @@ import android.graphics.Paint;
 import android.graphics.Path;
 import android.graphics.PointF;
 import android.os.Build;
+import android.util.Log;
 import android.view.View;
 
 import com.avaa.surfforecast.MainModel;
@@ -55,10 +56,10 @@ public class TideCircle extends MapCircle {
         MainModel model = MainModel.instance;
 
         model.addChangeListener(SELECTED_TIME, SELECTED_DAY, SELECTED_SPOT, changes -> {
-//            Log.i(TAG, "change " + changes.toString());
+            Log.i(TAG, "change " + changes.toString());
             if (changes.contains(SELECTED_SPOT)) updateTideData();
             updateNowTide();
-//            Log.i(TAG, "change " + model.getSelectedTime() + " " + (tideData != null) + " " + tide);
+            Log.i(TAG, "change " + model.getSelectedTime() + " " + (tideData != null) + " " + tide);
         });
 
         updateTideData();

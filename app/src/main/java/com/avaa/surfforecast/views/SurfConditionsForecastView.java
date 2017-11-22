@@ -104,6 +104,9 @@ public class SurfConditionsForecastView extends HorizontalScrollView {
     };
     public Runnable onTouchActionDown = null;
 
+    public float scrollY = 0;
+    private OverScroller scrollerY;
+
 
     public static class SurfConditionsOneDayBitmaps {
         //public SurfConditionsOneDay forSurfConditionsOneDay = null; // TODO: useless now, uncomment when will preorganize data by days in SurfConditionsProvider
@@ -353,7 +356,14 @@ public class SurfConditionsForecastView extends HorizontalScrollView {
         if (dh == 0) return;
         if (this.dh == dh) return;
 
-        this.dh = dh;
+        float newScrollYdDH;
+        if (this.dh == 0) {
+            newScrollYdDH = 4;
+            this.dh = dh;
+        } else {
+            newScrollYdDH = scrollY / this.dh;
+            this.dh = dh;
+        }
 
         fontH = metrics.fontH;
         labelsY = (dh - fontH) / 2;
@@ -370,6 +380,8 @@ public class SurfConditionsForecastView extends HorizontalScrollView {
 
         if (tideChartDrawer == null) tideChartDrawer = new TideChartDrawer(this, model);
         else tideChartDrawer.updateDrawer();
+
+        setScrollY(newScrollYdDH * dh);
 
         redrawSurfConditions();
 
@@ -663,8 +675,6 @@ public class SurfConditionsForecastView extends HorizontalScrollView {
         return i * dh * 16 + dh * 8 - getWidth() / 2; // i * dh * 16 + dh * 2;
     }
 
-    public float scrollY = 0;
-    private OverScroller scrollerY;
 
     public void scrollY(int y) {
         scrollY(y, 333);
