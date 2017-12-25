@@ -33,11 +33,13 @@ public class OneDayConditionsSmallView extends LinearLayout {
     private static final String TAG = "OneDayCSV";
     private static final SimpleDateFormat DAY_FORMAT = new SimpleDateFormat("EEE");
 
-    private static final int DELAY_BEFORE_CHANGES = 500;
-    private static final int DELAY_FOR_FRAME = 50;
+    private static final int DELAY_BEFORE_CHANGES = 333;
+    private static final int DELAY_FOR_FRAME = 33;
 
 
     private final Paint p = new Paint();
+
+    public int plusDays = 0;
 
     private TextView tvDate;
     private TextView tvDayOfWeek;
@@ -69,7 +71,21 @@ public class OneDayConditionsSmallView extends LinearLayout {
 
     public void setColorText(int colorText) {
         this.colorText = colorText;
-        p.setColor(0xdd000000 | colorText);
+    }
+
+
+    public void setBold(boolean b) {
+        tvDate.setTypeface(Typeface.create(tvDate.getTypeface(), b ? Typeface.BOLD : Typeface.NORMAL));
+
+        int a = b ? 0xff000000 : 0xbb000000;
+        tvDate.setTextColor(a | colorText);
+
+        a = b ? 0xff000000 : 0xa0000000;
+        tvDayOfWeek.setTextColor(a | colorText);
+
+        a = b ? 0xff000000 : 0x99000000;
+        p.setColor(a | colorText);
+        repaintBitmap();
     }
 
 
@@ -127,7 +143,7 @@ public class OneDayConditionsSmallView extends LinearLayout {
                         timerHAnimataion = null;
                     }
                 }
-            }, DELAY_BEFORE_CHANGES, DELAY_FOR_FRAME); //isVisible() ? 100 :
+            }, DELAY_BEFORE_CHANGES + plusDays * DELAY_FOR_FRAME, DELAY_FOR_FRAME); //isVisible() ? 100 :
         }
     }
 
@@ -200,18 +216,21 @@ public class OneDayConditionsSmallView extends LinearLayout {
     }
 
 
-    public void setDate(Calendar c) {
+    public void setDate(Calendar c, int plusDays) {
+        this.plusDays = plusDays;
+
         tvDate.setText(String.valueOf(c.get(Calendar.DATE)));
 
-        tvDayOfWeek.setText(c.getDisplayName(Calendar.DAY_OF_WEEK, Calendar.SHORT, Locale.getDefault())); //DAY_FORMAT.format(c.getTime()).toUpperCase());
+        String day = c.getDisplayName(Calendar.DAY_OF_WEEK, Calendar.SHORT, Locale.getDefault());
+        tvDayOfWeek.setText(day); //DAY_FORMAT.format(c.getTime()).toUpperCase());
 
         int dayOfWeek = c.get(Calendar.DAY_OF_WEEK);
         if (dayOfWeek == Calendar.SATURDAY || dayOfWeek == Calendar.SUNDAY) {
-            tvDate.setTextColor(0xdd000000 | colorText);
-            tvDayOfWeek.setTextColor(0xdd000000 | colorText);
+//            tvDate.setTextColor(0xbb000000 | colorText);
+//            tvDayOfWeek.setTextColor(0xbb000000 | colorText);
             tvDayOfWeek.setTypeface(null, Typeface.BOLD);
         } else {
-            tvDate.setTextColor(0xdd000000 | colorText);
+//            tvDate.setTextColor(0xbb000000 | colorText);
             tvDayOfWeek.setTextColor(0x88000000 | colorText);
         }
     }

@@ -1,14 +1,12 @@
 package com.avaa.surfforecast.views.Map;
 
 
-import android.content.Context;
 import android.graphics.Canvas;
 import android.graphics.Matrix;
 import android.graphics.Paint;
 import android.graphics.Path;
 import android.graphics.PointF;
 import android.os.Build;
-import android.util.Log;
 import android.view.View;
 
 import com.avaa.surfforecast.MainModel;
@@ -17,7 +15,7 @@ import com.avaa.surfforecast.drawers.MetricsAndPaints;
 import com.avaa.surfforecast.views.ParallaxHelper;
 
 import static com.avaa.surfforecast.MainModel.Change.SELECTED_DAY;
-import static com.avaa.surfforecast.MainModel.Change.SELECTED_SPOT;
+import static com.avaa.surfforecast.MainModel.Change.SELECTED_TIDE_DATA;
 import static com.avaa.surfforecast.MainModel.Change.SELECTED_TIME;
 import static com.avaa.surfforecast.data.Common.STR_DASH;
 import static com.avaa.surfforecast.data.Common.STR_M;
@@ -53,11 +51,13 @@ public class TideCircle extends MapCircle {
         paintFont.setColor(MetricsAndPaints.colorWhite);
         paintHintsFont.setColor(MetricsAndPaints.colorWhite);
 
+//        paintFont.setTypeface(Typeface.create(Typeface.DEFAULT_BOLD, Typeface.BOLD));
+
         MainModel model = MainModel.instance;
 
-        model.addChangeListener(SELECTED_TIME, SELECTED_DAY, SELECTED_SPOT, changes -> {
+        model.addChangeListener(SELECTED_TIME, SELECTED_DAY, SELECTED_TIDE_DATA, changes -> {
 //            Log.i(TAG, "change " + changes.toString());
-            if (changes.contains(SELECTED_SPOT)) updateTideData();
+            if (changes.contains(SELECTED_TIDE_DATA)) updateTideData();
             updateNowTide();
 //            Log.i(TAG, "change " + model.getSelectedTime() + " " + (tideData != null) + " " + tide);
         });
@@ -171,7 +171,7 @@ public class TideCircle extends MapCircle {
         Integer newTide = null;
 
         if (tideData != null) {
-            newTide = tideData.getTide(model.getSelectedDayInt(), time);
+            newTide = tideData.getTide(model.getSelectedDay(), time);
             if (newTide != null) tide = newTide;
         }
 
@@ -187,7 +187,7 @@ public class TideCircle extends MapCircle {
             int nowH = time / 60;
             final float pathDX = width * (time - (nowH - 2) * 60) / 24 / 60 - nowX;
 
-            Path pathTide = tideData.getPath2(model.getSelectedDayInt(), width * 9 / 24, py * 2, 0, 250, nowH - 2, nowH + 7);
+            Path pathTide = tideData.getPath2(model.getSelectedDay(), width * 9 / 24, py * 2, 0, 250, nowH - 2, nowH + 7);
             if (pathTide != null) {
                 this.pathTide = pathTide;
                 Matrix translateMatrix = new Matrix();

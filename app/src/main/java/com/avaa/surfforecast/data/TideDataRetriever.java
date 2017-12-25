@@ -73,8 +73,6 @@ public class TideDataRetriever extends AsyncTask<Object, Void, TideData> {
     protected void onPostExecute(TideData tideData) {
         Log.i(TAG, "onPostExecute() | for " + portID + " " + (tideData == null ? "null" : "needAndCanUpdate = " + tideData.needAndCanUpdate()));
 
-        tideDataProvider.fireLoadingStateChanged(portID, false);
-
         if (tideData == null) return;
 
         tideDataProvider.newDataFetched(portID, tideData);

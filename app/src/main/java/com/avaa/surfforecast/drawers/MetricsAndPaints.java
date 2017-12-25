@@ -18,6 +18,9 @@ public class MetricsAndPaints {
     public static int colorTideBG = 0xFF006283; //0xFF005C86; //ff122D54; //0xff2e393d;
     public static int colorTideChartBG = 0xff0091c1;
 
+    public static int colorRed = 0xffe40036;
+    public static int colorGreen = 0xff01be7d;
+
     public static int colorWhite = 0xffffffff;
     public static int colorMinorWhite = 0x88ffffff;
 

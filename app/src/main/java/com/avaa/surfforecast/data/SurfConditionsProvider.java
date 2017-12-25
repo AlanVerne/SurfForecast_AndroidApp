@@ -34,7 +34,7 @@ public class SurfConditionsProvider {
         void onUpdate(SurfConditionsProvider surfConditionsProvider);
     }
 
-    private boolean loaded = false;
+    private Boolean loaded = null;
 
     public final String url;
     public final String urlfull;
@@ -88,8 +88,13 @@ public class SurfConditionsProvider {
         return get(0);
     }
 
+    public boolean hasData() {
+        if (loaded == null) load();
+        return conditions != null;
+    }
+
     public SurfConditionsOneDay get(int plusDays) {
-        if (!loaded) load();
+        if (loaded == null) load();
 
         if (conditions == null) {
             update();
@@ -185,23 +190,23 @@ public class SurfConditionsProvider {
 
 
     private boolean load() {
-        Log.i(TAG, "load() " + url);
+        loaded = false;
 
-        SharedPreferences sp = MainModel.instance.sharedPreferences;
+        final SharedPreferences sp = MainModel.instance.sharedPreferences;
+        final Set<String> keys = sp.getStringSet(SPKEY_SF_SET + url, null);
+        if (keys != null) {
+            lastUpdate = sp.getLong(SPKEY_SF_LAST_UPDATE + url, 0);
 
-        lastUpdate = sp.getLong(SPKEY_SF_LAST_UPDATE + url, 0);
-
-        Set<String> tideTimes = sp.getStringSet(SPKEY_SF_SET + url, null);
-
-        if (tideTimes == null) return false;
-
-        conditions = new TreeMap<>();
-        for (String s : tideTimes) {
-            String[] split = s.split("\n");
-            conditions.put(Long.valueOf(split[0]), SurfConditions.fromString(split[1]));
+            conditions = new TreeMap<>();
+            for (String s : keys) {
+                String[] split = s.split("\n");
+                conditions.put(Long.valueOf(split[0]), SurfConditions.fromString(split[1]));
+            }
         }
 
         loaded = true;
+
+        Log.i(TAG, "loadFromSP(" + url + ")\t" + (loaded ? " - DONE" : " ---"));
 
         return needUpdate();
     }

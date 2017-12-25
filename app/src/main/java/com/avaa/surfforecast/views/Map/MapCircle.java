@@ -65,6 +65,10 @@ public class MapCircle {
         return scrollerVisible.to(visible ? 1 : 0, smooth);
     }
 
+
+    public boolean isHintsVisible() {
+        return scrollerHints.getDestination() == 1;
+    }
     public boolean setHintsVisible(boolean visible, boolean smooth) {
         return scrollerHints.to(visible ? 1 : 0, smooth);
     }

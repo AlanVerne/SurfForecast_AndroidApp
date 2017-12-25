@@ -61,6 +61,11 @@ public class FloatScroller {
     }
 
 
+    public float getDestination() {
+        return !scroller.isFinished() ? scroller.getFinalX() / 1000.0f : value;
+    }
+
+
     protected void repaint() {
         ((SurfSpotsMap) view).repaint();
     }

@@ -1,8 +1,8 @@
 package com.avaa.surfforecast.data;
 
 
+import android.os.AsyncTask;
 import android.support.annotation.NonNull;
-import android.util.Log;
 
 import com.avaa.surfforecast.MainModel;
 
@@ -23,7 +23,7 @@ public class Rater {
     private static final String TAG = "Rater";
 
     private final Map<SurfSpot, Long> updated = new HashMap<>();
-    private final Map<SurfSpot, TreeMap<Long, RatedConditions>> bestBySpot = new HashMap<>();
+    private Map<SurfSpot, TreeMap<Long, RatedConditions>> bestBySpot = new HashMap<>();
     private final Map<Long, SortedSet<RatedConditions>> bestByDay = new HashMap<>();
 
     private long lastUpdate = 0;
@@ -154,5 +154,97 @@ public class Rater {
         }
 
         set.add(newRC);
+    }
+
+
+    // --
+
+
+    private static TreeMap<Long, RatedConditions> rateSpot(SurfSpot surfSpot) {
+        TreeMap<Long, RatedConditions> map = new TreeMap<>();
+
+        final TideData tideData = MainModel.instance.tideDataProvider.getTideData(surfSpot.tidePortID);
+
+        RatedConditions rc = new RatedConditions();
+
+        for (int plusDays = 0; plusDays <= 6; plusDays++) {
+            RatedConditions bestRC = null;
+            float bestRate = -1;
+
+            SurfConditionsOneDay surfConditionsOneDay = surfSpot.conditionsProvider.get(plusDays);
+
+            if (surfConditionsOneDay == null) continue;
+
+            for (int min = 6 * 60; min < 18 * 60; min += 60) {
+                SurfConditions conditions = surfConditionsOneDay.get(min);
+
+                if (conditions == null) continue;
+
+                float rate = RatedConditions.rate(rc, surfSpot, conditions, tideData, plusDays, min);
+
+                if (rate > bestRate) {
+                    bestRate = rate;
+                    bestRC = rc.clone();
+                }
+
+//                if ("Green Ball".equals(surfSpot.name))
+//                    Log.i(TAG, "day" + plusDays + " best min " + min + "  " + conditions.getWaveHeightInFt() + "  " + conditions.windSpeed);
+            }
+
+            if (bestRC != null) {
+                long day = Common.getDay(plusDays, Common.TIME_ZONE);
+                map.put(day, bestRC);
+            }
+        }
+
+        return map;
+    }
+
+
+    // --
+
+
+    public void updateAll() {
+        if (DataRetrieversPool.getTask(TAG, METARRetriever.class) == null) {
+            DataRetrieversPool.addTask(TAG, new RaterAsyncTask());
+        }
+    }
+
+    public static class RaterAsyncTask extends AsyncTask<Object, Void, Map<SurfSpot, TreeMap<Long, RatedConditions>>> {
+        private long time;
+
+        @Override
+        protected Map<SurfSpot, TreeMap<Long, RatedConditions>> doInBackground(Object... lists) {
+            time = System.currentTimeMillis();
+
+            final Map<SurfSpot, TreeMap<Long, RatedConditions>> bestBySpot = new HashMap<>();
+
+            for (SurfSpot surfSpot : MainModel.instance.surfSpots.getAll()) {
+                if (surfSpot.conditionsProvider.hasData()) {
+                    bestBySpot.put(surfSpot, rateSpot(surfSpot));
+                }
+            }
+
+            return bestBySpot;
+        }
+
+        @Override
+        protected void onPostExecute(Map<SurfSpot, TreeMap<Long, RatedConditions>> surfSpotTreeMapMap) {
+            MainModel.instance.rater.asyncFinished(surfSpotTreeMapMap, time);
+        }
+    }
+
+
+    // --
+
+
+    private void asyncFinished(Map<SurfSpot, TreeMap<Long, RatedConditions>> surfSpotTreeMapMap, long time) {
+        bestBySpot = surfSpotTreeMapMap;
+
+        for (SurfSpot surfSpot : MainModel.instance.surfSpots.getAll()) {
+            updated.put(surfSpot, time);
+        }
+
+        MainModel.instance.allRatingsUpdated();
     }
 }

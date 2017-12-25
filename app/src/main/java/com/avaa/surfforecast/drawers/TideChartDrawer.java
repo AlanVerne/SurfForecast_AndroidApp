@@ -1,9 +1,12 @@
 package com.avaa.surfforecast.drawers;
 
+
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
 import android.graphics.Paint;
+import android.graphics.Typeface;
 import android.os.AsyncTask;
+import android.util.Log;
 
 import com.avaa.surfforecast.MainActivity;
 import com.avaa.surfforecast.MainModel;
@@ -37,10 +40,7 @@ public class TideChartDrawer {
     private final SurfConditionsForecastView view;
 
     private final Bitmap[] bitmaps = new Bitmap[MainActivity.NDAYS];
-    private final TideDataProvider tideDataProvider;
     private final MainModel model;
-
-    private String tidePortID = null;
 
     private MetricsAndPaints metricsAndPaints;
     private int dh;
@@ -77,24 +77,18 @@ public class TideChartDrawer {
     private float strMWidth;
 
 
-    public TideChartDrawer(SurfConditionsForecastView view, MainModel mainModel) {
+    public TideChartDrawer(SurfConditionsForecastView view, final MainModel mainModel) {
         this.view = view;
-        this.tideDataProvider = MainModel.instance.tideDataProvider;
         this.model = mainModel;
-        setPortID(mainModel.getSelectedSpot().tidePortID);
+
+        tideData = mainModel.selectedTideData;
 
         updateDrawer();
 
-        mainModel.addChangeListener(MainModel.Change.SELECTED_SPOT, changes -> setPortID(mainModel.getSelectedSpot().tidePortID));
-    }
-
-
-    public void setPortID(String tidePortID) {
-        if (this.tidePortID != tidePortID) {
-            this.tidePortID = tidePortID;
-            tideData = tideDataProvider.getTideData(tidePortID);
+        mainModel.addChangeListener(MainModel.Change.SELECTED_TIDE_DATA, changes -> {
+            tideData = mainModel.selectedTideData;
             updateBitmaps();
-        }
+        });
     }
 
 
@@ -107,6 +101,7 @@ public class TideChartDrawer {
         h = dh * 4;
 
         paintFont.setTextSize(metricsAndPaints.font);
+        paintFont.setTypeface(Typeface.create(paintFont.getTypeface(), Typeface.BOLD));
         paintFontSmall.setTextSize(metricsAndPaints.fontSmall);
 
         paintFontNoData = new Paint() {{
@@ -124,13 +119,11 @@ public class TideChartDrawer {
     public void draw(Canvas c, int w, int h, int dx, int orientation) {
         Integer nowTime = Common.getNowTimeInt(TIME_ZONE);
 
-        if (tidePortID == null) return;
-
         Integer now = tideData == null ? null : tideData.getNow();
 
         int si = dx / dayWidth;
         int ei = Math.min(MainActivity.NDAYS - 1, (dx + w) / dayWidth);
-        int x = si * dayWidth;
+        int x = si * dayWidth - dx;
         for (int i = si; i <= ei; i++) {
             if (bitmaps[i] != null) {
                 c.drawBitmap(bitmaps[i], x, h - this.h, null);
@@ -142,7 +135,7 @@ public class TideChartDrawer {
         }
 
         if (now != null && bitmaps[0] != null) {
-            int nowX = dayWidth * nowTime / 60 / 24;
+            int nowX = dayWidth * nowTime / 60 / 24 - dx;
             int nowY = h - this.h + dh * 3 / 2 - now * dh * 3 / 2 / 300;
 
             String tide = String.valueOf(Math.round(now / 10f) / 10f);
@@ -187,13 +180,11 @@ public class TideChartDrawer {
 
     public boolean updateBitmaps() {
         SurfSpot surfSpot = model.getSelectedSpot();
-
-        tidePortID = surfSpot.tidePortID;
-
-        if (tideDataProvider.getTideData(surfSpot.tidePortID) == null) {
-//            Log.i(TAG, "updateBitmaps() | " + "cancelled. tideDataProvider.get() == null");
-            return false;
-        }
+//        // TODO SIMPLIER
+//        if (tideDataProvider.getTideData(surfSpot.tidePortID) == null) {
+////            Log.i(TAG, "updateBitmaps() | " + "cancelled. tideDataProvider.get() == null");
+//            return false;
+//        }
 
         if (tideChartBitmapsAsyncDrawer != null && tideChartBitmapsAsyncDrawer.getStatus() != AsyncTask.Status.FINISHED) {
             tideChartBitmapsAsyncDrawer.cancel(true);

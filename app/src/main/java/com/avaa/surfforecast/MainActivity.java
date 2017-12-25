@@ -5,6 +5,7 @@ import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.res.ColorStateList;
 import android.graphics.PorterDuff;
+import android.graphics.Typeface;
 import android.hardware.SensorManager;
 import android.net.Uri;
 import android.os.Bundle;
@@ -123,7 +124,7 @@ public class MainActivity extends AppCompatActivity {
 
         model.addChangeListener(Change.SELECTED_SPOT, changes -> {
             listSpots.select(spotsTV.get(model.getSelectedSpotI()));
-            flBtnCam.setVisibility(model.getSelectedSpot().urlCam != null ? View.VISIBLE : View.INVISIBLE);
+            updateCamAwayButtons();
         });
 
         model.addChangeListener(Change.ALL_CONDITIONS, changes -> {
@@ -131,7 +132,7 @@ public class MainActivity extends AppCompatActivity {
         });
 
         model.addChangeListener(Change.SELECTED_DAY, changes -> {
-            int day = Math.round(model.getSelectedDay());
+            int day = model.getSelectedDay();
             tvRatingDay.setText(capitalize(CommandsExecutor.intDayToNL(day)));
         });
 
@@ -238,6 +239,8 @@ public class MainActivity extends AppCompatActivity {
 
                 llRating.setVisibility(visibility);
                 llRating.setAlpha(awakeState);
+
+                updateCamAwayButtons();
             }
         };
 
@@ -248,7 +251,7 @@ public class MainActivity extends AppCompatActivity {
                 if (day >= 0) {
                     if (x < v1.getRight() + ((LinearLayout.LayoutParams) v1.getLayoutParams()).rightMargin) {
                         if (event.getAction() == MotionEvent.ACTION_MOVE || event.getAction() == MotionEvent.ACTION_UP) {
-                            model.setSelectedDay(day);
+                            model.setSelectedDay(day, true);
                         }
                         if (event.getAction() == MotionEvent.ACTION_MOVE || event.getAction() == MotionEvent.ACTION_DOWN) {
                             v1.setAlpha(0.5f);
@@ -289,24 +292,21 @@ public class MainActivity extends AppCompatActivity {
             rlDays.setAlpha(alpha);
             rlDays.setY(forecast.getContentTop() - rlDays.getHeight());
 
-            alpha = max(0f, min(1f, 1f - (forecast.scrollY - dh * 5f) / (dh * 3f)));
-            flBtnAway.setAlpha(alpha);
-            flBtnAway.setVisibility(alpha == 0 ? View.INVISIBLE : View.VISIBLE);
-
-            if (model.getSelectedSpot().urlCam == null) alpha = 0;
-            else if (forecast.getTideVisibility() < 1f) alpha = forecast.getTideVisibility();
-            flBtnCam.setAlpha(alpha);
-            flBtnCam.setVisibility(alpha == 0f ? View.INVISIBLE : View.VISIBLE);
+            updateCamAwayButtons();
 
             if (forecast.scrollY > forecast.getWindSwellScrollY()) {
-                map.setInsets(5 * dh, forecast.getHeight() - forecast.getContentTop(forecast.getWindSwellScrollY()));
+                map.setInsets((int) (5 * dh), forecast.getHeight() - forecast.getContentTop(forecast.getWindSwellScrollY()));
                 map.setOverviewState(0f);
 //                1baliMap.hideCircles();
             } else {
                 float tideVisibility = forecast.getTideVisibility();
-                map.setInsets((int) (4 * dh + 1 * dh * tideVisibility), forecast.getHeight() - forecast.getContentTop());
+                map.setInsets((int) (4 * dh + 2 * dh * tideVisibility - 1 * dh * forecast.getWindSwellVisibility()), forecast.getHeight() - forecast.getContentTop());
                 map.setOverviewState(1f - tideVisibility);
 //                baliMap.showCircles();
+            }
+
+            if (getState() == 2) {
+                map.hideHints();
             }
         };
 
@@ -384,13 +384,22 @@ public class MainActivity extends AppCompatActivity {
     @Override
     public void onBackPressed() {
         if (vif.onBackPressed()) return;
-        if (forecast.scrollY > forecast.getTideScrollY()) {
+        if (backLocal()) return;
+        super.onBackPressed();
+    }
+
+
+    public boolean backLocal() {
+        int state = getState();
+
+        if (state == 2) {
             performShowTide();
-        } else if (forecast.scrollY > 0) {
-            performHideForecast();
-        } else {
-            super.onBackPressed();
+            return true;
+        } else if (state == 1) {
+            performOverview();
+            return true;
         }
+        return false;
     }
 
 
@@ -401,8 +410,10 @@ public class MainActivity extends AppCompatActivity {
         if (this.c != null && this.c.get(Calendar.DATE) == c.get(Calendar.DATE)) return;
 
         this.c = Common.getCalendarToday(Common.TIME_ZONE);
+        int i = 0;
         for (OneDayConditionsSmallView v : smallViews) {
-            v.setDate(c);
+            v.setDate(c, i++);
+            v.setBold(v.plusDays == model.getSelectedDay());
             c.add(Calendar.DATE, 1);
         }
 
@@ -443,6 +454,7 @@ public class MainActivity extends AppCompatActivity {
         }});
         tvPlace.setPadding(dh, dhd2, 0, 0);
         tvPlace.setTextSize(TypedValue.COMPLEX_UNIT_PX, metrics.fontHeader);
+//        tvPlace.setTypeface(tvPlace.getTypeface(), Typeface.BOLD);
         tvPlace.setGravity(Gravity.CENTER_VERTICAL);
         tvPlace.setTextColor(MetricsAndPaints.colorWhite);
 
@@ -494,7 +506,7 @@ public class MainActivity extends AppCompatActivity {
 
         initListSpots();
 
-        forecast.postDelayed(() -> forecast.showDay(model.getSelectedDayInt()), 100);
+        forecast.postDelayed(() -> forecast.showDay(model.getSelectedDay()), 100);
     }
 
     //private boolean olclWorked = false;
@@ -545,8 +557,13 @@ public class MainActivity extends AppCompatActivity {
             smallView.setColorText(colorConditionsPreviews);
         }
 
+        model.addChangeListener(Change.SELECTED_DAY, changes -> {
+            for (OneDayConditionsSmallView smallView : smallViews) {
+                smallView.setBold(smallView.plusDays == model.getSelectedDay());
+            }
+        });
         model.addChangeListener(Change.SELECTED_DAY_FLOAT, changes -> {
-            float offset = model.getSelectedDay();
+            float offset = model.getSelectedDayFloat();
 
             int j = (int) offset;
             if (offset - j < 0.5) {
@@ -592,11 +609,29 @@ public class MainActivity extends AppCompatActivity {
     }
 
 
+    private void updateCamAwayButtons() {
+        float alpha;
+
+        alpha = max(0f, min(1f, 1f - (forecast.scrollY - dh * 5f) / (dh * 3f))) * (1f - listSpots.getAwakeState());
+        flBtnAway.setAlpha(alpha);
+        flBtnAway.setVisibility(alpha == 0 ? View.INVISIBLE : View.VISIBLE);
+
+        if (model.getSelectedSpot().urlCam == null) alpha = 0;
+        else if (forecast.getTideVisibility() < 1f) alpha = forecast.getTideVisibility();
+        flBtnCam.setAlpha(alpha);
+        flBtnCam.setVisibility(alpha == 0f ? View.INVISIBLE : View.VISIBLE);
+    }
+
+
     private final PopupMenu.OnMenuItemClickListener onMenuItemClickListener = item -> {
         SurfSpot spot = model.getSelectedSpot();
         switch (item.getItemId()) {
             case 0:
-                model.updateSelectedSpotAll();
+                if (forecast.scrollY > 0) {
+                    model.updateSelectedSpotAll();
+                } else {
+                    model.updateAll();
+                }
                 return true;
             case 1:
                 model.surfSpots.swapFavorite(spot);
@@ -629,8 +664,15 @@ public class MainActivity extends AppCompatActivity {
 
             menu.setOnMenuItemClickListener(onMenuItemClickListener);
 
-            menu.getMenu().add(0, 0, 0, "Update");
-            menu.getMenu().add(0, 1, 0, spot.favorite ? "Remove star" : "Mark with a star");
+            if (forecast.scrollY > 0) {
+                menu.getMenu().add(0, 0, 0, "Update");
+            } else {
+                menu.getMenu().add(0, 0, 0, "Update all");
+            }
+
+            if (forecast.scrollY > 0) {
+                menu.getMenu().add(0, 1, 0, spot.favorite ? "Remove star" : "Mark with a star");
+            }
 
             if (forecast.scrollY > forecast.getTideScrollY()) {
                 menu.getMenu().add(1, 2, 0, "Open in Maps");
@@ -691,6 +733,7 @@ public class MainActivity extends AppCompatActivity {
             layoutParams.setMargins(0, 0, 0, 0);
             textView.setLayoutParams(layoutParams);
             textView.setTextSize(TypedValue.COMPLEX_UNIT_PX, metricsAndPaints.fontHeader);
+            textView.setTypeface(textView.getTypeface(), Typeface.BOLD);
             textView.setTextColor(colorStateList);
             textView.setText(SurfSpot.name + (SurfSpot.favorite ? "   " + "\u2605" : "")); //2605");
             textView.setAlpha(i == ssi ? 1 : 0);
@@ -770,7 +813,7 @@ public class MainActivity extends AppCompatActivity {
 
         if (model.getSelectedSpotI() != spotI) {
             if (forecast.getTideVisibility() > 0) {
-                performHideForecast();
+                performOverview();
                 map.postDelayed(() -> {
                     model.setSelectedSpotI(spotI);
                     performShowTide();
@@ -810,7 +853,7 @@ public class MainActivity extends AppCompatActivity {
     }
 
 
-    public void performHideForecast() {
+    public void performOverview() {
         forecast.scrollY(0, 666);
     }
 
@@ -820,5 +863,17 @@ public class MainActivity extends AppCompatActivity {
 
     public void performShowWindSwell() {
         forecast.scrollY(forecast.getWindSwellScrollY(), 666);
+    }
+
+
+    // 0 - overview, 1 - tide, 2 - forecast
+    public int getState() {
+        float y = forecast.scrollY;
+        if (!forecast.scrollerY.isFinished()) y = forecast.scrollerY.getFinalY();
+
+        if (y < forecast.getTideScrollY() / 2) return 0;
+        else if (y < (forecast.getWindSwellScrollY() - forecast.getTideScrollY()) / 2 + forecast.getTideScrollY())
+            return 1;
+        else return 2;
     }
 }

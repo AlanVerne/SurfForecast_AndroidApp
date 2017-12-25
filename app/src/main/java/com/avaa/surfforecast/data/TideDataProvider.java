@@ -31,8 +31,6 @@ public class TideDataProvider {
 
     public interface TideDataProviderListener {
         void updated(String portID);
-
-        void loadingStateChanged(String portID, boolean loading);
     }
 
     private final List<TideDataProviderListener> listeners = new ArrayList<>();
@@ -67,7 +65,6 @@ public class TideDataProvider {
         } else portIDToTideData.put(portID, new TideData(System.currentTimeMillis()));
 
         if (DataRetrieversPool.getTask(portID, TideDataRetriever.class) == null) {
-            fireLoadingStateChanged(portID, true);
             DataRetrieversPool.addTask(portID, new TideDataRetriever(this, portID));
         }
     }
@@ -80,12 +77,6 @@ public class TideDataProvider {
 
     // --
 
-
-    protected void fireLoadingStateChanged(String portID, boolean loading) {
-        for (TideDataProviderListener listener : listeners) {
-            listener.loadingStateChanged(portID, loading);
-        }
-    }
 
     protected void fireUpdated(String portID) {
         for (TideDataProviderListener listener : listeners) {

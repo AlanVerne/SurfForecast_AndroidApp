@@ -5,15 +5,19 @@ import android.graphics.Canvas;
 import android.graphics.Paint;
 import android.graphics.Path;
 import android.graphics.PointF;
+import android.graphics.Typeface;
 import android.view.View;
 
 import com.avaa.surfforecast.MainModel;
+import com.avaa.surfforecast.data.RatedConditions;
 import com.avaa.surfforecast.drawers.MetricsAndPaints;
 import com.avaa.surfforecast.views.ParallaxHelper;
 
 import static com.avaa.surfforecast.data.Common.STR_DASH;
 import static com.avaa.surfforecast.data.Common.STR_KMH;
 import static com.avaa.surfforecast.data.Common.STR_WIND;
+import static com.avaa.surfforecast.drawers.MetricsAndPaints.colorGreen;
+import static com.avaa.surfforecast.drawers.MetricsAndPaints.colorRed;
 import static com.avaa.surfforecast.drawers.MetricsAndPaints.colorWindText;
 import static com.avaa.surfforecast.views.ColorUtils.alpha;
 import static com.avaa.surfforecast.views.Map.Arrow.createArrow;
@@ -34,27 +38,34 @@ public class WindCircle extends MapCircle {
     private final FloatScroller angle;
     private final FloatScroller vbr;
 
+    private int windSpeedLabelColor = colorWindText;
+
 
     public WindCircle(View view) {
         super(view);
 
+        paintFont.setTypeface(Typeface.create(Typeface.DEFAULT_BOLD, Typeface.BOLD));
+
         angle = new DirectionScroller(view);
         vbr = new FloatScroller(view);
 
-        MainModel.instance.addChangeListener(
-                MainModel.Change.SELECTED_CONDITIONS,
-                changes -> update());
+        final MainModel model = MainModel.instance;
+        model.addChangeListener(
+                MainModel.Change.SELECTED_CONDITIONS, MainModel.Change.SELECTED_RATING,
+                changes -> update(model));
 
-        update();
+        update(model);
     }
 
 
-    private void update() {
-        MainModel model = MainModel.instance;
-
+    private void update(MainModel model) {
         int windSpeed = model.getSelectedWindSpeed();
 
         strWindSpeed = windSpeed == -1 ? STR_DASH : String.valueOf(windSpeed);
+
+        RatedConditions selectedRatedConditions = model.getSelectedRatedConditions();
+        float windRating = selectedRatedConditions != null ? selectedRatedConditions.windRating : 0.6f;
+        windSpeedLabelColor = windRating < 0.5 ? colorRed : windRating > 0.8 ? colorGreen : colorWindText;
 
         if (windSpeed != -1) {
             setVisible(true, true);
@@ -113,7 +124,7 @@ public class WindCircle extends MapCircle {
         if (vbr) c.drawCircle(ax, ay, windArrowR, paintBG);
         else c.drawPath(createArrow(ax, ay, a, windArrowR), paintBG);
 
-        paintFont.setColor(alpha(alpha, colorWindText));
+        paintFont.setColor(alpha(alpha, windSpeedLabelColor));
 
         if (hintsVisible > 0) {
             paintHintsFont.setColor(alpha(alpha * hintsVisible * hintsVisible, colorWindText));

@@ -127,6 +127,11 @@ public class HeaderList extends FeaturedScrollView {
     }
 
 
+    public float getAwakeState() {
+        return awakeState;
+    }
+
+
     private boolean isPowerSavingMode() {
         return Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP && powerManager.isPowerSaveMode();
     }
