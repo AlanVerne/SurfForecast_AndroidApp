@@ -87,6 +87,11 @@ public class SurfSpotsMap extends View {
         setTextAlign(Paint.Align.CENTER);
         setColor(MetricsAndPaints.colorWhite);
     }};
+//    private final Paint paintFontSmall = new Paint() {{
+//        setFlags(Paint.ANTI_ALIAS_FLAG);
+//        setTextAlign(Paint.Align.CENTER);
+//        setColor(MetricsAndPaints.colorWhite);
+//    }};
     private final Paint paintBG = new Paint() {{
         setAntiAlias(true);
         setStyle(Paint.Style.FILL);
@@ -136,7 +141,9 @@ public class SurfSpotsMap extends View {
 
     private final RectF rectFTemp = new RectF();
 
-    private Map<Integer, Rect> spotsLabels = new HashMap<>();
+    private SpotLabel.SpotLabelsCommon spotLabelsCommon;
+    private Map<Integer, SpotLabel> spotsLabels = new HashMap<>();
+    private Map<Integer, Rect> spotsLabelsRects = new HashMap<>();
 
     private float avex = 0;
     private float avey = 0;
@@ -171,7 +178,8 @@ public class SurfSpotsMap extends View {
         surfSpotsList = model.surfSpots.getAll();
 
         for (int i = 0; i < surfSpotsList.size(); i++) {
-            spotsLabels.put(i, new Rect());
+            spotsLabelsRects.put(i, new Rect());
+            spotsLabels.put(i, new SpotLabel(surfSpotsList.get(i)));
         }
 
         densityDHDep = getResources().getDisplayMetrics().density;
@@ -202,6 +210,13 @@ public class SurfSpotsMap extends View {
                 MainModel.Change.SELECTED_CONDITIONS,
                 MainModel.Change.SELECTED_DAY,
                 changes -> repaint());
+
+        model.addChangeListener(MainModel.Change.SELECTED_RATING,
+                changes -> {
+                    for (SpotLabel label : spotsLabels.values()) {
+                        label.setRating(model.rater.getBestForDay(model.getSelectedDay()));
+                    }
+                });
 
         parallaxHelper = new ParallaxHelper(this);
 
@@ -246,6 +261,8 @@ public class SurfSpotsMap extends View {
         }
 
         updateScale();
+
+        spotLabelsCommon = new SpotLabel.SpotLabelsCommon(star);
 
         onSizeChanged(getWidth(), getHeight(), getWidth(), getHeight());
 
@@ -500,7 +517,7 @@ public class SurfSpotsMap extends View {
 
 
     private int hit(int x, int y) {
-        for (Map.Entry<Integer, Rect> rect : spotsLabels.entrySet()) {
+        for (Map.Entry<Integer, Rect> rect : spotsLabelsRects.entrySet()) {
             if (rect.getValue().contains(x, y)) {
                 return rect.getKey();
             }
@@ -508,7 +525,7 @@ public class SurfSpotsMap extends View {
 
         double min = dh * dh * 4;
         int minI = -1;
-        for (Map.Entry<Integer, Rect> rect : spotsLabels.entrySet()) {
+        for (Map.Entry<Integer, Rect> rect : spotsLabelsRects.entrySet()) {
             double d = Math.pow(rect.getValue().centerX() - x, 2) + Math.pow(rect.getValue().centerY() - y, 2);
             if (d < min) {
                 min = d;
@@ -858,99 +875,105 @@ public class SurfSpotsMap extends View {
         canvas.translate(dx, dy);
         canvas.scale(scalesRatio, scalesRatio);
 
-        float dx2 = dx / scalesRatio;
-        float dy2 = dy / scalesRatio;
+//        float dx2 = dx / scalesRatio;
+//        float dy2 = dy / scalesRatio;
 
         float r = densityDHDep * 2.5f; //1.5f;
-        float rZommedOut = densityDHDep * 1.5f / scalesRatio;
+//        float rZommedOut = densityDHDep * 1.5f / scalesRatio;
 
-        float labelsAlpha = Math.max(0f, overviewState - 0.33f) / 0.67f;
+//        float labelsAlpha = Math.max(0f, overviewState - 0.33f) / 0.67f;
 
-        for (SurfSpot spot : surfSpotsList) {
-            float x = spot.pointOnSVG.x * scaleOverview;
-            float y = spot.pointOnSVG.y * scaleOverview;
-            float x2 = x + dx2;
-            float y2 = y + dy2;
+//        paintFont.setTextSize(metrics.font);
+//        paintFont.setTextAlign(Paint.Align.LEFT);
 
-            float highlighted = isHighlighted(i); // TODO!!! scale bug
-            if (highlighted > 0 && i != selectedSpotI) {
-                float t = highlighted * (1f - awakenedState);
-                paintBG.setColor(alpha(t, 0xbbffffff)); //colorSpotDot));
-                canvas.drawCircle(x, y, rZommedOut * highlighted, paintBG);
+//        float labelDY = paintFont.getFontMetrics().ascent / 3;
+
+//        paintFontSmall.setTextAlign(Paint.Align.CENTER);
+//        paintFontSmall.setTextSize(metrics.fontSmall);
+
+//        RatedConditions best;
+//        float bestRating;
+
+        if (spotLabelsCommon != null)
+            for (SpotLabel spotLabel : spotsLabels.values()) {
+                spotLabel.draw(canvas, spotLabelsCommon, scaleOverview, spotIDown == i);
             }
+//        for (SurfSpot spot : surfSpotsList) {
 
-            if (spotIDown == i) {
-                labelsAlpha *= 0.4f;
-            }
-
-            if (awakenedState == 1 && overviewState > 0f) {
-                RatedConditions best = model.rater.getBest(spot, plusDays);
-                float bestRating = best != null ? best.rating : -1;
-                //r = densityDHDep * (bestRating >= 0.7 ? 2f : bestRating > 0.3 ? 1.5f : 1f);
-
-//                paintBG.setColor(alpha(overviewState * (bestRating / 2f + 0.5f), 0x006281)); //colorSpotDot);
-                paintBG.setColor(alpha(overviewState * (spotIDown == i ? 0.3f : 0.8f), 0x006281)); //colorSpotDot);
-                canvas.drawCircle(x, y, r, paintBG);
-
-                if (x2 > rectXL && (y2 > insetTop || x2 > dh * 4 && y2 > rectYT) && x2 < rectXR && y2 < rectYB) {
-                    float size = metrics.font; // / ((overviewState * MAP_OVERVIEW + (1f - overviewState) * MAP_SPOT_SELECTED) / MAP_OVERVIEW); // bestRating >= 0.7 ? metrics.fontBig : bestRating > 0.3 ? metrics.font : metrics.fontSmall;
-//                    RatingView.drawStatic(canvas, (int) x - dh, (int) y, dh / 4, best.rating, best.waveRating * best.tideRating, (int) (t * 255));
-//                    paintFont.setColor(alpha(Math.max(0f, overviewState - 0.33f) / 0.67f * (bestRating / 3f + 0.66f), 0x006281));
-                    paintFont.setColor(alpha(labelsAlpha, 0x004055));
-                    paintFont.setTextSize(size);
-
-                    y -= paintFont.getFontMetrics().ascent / 3;
-
-                    if (spot.labelLeft) {
-                        x -= 3 * r;
-                        paintFont.setTextAlign(Paint.Align.RIGHT);
-                    } else {
-                        x += 3 * r;
-                        paintFont.setTextAlign(Paint.Align.LEFT);
-                    }
-
-                    canvas.drawText(spot.name, x, y, paintFont);
-
-                    int strWidth = (int) paintFont.measureText(spot.name);
-
-                    if (spot.labelLeft) x2 -= strWidth;
-
-                    Rect rect = spotsLabels.get(i);
-                    rect.set((int) x2 - dh / 2, (int) (y2 + paintFont.getFontMetrics().ascent), (int) x2 + strWidth + dh / 2, (int) y2);
-
-                    if (spot.labelLeft) {
-                        x -= strWidth + dh / 16 + dh;
-                    } else {
-                        x += strWidth + dh / 16;
-                    }
-
-                    if (bestRating >= 0) {
-                        y += paintFont.getFontMetrics().ascent * 1.5f;
-                        star.setAlpha((int) (labelsAlpha * (80 + 175 * bestRating)));
-                        star.setBounds((int) x, (int) y, (int) (x + dh), (int) (y + dh));
-                        star.draw(canvas);
-
-                        y -= paintFont.getFontMetrics().ascent * 1.425f;
-                        paintFont.setColor(alpha(labelsAlpha * (0.66f + 0.33f * bestRating), 0xffffffff)); //bestRating >= 0.7 ? 0xff8ae3fc : 0xff4ac3ec)); //paintBG.getColor());
-                        paintFont.setTextAlign(Paint.Align.CENTER);
-                        paintFont.setTextSize(metrics.fontSmall);
-                        canvas.drawText(String.valueOf(Math.round(bestRating * 7)), x + dh / 2, y, paintFont);
-                    }
-
-                    if (!justOneLabel && x2 > fx1 && y2 > fy1 && x2 + dh < fx2 && y2 < fy2) {
-                        justOneLabel = true;
-                    }
-                } else {
-                    spotsLabels.get(i).set(-1000, -1000, -1, -1);
-                }
-            }
-
-            if (spotIDown == i) {
-                labelsAlpha /= 0.4f;
-            }
-
-            i++;
-        }
+//            boolean isPressed = spotIDown == i;
+//
+//            float x = spot.pointOnSVG.x * scaleOverview;
+//            float y = spot.pointOnSVG.y * scaleOverview;
+//            float x2 = x + dx2;
+//            float y2 = y + dy2;
+//
+//            if (awakenedState != 1) {
+//                float highlighted = isHighlighted(i);
+//                if (highlighted > 0 && i != selectedSpotI) {
+//                    float t = highlighted * (1f - awakenedState);
+//                    paintBG.setColor(alpha(t, 0xbbffffff));
+//                    canvas.drawCircle(x, y, rZommedOut * highlighted, paintBG);
+//                }
+//            }
+//
+//            if (awakenedState == 1 && overviewState > 0f) {
+//                if (isPressed) labelsAlpha *= 0.4f;
+//
+//                best = model.rater.getBest(spot, plusDays);
+//                bestRating = best != null ? best.rating : -1;
+//
+//                paintBG.setColor(isPressed ? circleColorPressed : circleColor);
+//                canvas.drawCircle(x, y, r, paintBG);
+//
+//                if (x2 > rectXL && (y2 > insetTop || x2 > dh * 4 && y2 > rectYT) && x2 < rectXR && y2 < rectYB) {
+//                    paintFont.setColor(alpha(labelsAlpha, 0x004055));
+//
+//                    int strWidth = (int) paintFont.measureText(spot.name);
+//
+//                    y -= labelDY;
+//                    if (spot.labelLeft) {
+//                        x -= 3 * r;
+//                        x -= strWidth;
+//                        x2 -= strWidth - (bestRating >= 0 ? (int) (dh * 1.5f) : 0);
+//                    } else {
+//                        x += 3 * r;
+//                    }
+//
+//                    canvas.drawText(spot.name, x, y, paintFont);
+//
+//                    Rect rect = spotsLabelsRects.get(i);
+//                    rect.set((int) x2 - dh / 2, (int) (y2 + paintFont.getFontMetrics().ascent), (int) x2 + strWidth + dh / 2 + (bestRating >= 0 ? (int) (dh * 1.5f) : 0), (int) y2);
+//
+//                    if (spot.labelLeft) {
+//                        x -= dh / 16 + dh;
+//                    } else {
+//                        x += strWidth + dh / 16;
+//                    }
+//
+//                    if (bestRating >= 0) {
+//                        y += starDY;
+//                        star.setAlpha((int) (labelsAlpha * (80 + 175 * bestRating)));
+//                        star.setBounds((int) x, (int) y, (int) (x + dh), (int) (y + dh));
+//                        star.draw(canvas);
+//
+//                        y -= starTextDY;
+//                        paintFontSmall.setColor(alpha(labelsAlpha * (0.66f + 0.33f * bestRating), 0xffffffff)); //bestRating >= 0.7 ? 0xff8ae3fc : 0xff4ac3ec)); //paintBG.getColor());
+//                        canvas.drawText(String.valueOf(Math.round(bestRating * 7)), x + dh / 2, y, paintFontSmall);
+//                    }
+//
+//                    canvas.drawRect(rect, paintFont);
+//
+//                    if (!justOneLabel && x2 > fx1 && y2 > fy1 && x2 + dh < fx2 && y2 < fy2) {
+//                        justOneLabel = true;
+//                    }
+//                } else {
+//                    spotsLabelsRects.get(i).set(-1000, -1000, -1, -1);
+//                }
+//
+//                if (isPressed) labelsAlpha /= 0.4f;
+//            }
+//            i++;
+//        }
 
         canvas.restore();
 
@@ -1123,6 +1146,8 @@ public class SurfSpotsMap extends View {
         toOverview = this.overviewState < overviewState;
 
         this.overviewState = overviewState;
+
+        spotLabelsCommon.update(overviewState);
 
         updateScale();
         repaint();

@@ -31,12 +31,12 @@ import com.avaa.surfforecast.MainModel.Change;
 import com.avaa.surfforecast.ai.CommandsExecutor;
 import com.avaa.surfforecast.ai.VoiceInterfaceFragment;
 import com.avaa.surfforecast.data.BusyStateListener;
-import com.avaa.surfforecast.data.Common;
 import com.avaa.surfforecast.data.RatedConditions;
 import com.avaa.surfforecast.data.SurfConditionsProvider;
 import com.avaa.surfforecast.data.SurfSpot;
 import com.avaa.surfforecast.data.SurfSpots;
 import com.avaa.surfforecast.drawers.MetricsAndPaints;
+import com.avaa.surfforecast.utils.DT;
 import com.avaa.surfforecast.views.HeaderList;
 import com.avaa.surfforecast.views.Map.SurfSpotsMap;
 import com.avaa.surfforecast.views.OneDayConditionsSmallView;
@@ -155,7 +155,7 @@ public class MainActivity extends AppCompatActivity {
 //                now.addMETAR(model.selectedMETAR);
 //                TideData tideData = model.tideDataProvider.getTideData(surfSpot.tidePortID);
 //                if (tideData != null) { //!!!!!!!!!!!!!!!!!!
-//                    float rate = now.rate(surfSpot, tideData, 0, Common.getNowTimeInt(Common.TIME_ZONE));
+//                    float rate = now.rate(surfSpot, tideData, 0, Common.getNowTimeMinutes(Common.TIME_ZONE));
         //((TextView)findViewById(R.id.tvRatingDay)).setText("Rating: " + rate + "\nWave: " + now.waveRating + "\nWind: " + now.windRating + "\nTide: " + now.tideRating);
 //                    rv.setRating(rate, now.waveRating * now.tideRating);
 //                }
@@ -406,10 +406,10 @@ public class MainActivity extends AppCompatActivity {
     private Calendar c = null;
 
     private void resetDates() {
-        Calendar c = Common.getCalendarToday(Common.TIME_ZONE);
+        Calendar c = DT.getCalendarTodayStart(DT.TIME_ZONE);
         if (this.c != null && this.c.get(Calendar.DATE) == c.get(Calendar.DATE)) return;
 
-        this.c = Common.getCalendarToday(Common.TIME_ZONE);
+        this.c = DT.getCalendarTodayStart(DT.TIME_ZONE);
         int i = 0;
         for (OneDayConditionsSmallView v : smallViews) {
             v.setDate(c, i++);

@@ -1,7 +1,6 @@
 package com.avaa.surfforecast.data;
 
 import android.os.AsyncTask;
-import android.util.Log;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -14,7 +13,7 @@ import java.util.GregorianCalendar;
 import java.util.List;
 import java.util.TreeMap;
 
-import static com.avaa.surfforecast.data.Common.TIME_ZONE;
+import static com.avaa.surfforecast.utils.DT.TIME_ZONE;
 import static java.lang.Math.PI;
 
 /**

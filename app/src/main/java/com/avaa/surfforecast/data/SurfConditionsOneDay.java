@@ -6,7 +6,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.TreeMap;
 
-import static com.avaa.surfforecast.data.Common.TIME_ZONE;
+import static com.avaa.surfforecast.utils.DT.TIME_ZONE;
 
 /**
  * Created by Alan on 10 Nov 2016.

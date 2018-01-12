@@ -1,5 +1,7 @@
 package com.avaa.surfforecast.data;
 
+import com.avaa.surfforecast.utils.DT;
+
 import java.util.TimeZone;
 
 /**
@@ -18,7 +20,7 @@ public class SunTimesProvider {
     //  dusk:          julianDateToDate(Jnau)
 
     public static SunTimes get(final double latitude, final double longitude, TimeZone timeZone) {
-        long time = Common.getDay(0, timeZone);
+        long time = DT.getDay(0, timeZone);
         return get(latitude, longitude, time, timeZone);
     }
 

@@ -5,13 +5,17 @@ import android.os.AsyncTask;
 import android.support.annotation.NonNull;
 
 import com.avaa.surfforecast.MainModel;
+import com.avaa.surfforecast.utils.DT;
 
 import java.util.HashMap;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
 import java.util.SortedSet;
 import java.util.TreeMap;
 import java.util.TreeSet;
+
+import static com.avaa.surfforecast.MainModel.N_DAYS;
 
 
 /**
@@ -26,31 +30,32 @@ public class Rater {
     private Map<SurfSpot, TreeMap<Long, RatedConditions>> bestBySpot = new HashMap<>();
     private final Map<Long, SortedSet<RatedConditions>> bestByDay = new HashMap<>();
 
-    private long lastUpdate = 0;
-
 
     private void initBestByDay() {
         bestByDay.clear();
-        for (int plusDays = 0; plusDays <= 6; plusDays++) {
-            bestByDay.put(Common.getDay(plusDays, Common.TIME_ZONE), new TreeSet<>());
+        for (int plusDays = 0; plusDays <= N_DAYS; plusDays++) {
+            bestByDay.put(DT.getDay(plusDays, DT.TIME_ZONE), new TreeSet<>());
         }
     }
 
 
     public RatedConditions getBest(@NonNull SurfSpot surfSpot, int plusDays) {
-        Long updated = this.updated.get(surfSpot);
+        final Long updated = this.updated.get(surfSpot);
         if (updated == null || updated < surfSpot.conditionsProvider.lastUpdate) {
             updateBest(surfSpot);
         }
 
         if (bestBySpot.get(surfSpot) == null) return null;
 
-        return bestBySpot.get(surfSpot).get(Common.getDay(plusDays, Common.TIME_ZONE));
+        return bestBySpot.get(surfSpot).get(DT.getDay(plusDays, DT.TIME_ZONE));
     }
 
 
     public RatedConditions getBestForDay(int plusDays) {
-        return bestByDay.get(Common.getDay(plusDays, Common.TIME_ZONE)).first();
+        if (bestByDay.isEmpty()) {
+            return null;
+        }
+        return bestByDay.get(DT.getDay(plusDays, DT.TIME_ZONE)).first();
     }
 
 
@@ -68,16 +73,16 @@ public class Rater {
     }
 
 
-    public void updateBest() {
-//        Log.i(TAG, "updateBest");
+    public void updateBestByDay() {
+//        Log.i(TAG, "updateBestByDay()");
         initBestByDay();
-        for (SurfSpot surfSpot : MainModel.instance.surfSpots.getAll()) {
-            TreeMap<Long, RatedConditions> map = updateBest(surfSpot);
+
+        for (Map.Entry<SurfSpot, TreeMap<Long, RatedConditions>> ei : bestBySpot.entrySet()) {
+            TreeMap<Long, RatedConditions> map = ei.getValue();
             for (Map.Entry<Long, RatedConditions> entry : map.entrySet()) {
                 bestByDay.get(entry.getKey()).add(entry.getValue());
             }
         }
-        lastUpdate = System.currentTimeMillis();
     }
 
 
@@ -93,11 +98,11 @@ public class Rater {
 
         TideData tideData = MainModel.instance.tideDataProvider.getTideData(surfSpot.tidePortID);
 
-        int nowTimeInt = Common.getNowTimeInt(Common.TIME_ZONE);
+        int nowTimeInt = DT.getNowTimeMinutes(DT.TIME_ZONE);
 
         RatedConditions rc = new RatedConditions();
 
-        for (int plusDays = 0; plusDays <= 6; plusDays++) {
+        for (int plusDays = 0; plusDays <= N_DAYS; plusDays++) {
             RatedConditions bestRC = null;
             float bestRate = -1;
 
@@ -125,7 +130,7 @@ public class Rater {
             }
 
             if (bestRC != null) {
-                long day = Common.getDay(plusDays, Common.TIME_ZONE);
+                long day = DT.getDay(plusDays, DT.TIME_ZONE);
 
                 map.put(day, bestRC);
 
@@ -144,7 +149,8 @@ public class Rater {
     }
 
 
-    private void replaceInSet(SortedSet<RatedConditions> set, RatedConditions newRC) {
+    // Contains rated conditions for spots for one specific day
+    private static void replaceInSet(SortedSet<RatedConditions> set, RatedConditions newRC) {
         SurfSpot surfSpot = newRC.surfSpot;
 
         Iterator<RatedConditions> setI = set.iterator();
@@ -165,13 +171,13 @@ public class Rater {
 
         final TideData tideData = MainModel.instance.tideDataProvider.getTideData(surfSpot.tidePortID);
 
-        RatedConditions rc = new RatedConditions();
+        final RatedConditions rc = new RatedConditions();
 
-        for (int plusDays = 0; plusDays <= 6; plusDays++) {
+        for (int plusDays = 0; plusDays <= N_DAYS; plusDays++) {
             RatedConditions bestRC = null;
             float bestRate = -1;
 
-            SurfConditionsOneDay surfConditionsOneDay = surfSpot.conditionsProvider.get(plusDays);
+            final SurfConditionsOneDay surfConditionsOneDay = surfSpot.conditionsProvider.get(plusDays);
 
             if (surfConditionsOneDay == null) continue;
 
@@ -192,7 +198,7 @@ public class Rater {
             }
 
             if (bestRC != null) {
-                long day = Common.getDay(plusDays, Common.TIME_ZONE);
+                long day = DT.getDay(plusDays, DT.TIME_ZONE);
                 map.put(day, bestRC);
             }
         }
@@ -205,13 +211,19 @@ public class Rater {
 
 
     public void updateAll() {
-        if (DataRetrieversPool.getTask(TAG, METARRetriever.class) == null) {
-            DataRetrieversPool.addTask(TAG, new RaterAsyncTask());
+        if (DataRetrieversPool.getTask(TAG, RaterAsyncTask.class) == null) {
+            DataRetrieversPool.addTask(TAG, new RaterAsyncTask(MainModel.instance.surfSpots.getAll()));
         }
     }
 
+
     public static class RaterAsyncTask extends AsyncTask<Object, Void, Map<SurfSpot, TreeMap<Long, RatedConditions>>> {
+        private final List<SurfSpot> spots;
         private long time;
+
+        public RaterAsyncTask(List<SurfSpot> spots) {
+            this.spots = spots;
+        }
 
         @Override
         protected Map<SurfSpot, TreeMap<Long, RatedConditions>> doInBackground(Object... lists) {
@@ -219,7 +231,7 @@ public class Rater {
 
             final Map<SurfSpot, TreeMap<Long, RatedConditions>> bestBySpot = new HashMap<>();
 
-            for (SurfSpot surfSpot : MainModel.instance.surfSpots.getAll()) {
+            for (SurfSpot surfSpot : spots) {
                 if (surfSpot.conditionsProvider.hasData()) {
                     bestBySpot.put(surfSpot, rateSpot(surfSpot));
                 }
@@ -235,15 +247,14 @@ public class Rater {
     }
 
 
-    // --
-
-
     private void asyncFinished(Map<SurfSpot, TreeMap<Long, RatedConditions>> surfSpotTreeMapMap, long time) {
         bestBySpot = surfSpotTreeMapMap;
 
-        for (SurfSpot surfSpot : MainModel.instance.surfSpots.getAll()) {
+        for (SurfSpot surfSpot : surfSpotTreeMapMap.keySet()) {
             updated.put(surfSpot, time);
         }
+
+        updateBestByDay();
 
         MainModel.instance.allRatingsUpdated();
     }

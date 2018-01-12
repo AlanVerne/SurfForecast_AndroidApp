@@ -16,7 +16,7 @@ import java.util.Set;
 import java.util.SortedMap;
 import java.util.TreeMap;
 
-import static com.avaa.surfforecast.data.Common.TIME_ZONE;
+import static com.avaa.surfforecast.utils.DT.TIME_ZONE;
 
 
 /**

@@ -1,5 +1,7 @@
 package com.avaa.surfforecast.data;
 
+import com.avaa.surfforecast.utils.DT;
+
 import java.util.Calendar;
 import java.util.GregorianCalendar;
 
@@ -9,8 +11,8 @@ import java.util.GregorianCalendar;
 
 public class DateTimeHelper {
     public static Calendar getTodaysStartTime() {
-        Calendar calendarNow = GregorianCalendar.getInstance(Common.TIME_ZONE);
-        Calendar calendar = GregorianCalendar.getInstance(Common.TIME_ZONE);
+        Calendar calendarNow = GregorianCalendar.getInstance(DT.TIME_ZONE);
+        Calendar calendar = GregorianCalendar.getInstance(DT.TIME_ZONE);
         calendar.set(calendarNow.get(Calendar.YEAR), calendarNow.get(Calendar.MONTH), calendarNow.get(Calendar.DAY_OF_MONTH), 0, 0, 0);
         calendar.set(Calendar.MILLISECOND, 0);
         return calendar;

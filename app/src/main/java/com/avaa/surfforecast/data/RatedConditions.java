@@ -169,6 +169,8 @@ public class RatedConditions implements Comparable<RatedConditions> {
         return a == null && b == null ||
                 a != null && b != null &&
                         round(7 * a.rating) == round(7 * b.rating) &&
-                        round(7 * a.waveRating) == round(7 * b.waveRating);
+                        round(7 * a.waveRating) == round(7 * b.waveRating) &&
+                        round(7 * a.windRating) == round(7 * b.windRating) &&
+                        round(7 * a.tideRating) == round(7 * b.tideRating);
     }
 }

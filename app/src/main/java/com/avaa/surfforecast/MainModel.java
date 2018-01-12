@@ -1,12 +1,13 @@
 package com.avaa.surfforecast;
 
+
 import android.content.SharedPreferences;
+import android.os.Handler;
 import android.support.annotation.NonNull;
 
 import com.avaa.surfforecast.ai.CommandsExecutor;
 import com.avaa.surfforecast.ai.VoiceRecognitionHelper;
 import com.avaa.surfforecast.data.BusyStateListener;
-import com.avaa.surfforecast.data.Common;
 import com.avaa.surfforecast.data.METAR;
 import com.avaa.surfforecast.data.METARProvider;
 import com.avaa.surfforecast.data.RatedConditions;
@@ -20,6 +21,7 @@ import com.avaa.surfforecast.data.TideData;
 import com.avaa.surfforecast.data.TideDataProvider;
 import com.avaa.surfforecast.data.UserStat;
 import com.avaa.surfforecast.drawers.MetricsAndPaints;
+import com.avaa.surfforecast.utils.DT;
 
 import java.util.Collection;
 import java.util.HashMap;
@@ -45,6 +47,8 @@ import static com.avaa.surfforecast.MainModel.Change.SELECTED_TIME;
 public class MainModel {
     private static final String TAG = "MainModel";
     private static final String SPKEY_SELECTED_SPOT = "selectedSpot";
+
+    public static final int N_DAYS = 6;
 
     private final int willBeSelectedSpotI; //TODO
 
@@ -124,8 +128,11 @@ public class MainModel {
 
         setSelectedSpotI(willBeSelectedSpotI);
 
-        rater.updateAll();
-//        setSelectedDay(-0.01f);
+        // Delay rater to let the graphics draw first
+        final Handler handler = new Handler();
+        handler.postDelayed(rater::updateAll, 1000);
+
+        //setSelectedDay(-0.01f);
     }
 
 
@@ -176,7 +183,7 @@ public class MainModel {
             changes.add(updateSelectedTideData(false));
 
             if (selectedNow) {
-                changes.add(setSelectedTime(Common.getNowTimeInt(Common.TIME_ZONE), false));
+                changes.add(setSelectedTime(DT.getNowTimeMinutes(DT.TIME_ZONE), false));
             } else {
                 changes.add(selectBestTime(false));
             }
@@ -305,11 +312,11 @@ public class MainModel {
 
         SurfSpot spot = getSelectedSpot();
 
-//        int nowTimeInt = Common.getNowTimeInt(TIME_ZONE);
+//        int nowTimeInt = Common.getNowTimeMinutes(TIME_ZONE);
 
         if (getSelectedDay() == 0) {
             selectedNow = true;
-            selectedTime = Common.getNowTimeInt(Common.TIME_ZONE);
+            selectedTime = DT.getNowTimeMinutes(DT.TIME_ZONE);
             changes.add(SELECTED_TIME);
 
             changes.add(updateSelectedConditions(false));
@@ -389,7 +396,7 @@ public class MainModel {
     public Set<Change> updateCurrentConditions(boolean fire) {
         if (!selectedNow) return null;
 
-        selectedTime = Common.getNowTimeInt(Common.TIME_ZONE);
+        selectedTime = DT.getNowTimeMinutes(DT.TIME_ZONE);
 
         if (selectedSpot == null) return null;
 
@@ -499,11 +506,11 @@ public class MainModel {
 
 
     public void allRatingsUpdated() {
-        fireChanged(Change.SELECTED_RATING);
+        fireChanged(Change.ALL_RATINGS); // Change.SELECTED_RATING
     }
 
 
-    public enum Change {SELECTED_SPOT, ALL_CONDITIONS, SELECTED_CONDITIONS, SELECTED_DAY, SELECTED_DAY_FLOAT, SELECTED_TIME, SELECTED_TIDE_DATA, SELECTED_RATING}
+    public enum Change {SELECTED_SPOT, ALL_CONDITIONS, SELECTED_CONDITIONS, SELECTED_DAY, SELECTED_DAY_FLOAT, SELECTED_TIME, SELECTED_TIDE_DATA, SELECTED_RATING, ALL_RATINGS}
 
 
     public interface ChangeListener {

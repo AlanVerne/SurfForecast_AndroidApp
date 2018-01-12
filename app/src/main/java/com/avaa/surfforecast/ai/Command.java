@@ -1,8 +1,8 @@
 package com.avaa.surfforecast.ai;
 
 import com.avaa.surfforecast.MainModel;
-import com.avaa.surfforecast.data.Common;
 import com.avaa.surfforecast.data.SurfSpot;
+import com.avaa.surfforecast.utils.DT;
 
 import java.util.List;
 
@@ -79,7 +79,7 @@ public class Command {
 
 
     public boolean isTimeNow() {
-        return day != null && day == 0 && time != null && (time == -1 || Math.abs(time - Common.getNowTimeInt(Common.TIME_ZONE)) < 10);
+        return day != null && day == 0 && time != null && (time == -1 || Math.abs(time - DT.getNowTimeMinutes(DT.TIME_ZONE)) < 10);
     }
 
 

@@ -2,14 +2,6 @@ package com.avaa.surfforecast.data;
 
 import android.graphics.PointF;
 
-import com.avaa.surfforecast.MainModel;
-import com.avaa.surfforecast.views.RatingView;
-
-import java.util.HashMap;
-import java.util.Map;
-
-import static com.avaa.surfforecast.data.Common.TIME_ZONE;
-
 /**
  * Created by Alan on 12 Jul 2016.
  */

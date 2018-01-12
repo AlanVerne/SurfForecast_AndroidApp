@@ -5,11 +5,11 @@ import android.net.Uri;
 import android.util.Log;
 
 import com.avaa.surfforecast.MainModel;
-import com.avaa.surfforecast.data.Common;
 import com.avaa.surfforecast.data.METAR;
 import com.avaa.surfforecast.data.RatedConditions;
 import com.avaa.surfforecast.data.SurfConditions;
 import com.avaa.surfforecast.data.SurfSpot;
+import com.avaa.surfforecast.utils.DT;
 
 import java.util.ArrayList;
 import java.util.Calendar;
@@ -87,7 +87,7 @@ public class CommandsExecutor {
 
         sToDay.put(" now ", 0);
 
-        Calendar c = Common.getCalendarToday(Common.TIME_ZONE);
+        Calendar c = DT.getCalendarTodayStart(DT.TIME_ZONE);
         for (int i = 0; i < 7; i++) {
             int dayOfWeek = c.get(Calendar.DAY_OF_WEEK);
             String s = c.getDisplayName(Calendar.DAY_OF_WEEK, Calendar.LONG, Locale.ENGLISH).toLowerCase();
@@ -200,7 +200,7 @@ public class CommandsExecutor {
         SurfSpot selectedSpot = mainModel.getSelectedSpot();
         String name = selectedSpot.getShortName();
 
-        int nowTimeInt = Common.getNowTimeInt(Common.TIME_ZONE);
+        int nowTimeInt = DT.getNowTimeMinutes(DT.TIME_ZONE);
         if (nowTimeInt > 18 * 60) ;
 
         String day = nowTimeInt > 18 * 60 ? "tomorrow" : "today";
@@ -297,7 +297,7 @@ public class CommandsExecutor {
 //            return askForUsersExperience();
 //        }
 
-        int nowTimeInt = Common.getNowTimeInt(Common.TIME_ZONE);
+        int nowTimeInt = DT.getNowTimeMinutes(DT.TIME_ZONE);
 
         String prefix = "";
         if (c.keywords.contains("where to surf")) prefix = "In ";
@@ -534,7 +534,7 @@ public class CommandsExecutor {
 
         List<String> keywords = c.keywords;
 
-        int nowTimeInt = Common.getNowTimeInt(Common.TIME_ZONE);
+        int nowTimeInt = DT.getNowTimeMinutes(DT.TIME_ZONE);
 
         boolean forNowTime = c.time != null && c.time == -1;
 

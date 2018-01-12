@@ -2,6 +2,8 @@ package com.avaa.surfforecast.data;
 
 import android.graphics.Path;
 
+import com.avaa.surfforecast.utils.DT;
+
 import java.util.Calendar;
 import java.util.Date;
 import java.util.GregorianCalendar;
@@ -11,7 +13,7 @@ import java.util.Map;
 import java.util.SortedMap;
 import java.util.TreeMap;
 
-import static com.avaa.surfforecast.data.Common.TIME_ZONE;
+import static com.avaa.surfforecast.utils.DT.TIME_ZONE;
 
 
 /**
@@ -94,22 +96,22 @@ public class TideData {
 
 
     public int hasDays() { // 1 - only today, 7 - 7 days
-        Calendar calendar = Common.getCalendarToday(Common.TIME_ZONE);
+        Calendar calendar = DT.getCalendarTodayStart(DT.TIME_ZONE);
         int day = calendar.get(Calendar.DAY_OF_YEAR);
 
         if (hasDaysStartingFrom == day) {
-            //Log.i(TAG, "hasDays() | cached: startfrom = " + hasDaysStartingFrom + ", days = " + hasDaysN);
+            // Log.i(TAG, "hasDays() | cached: startfrom = " + hasDaysStartingFrom + ", days = " + hasDaysN);
             return hasDaysN;
         }
 
         hasDaysStartingFrom = day;
         hasDaysN = 0;
-        while (hasData(Common.getUnixTimeFromCalendar(calendar))) {
+        while (hasData(DT.getUnixTimeFromCalendar(calendar))) {
             calendar.add(Calendar.DATE, 1);
             hasDaysN++;
         }
 
-        //Log.i(TAG, "hasDays() | calculated: startfrom = " + hasDaysStartingFrom + ", days = " + hasDaysN);
+        // Log.i(TAG, "hasDays() | calculated: startfrom = " + hasDaysStartingFrom + ", days = " + hasDaysN);
 
         return hasDaysN;
     }
@@ -160,7 +162,7 @@ public class TideData {
             hEnd += 24;
         }
 
-        long day = Common.getDay(plusDays, TIME_ZONE);
+        long day = DT.getDay(plusDays, TIME_ZONE);
 
         int[] values = precise.get(day);
 
@@ -168,7 +170,7 @@ public class TideData {
         p.moveTo(0, h * 2);
 
         if (hEnd >= 24) {
-            Calendar c = new GregorianCalendar(Common.TIME_ZONE);
+            Calendar c = new GregorianCalendar(DT.TIME_ZONE);
             c.setTime(new Date(day * 1000));
             c.add(Calendar.DATE, 1);
             int[] values2 = precise.get(c.getTime().getTime() / 1000);
@@ -242,7 +244,7 @@ public class TideData {
 
 
     public Integer getTide(int plusDays, int time) { // time in 24*60
-        return getTide(Common.getDay(plusDays, Common.TIME_ZONE) + time * 60);
+        return getTide(DT.getDay(plusDays, DT.TIME_ZONE) + time * 60);
     }
 
     public Integer getTide(long time) { // time with seconds 24*60*60
@@ -276,10 +278,10 @@ public class TideData {
 
 
     public Integer getNow() {
-        int[] values = precise.get(Common.getToday(Common.TIME_ZONE));
+        int[] values = precise.get(DT.getToday(DT.TIME_ZONE));
         if (values == null) return null;
 
-        Calendar calendar = new GregorianCalendar(Common.TIME_ZONE);
+        Calendar calendar = new GregorianCalendar(DT.TIME_ZONE);
         float now = calendar.get(Calendar.HOUR_OF_DAY) * 60 + calendar.get(Calendar.MINUTE) + calendar.get(Calendar.SECOND) / 60.0f;
         now /= 10;
 
@@ -295,7 +297,7 @@ public class TideData {
 
 
     public String getStateNow() {
-        return getState(Common.getToday(TIME_ZONE), System.currentTimeMillis() / 1000);
+        return getState(DT.getToday(TIME_ZONE), System.currentTimeMillis() / 1000);
     }
 
     public String getState(long day, int t) {
@@ -364,7 +366,7 @@ public class TideData {
         Map.Entry<Long, Integer> e2 = iterator.next();
 
         ClosestExtremums ce = new ClosestExtremums();
-        ce.now = (int) ((time - day) / 60); //Common.getNowTimeInt(TIME_ZONE);
+        ce.now = (int) ((time - day) / 60); //Common.getNowTimeMinutes(TIME_ZONE);
         ce.set((int) ((e1.getKey() - day) / 60), e1.getValue() / 10,
                 (int) ((e2.getKey() - day) / 60), e2.getValue() / 10);
         return ce;

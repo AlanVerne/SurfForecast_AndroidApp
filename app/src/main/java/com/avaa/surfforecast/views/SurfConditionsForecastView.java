@@ -18,16 +18,15 @@ import android.widget.OverScroller;
 
 import com.avaa.surfforecast.MainActivity;
 import com.avaa.surfforecast.MainModel;
-import com.avaa.surfforecast.data.Common;
 import com.avaa.surfforecast.data.SurfConditions;
 import com.avaa.surfforecast.data.SurfConditionsOneDay;
 import com.avaa.surfforecast.data.SurfConditionsProvider;
 import com.avaa.surfforecast.data.SurfSpot;
 import com.avaa.surfforecast.data.TideData;
-import com.avaa.surfforecast.data.TideDataProvider;
 import com.avaa.surfforecast.drawers.MetricsAndPaints;
 import com.avaa.surfforecast.drawers.SurfConditionsOneDayBitmapsAsyncDrawer;
 import com.avaa.surfforecast.drawers.TideChartDrawer;
+import com.avaa.surfforecast.utils.DT;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -574,7 +573,7 @@ public class SurfConditionsForecastView extends View { //} HorizontalScrollView 
 
             paintLabels.setColor(((int) (0x66 * visible)) << 24 | 0xffffff);
 
-            Calendar calendar = GregorianCalendar.getInstance(Common.TIME_ZONE);
+            Calendar calendar = GregorianCalendar.getInstance(DT.TIME_ZONE);
             calendar.set(calendar.get(Calendar.YEAR), calendar.get(Calendar.MONTH), calendar.get(Calendar.DAY_OF_MONTH), 0, 0, 0);
             calendar.set(Calendar.MILLISECOND, 0);
             calendar.add(Calendar.MINUTE, (sx + dh / 2) * 60 * 24 / (dh * 16));

@@ -6,8 +6,8 @@ import com.avaa.surfforecast.data.Direction;
 import com.avaa.surfforecast.data.METAR;
 import com.avaa.surfforecast.data.SurfConditions;
 import com.avaa.surfforecast.data.SurfSpot;
-import com.avaa.surfforecast.data.SurfSpots;
 import com.avaa.surfforecast.data.TideData;
+import com.avaa.surfforecast.utils.DT;
 
 import static com.avaa.surfforecast.ai.ToNL.floatToNL;
 import static com.avaa.surfforecast.ai.ToNL.windRelativeToNL;
@@ -128,7 +128,7 @@ public class Answers {
 
         if (h == null) return new Answer("Tide:   unknown", "Don't know tide.");
 
-        String state = tideData.getState(Common.getDay(plusDays, Common.TIME_ZONE), time);
+        String state = tideData.getState(DT.getDay(plusDays, DT.TIME_ZONE), time);
 
         return new Answer("Tide:   " + TideData.intToString(h) + "m, " + state.toLowerCase(),
                 floatToMeters(h / 100f) + ", " + state + " tide.");

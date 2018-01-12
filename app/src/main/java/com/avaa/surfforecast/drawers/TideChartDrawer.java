@@ -6,14 +6,12 @@ import android.graphics.Canvas;
 import android.graphics.Paint;
 import android.graphics.Typeface;
 import android.os.AsyncTask;
-import android.util.Log;
 
 import com.avaa.surfforecast.MainActivity;
 import com.avaa.surfforecast.MainModel;
-import com.avaa.surfforecast.data.Common;
 import com.avaa.surfforecast.data.SurfSpot;
 import com.avaa.surfforecast.data.TideData;
-import com.avaa.surfforecast.data.TideDataProvider;
+import com.avaa.surfforecast.utils.DT;
 import com.avaa.surfforecast.views.SurfConditionsForecastView;
 
 import java.util.List;
@@ -22,7 +20,7 @@ import static com.avaa.surfforecast.data.Common.STR_M;
 import static com.avaa.surfforecast.data.Common.STR_NOW;
 import static com.avaa.surfforecast.data.Common.STR_NO_TIDE_DATA;
 import static com.avaa.surfforecast.data.Common.STR_TIDE;
-import static com.avaa.surfforecast.data.Common.TIME_ZONE;
+import static com.avaa.surfforecast.utils.DT.TIME_ZONE;
 import static com.avaa.surfforecast.drawers.MetricsAndPaints.colorTideBG;
 import static com.avaa.surfforecast.drawers.MetricsAndPaints.colorTideChartBG;
 import static com.avaa.surfforecast.drawers.MetricsAndPaints.colorTideText;
@@ -117,7 +115,7 @@ public class TideChartDrawer {
 
 
     public void draw(Canvas c, int w, int h, int dx, int orientation) {
-        Integer nowTime = Common.getNowTimeInt(TIME_ZONE);
+        Integer nowTime = DT.getNowTimeMinutes(TIME_ZONE);
 
         Integer now = tideData == null ? null : tideData.getNow();
 

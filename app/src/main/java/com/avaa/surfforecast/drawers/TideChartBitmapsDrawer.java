@@ -7,10 +7,10 @@ import android.graphics.Path;
 import android.graphics.Point;
 import android.graphics.Region;
 
-import com.avaa.surfforecast.data.Common;
 import com.avaa.surfforecast.data.SunTimes;
 import com.avaa.surfforecast.data.SunTimesProvider;
 import com.avaa.surfforecast.data.TideData;
+import com.avaa.surfforecast.utils.DT;
 
 import java.util.Map;
 import java.util.SortedMap;
@@ -65,9 +65,9 @@ public class TideChartBitmapsDrawer {
 
         //AstronomyProvider.Times sunTimes = AstronomyProvider.getTimes();
 
-        final long day = Common.getDay(plusDays, Common.TIME_ZONE);
+        final long day = DT.getDay(plusDays, DT.TIME_ZONE);
 
-        final SunTimes sunTimes = SunTimesProvider.get(la, lo, day, Common.TIME_ZONE);
+        final SunTimes sunTimes = SunTimesProvider.get(la, lo, day, DT.TIME_ZONE);
 
         final Path area = tideData.getPath(day, width, chartH * 2, -300, 300);
 

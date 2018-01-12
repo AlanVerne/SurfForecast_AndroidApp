@@ -9,12 +9,8 @@ import java.util.TimeZone;
  */
 
 public class Common {
-    public static final TimeZone TIME_ZONE = TimeZone.getTimeZone("GMT+8");
     public static final String BENOA_PORT_ID = "5382";
     public static final String SANUR_PORT_ID = "5381";
-
-    public static final double LATITUDE = -8.7716057;
-    public static final double LONGITUDE = 115.1718322;
 
     public static final String STR_NOW = "now";
 
@@ -47,41 +43,6 @@ public class Common {
         } catch (NumberFormatException e) {
             return def;
         }
-    }
-
-
-    public static long getToday(TimeZone timeZone) {
-        return getDay(0, timeZone);
-    }
-
-    public static long getDay(int plusDays, TimeZone timeZone) {
-        Calendar calendar = new GregorianCalendar(timeZone);
-        calendar.set(calendar.get(Calendar.YEAR), calendar.get(Calendar.MONTH), calendar.get(Calendar.DATE), 0, 0, 0);
-        calendar.set(Calendar.MILLISECOND, 0);
-        calendar.add(Calendar.DATE, plusDays);
-        return calendar.getTime().getTime() / 1000;
-    }
-
-    public static Calendar getCalendarToday(TimeZone timeZone) {
-        Calendar calendar = new GregorianCalendar(timeZone);
-        calendar.set(calendar.get(Calendar.YEAR), calendar.get(Calendar.MONTH), calendar.get(Calendar.DATE), 0, 0, 0);
-        calendar.set(Calendar.MILLISECOND, 0);
-        //calendar.add(Calendar.DATE, plusDays);
-        return calendar;
-    }
-
-
-    public static long getUnixTimeFromCalendar(Calendar calendar) {
-        return calendar.getTime().getTime() / 1000;
-    }
-//    public static long getUnixTime(TimeZone timeZone) {
-//        return System.currentTimeMillis()/1000; //new GregorianCalendar(Common.TIME_ZONE).getTime().getTime() / 1000;
-//    }
-
-
-    public static int getNowTimeInt(TimeZone timeZone) {
-        Calendar calendar = new GregorianCalendar(timeZone);
-        return calendar.get(Calendar.HOUR_OF_DAY) * 60 + calendar.get(Calendar.MINUTE);
     }
 }
 
