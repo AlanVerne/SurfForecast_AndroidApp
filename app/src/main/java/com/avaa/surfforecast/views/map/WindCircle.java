@@ -1,4 +1,4 @@
-package com.avaa.surfforecast.views.Map;
+package com.avaa.surfforecast.views.map;
 
 
 import android.graphics.Canvas;
@@ -16,11 +16,9 @@ import com.avaa.surfforecast.views.ParallaxHelper;
 import static com.avaa.surfforecast.data.Common.STR_DASH;
 import static com.avaa.surfforecast.data.Common.STR_KMH;
 import static com.avaa.surfforecast.data.Common.STR_WIND;
-import static com.avaa.surfforecast.drawers.MetricsAndPaints.colorGreen;
-import static com.avaa.surfforecast.drawers.MetricsAndPaints.colorRed;
 import static com.avaa.surfforecast.drawers.MetricsAndPaints.colorWindText;
 import static com.avaa.surfforecast.views.ColorUtils.alpha;
-import static com.avaa.surfforecast.views.Map.Arrow.createArrow;
+import static com.avaa.surfforecast.views.map.Arrow.createArrow;
 
 
 /**
@@ -38,7 +36,7 @@ public class WindCircle extends MapCircle {
     private final FloatScroller angle;
     private final FloatScroller vbr;
 
-    private int windSpeedLabelColor = colorWindText;
+    private int windLabelColor = colorWindText;
 
 
     public WindCircle(View view) {
@@ -64,8 +62,7 @@ public class WindCircle extends MapCircle {
         strWindSpeed = windSpeed == -1 ? STR_DASH : String.valueOf(windSpeed);
 
         RatedConditions selectedRatedConditions = model.getSelectedRatedConditions();
-        float windRating = selectedRatedConditions != null ? selectedRatedConditions.windRating : 0.6f;
-        windSpeedLabelColor = windRating < 0.5 ? colorRed : windRating > 0.8 ? colorGreen : colorWindText;
+        windLabelColor = MetricsAndPaints.getWindColor(selectedRatedConditions);
 
         if (windSpeed != -1) {
             setVisible(true, true);
@@ -124,7 +121,7 @@ public class WindCircle extends MapCircle {
         if (vbr) c.drawCircle(ax, ay, windArrowR, paintBG);
         else c.drawPath(createArrow(ax, ay, a, windArrowR), paintBG);
 
-        paintFont.setColor(alpha(alpha, windSpeedLabelColor));
+        paintFont.setColor(alpha(alpha, windLabelColor));
 
         if (hintsVisible > 0) {
             paintHintsFont.setColor(alpha(alpha * hintsVisible * hintsVisible, colorWindText));

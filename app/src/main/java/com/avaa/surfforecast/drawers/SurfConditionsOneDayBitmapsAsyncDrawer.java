@@ -81,7 +81,7 @@ public class SurfConditionsOneDayBitmapsAsyncDrawer extends AsyncTask<Void, Void
 
                 if (isCancelled()) return null;
 
-                surfConditionsOneDayBitmaps.wind = drawer.drawWind(scFixed, surfSpot.waveDirection, orientationF == 1);
+                surfConditionsOneDayBitmaps.wind = drawer.drawWind(scFixed, surfSpot, orientationF == 1);
 
 //                surfConditionsOneDayBitmaps.forSurfConditionsOneDay = sc;
 

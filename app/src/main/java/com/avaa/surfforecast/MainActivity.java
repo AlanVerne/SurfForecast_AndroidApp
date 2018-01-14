@@ -38,7 +38,7 @@ import com.avaa.surfforecast.data.SurfSpots;
 import com.avaa.surfforecast.drawers.MetricsAndPaints;
 import com.avaa.surfforecast.utils.DT;
 import com.avaa.surfforecast.views.HeaderList;
-import com.avaa.surfforecast.views.Map.SurfSpotsMap;
+import com.avaa.surfforecast.views.map.SurfSpotsMap;
 import com.avaa.surfforecast.views.OneDayConditionsSmallView;
 import com.avaa.surfforecast.views.RatingView;
 import com.avaa.surfforecast.views.SurfConditionsForecastView;

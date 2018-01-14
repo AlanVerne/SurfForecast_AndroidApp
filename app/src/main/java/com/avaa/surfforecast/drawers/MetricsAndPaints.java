@@ -4,6 +4,10 @@ package com.avaa.surfforecast.drawers;
 import android.graphics.Paint;
 import android.graphics.Rect;
 
+import com.avaa.surfforecast.data.RatedConditions;
+import com.avaa.surfforecast.data.SurfConditions;
+import com.avaa.surfforecast.data.SurfSpot;
+
 
 /**
  * Created by Alan on 25 Jan 2017.
@@ -19,6 +23,7 @@ public class MetricsAndPaints {
     public static int colorTideChartBG = 0xff0091c1;
 
     public static int colorRed = 0xffe40036;
+    public static int colorGray = 0xff888888;
     public static int colorGreen = 0xff01be7d;
 
     public static int colorWhite = 0xffffffff;
@@ -66,6 +71,7 @@ public class MetricsAndPaints {
     public final Paint paintFontSmall = new Paint(paintFont);
     public final Paint paintFontBig = new Paint(paintFont);
 
+
     public MetricsAndPaints(float density, int dh) {
         this.density = density;
         this.dh = dh;
@@ -96,9 +102,11 @@ public class MetricsAndPaints {
         fontSmallSpacing = fontSmallH / 2;
     }
 
+
     public static int getColorMinor(int color) {
         return color == colorWhite ? colorMinorWhite : colorMinorBlack;
     }
+
 
     public static int getTextColorForEnergy(int energy) {
         return energy > 1450 ? colorBlack : colorWhite;
@@ -143,5 +151,23 @@ public class MetricsAndPaints {
         }
 
         return r * 0x10000 + g * 0x100 + b;
+    }
+
+
+    // Wind color
+
+
+    public static int getWindColor(RatedConditions c) {
+        float windRating = c != null ? c.windRating : 0.6f;
+        return getWindColor(windRating);
+    }
+
+    public static int getWindColor(SurfConditions c, SurfSpot s) {
+        float windRating = RatedConditions.rateWind(c, s);
+        return getWindColor(windRating);
+    }
+
+    public static int getWindColor(float windRating) {
+        return windRating < 0.5 ? colorRed : windRating > 0.8 ? colorGreen : colorGray;
     }
 }

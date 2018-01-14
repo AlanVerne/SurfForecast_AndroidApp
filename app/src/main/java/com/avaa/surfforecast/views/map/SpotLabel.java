@@ -1,4 +1,4 @@
-package com.avaa.surfforecast.views.Map;
+package com.avaa.surfforecast.views.map;
 
 
 import android.graphics.Canvas;
@@ -47,7 +47,7 @@ public class SpotLabel {
             MetricsAndPaints metricsAndPaints = MainModel.instance.metricsAndPaints;
 
             paintLabel = new Paint(metricsAndPaints.paintFont) {{
-                setTextAlign(Align.CENTER);
+                setTextAlign(Align.LEFT);
             }};
             paintNumber = new Paint(metricsAndPaints.paintFontSmall) {{
                 setTextAlign(Align.CENTER);
@@ -58,10 +58,10 @@ public class SpotLabel {
 
             float ascent = paintLabel.getFontMetrics().ascent;
 
-            labelDY = ascent / 3;
+            labelDY = -ascent / 3;
 
-            starDY = ascent * 1.5f;
-            starTextDY = ascent * 0.075f;
+            starDY = labelDY + ascent * 1.5f;
+            starTextDY = labelDY + ascent * 0.075f;
 
             dh = metricsAndPaints.dh;
 
@@ -77,15 +77,15 @@ public class SpotLabel {
         }
     }
 
-    private final SurfSpot spot;
+    public final SurfSpot spot;
 
-    private float rating;
-    private String labelRating;
+    private float rating = -1;
+    private String labelRating = "";
 
     private int labelWidth;
-    private int labelX, labelY;
+    private int labelX;
     private int starX;
-    private Rect rect;
+    public final Rect rect = new Rect();
 
 
     public SpotLabel(SurfSpot surfSpot) {
@@ -95,37 +95,43 @@ public class SpotLabel {
 
     public void setRating(RatedConditions ratedConditions) {
         if (ratedConditions == null) return;
+
         this.rating = ratedConditions.rating;
-        labelRating = String.valueOf(Math.round(this.rating * 7));
+        this.labelRating = String.valueOf(Math.round(this.rating * 7));
     }
 
 
-    public void updateDimension(SpotLabelsCommon common) {
+    public void updateDimension(SpotLabelsCommon common, float scale) {
         labelWidth = (int) common.paintLabel.measureText(spot.name);
 
         if (spot.labelLeft) {
-            labelY = (int) common.labelDY;
-            if (spot.labelLeft) {
-                labelX = (int) (-3 * common.dotR);
-                labelX -= labelWidth;
-//                x2 -= labelWidth - (rating >= 0 ? (int) (dh * 1.5f) : 0);
-            } else {
-                labelX = (int) (3 * common.dotR);
-            }
-
-            starX = labelX;
-            if (spot.labelLeft) {
-                starX -= common.dh / 16 + common.dh;
-            } else {
-                starX += labelWidth + common.dh / 16;
-            }
+            labelX = (int) (-3 * common.dotR);
+            labelX -= labelWidth;
+        } else {
+            labelX = (int) (3 * common.dotR);
         }
 
-        rect.set(
-                (int) (spot.pointOnSVG.x - common.dh / 2),
-                (int) (spot.pointOnSVG.y + common.paintLabel.getFontMetrics().ascent),
-                (int) (spot.pointOnSVG.x + labelWidth + common.dh / 2 + (rating >= 0 ? (common.dh * 1.5f) : 0)),
-                (int) spot.pointOnSVG.y);
+        starX = labelX;
+        if (spot.labelLeft) {
+            starX -= common.dh / 16 + common.dh;
+        } else {
+            starX += labelWidth + common.dh / 16;
+        }
+
+        float w = labelWidth + (rating >= 0 ? (common.dh * 1.5f) : 0);
+        if (spot.labelLeft) {
+            rect.set(
+                    (int) (spot.pointOnSVG.x - (w + common.dh / 2) / scale),
+                    (int) (spot.pointOnSVG.y + common.paintLabel.getFontMetrics().ascent / scale),
+                    (int) (spot.pointOnSVG.x + (common.dh / 2) / scale),
+                    (int) (spot.pointOnSVG.y + common.paintLabel.getFontMetrics().descent / scale));
+        } else {
+            rect.set(
+                    (int) (spot.pointOnSVG.x - (common.dh / 2) / scale),
+                    (int) (spot.pointOnSVG.y + common.paintLabel.getFontMetrics().ascent / scale),
+                    (int) (spot.pointOnSVG.x + (w + common.dh / 2) / scale),
+                    (int) (spot.pointOnSVG.y + common.paintLabel.getFontMetrics().descent / scale));
+        }
     }
 
 
@@ -134,8 +140,6 @@ public class SpotLabel {
 
         float x = spot.pointOnSVG.x * scaleOverview;
         float y = spot.pointOnSVG.y * scaleOverview;
-//        float x2 = x + dx2;
-//        float y2 = y + dy2;
 
         float labelsAlpha = common.labelsAlpha;
 
@@ -144,29 +148,10 @@ public class SpotLabel {
         common.paintDot.setColor(isPressed ? common.circleColorPressed : common.circleColor);
         canvas.drawCircle(x, y, common.dotR, common.paintDot);
 
-////        if (x2 > rectXL && (y2 > insetTop || x2 > dh * 4 && y2 > rectYT) && x2 < rectXR && y2 < rectYB) {
-//        y -= common.labelDY;
-//        if (spot.labelLeft) {
-//            x -= 3 * common.dotR;
-//            x -= labelWidth;
-////                x2 -= labelWidth - (rating >= 0 ? (int) (dh * 1.5f) : 0);
-//        } else {
-//            x += 3 * common.dotR;
-//        }
-
         common.paintLabel.setColor(alpha(labelsAlpha, 0x004055));
-        canvas.drawText(spot.name, x + labelX, y + labelY, common.paintLabel);
+        canvas.drawText(spot.name, x + labelX, y + common.labelDY, common.paintLabel);
 
-        //Rect rect = spotsLabelsRects.get(i);
-        //rect.set((int) x2 - dh / 2, (int) (y2 + paintFont.getFontMetrics().ascent), (int) x2 + labelWidth + dh / 2 + (rating >= 0 ? (int) (dh * 1.5f) : 0), (int) y2);
-
-//        if (spot.labelLeft) {
-//            x -= dh / 16 + dh;
-//        } else {
-//            x += labelWidth + dh / 16;
-//        }
-
-        if (rating >= 0) {
+        if (rating != -1) {
             common.star.setAlpha((int) (labelsAlpha * (80 + 175 * rating)));
             common.star.setBounds(
                     (int) x + starX,
@@ -189,6 +174,5 @@ public class SpotLabel {
 //            spotsLabelsRects.get(i).set(-1000, -1000, -1, -1);
 //        }
         return true;
-//        if (isPressed) labelsAlpha /= 0.4f;
     }
 }

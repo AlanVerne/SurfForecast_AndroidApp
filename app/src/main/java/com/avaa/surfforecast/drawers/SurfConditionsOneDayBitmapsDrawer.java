@@ -11,6 +11,7 @@ import com.avaa.surfforecast.MainModel;
 import com.avaa.surfforecast.data.Common;
 import com.avaa.surfforecast.data.Direction;
 import com.avaa.surfforecast.data.SurfConditions;
+import com.avaa.surfforecast.data.SurfSpot;
 
 import java.util.Map;
 
@@ -20,9 +21,11 @@ import static com.avaa.surfforecast.drawers.MetricsAndPaints.colorWaveText;
 import static com.avaa.surfforecast.drawers.MetricsAndPaints.colorWindText;
 import static com.avaa.surfforecast.drawers.MetricsAndPaints.getColorMinor;
 
+
 /**
  * Created by Alan on 25 May 2016.
  */
+
 
 public class SurfConditionsOneDayBitmapsDrawer {
     private static final float RK = 0.7f;
@@ -82,6 +85,7 @@ public class SurfConditionsOneDayBitmapsDrawer {
             setColor(colorWindText);
             setTextSize(metricsAndPaints.font);
             setTextAlign(Align.CENTER);
+            setTypeface(Typeface.create(Typeface.DEFAULT_BOLD, Typeface.BOLD));
         }};
 
         colorMinorWindText = getColorMinor(colorWaveText);
@@ -201,7 +205,7 @@ public class SurfConditionsOneDayBitmapsDrawer {
     }
 
 
-    public Bitmap drawWind(Map<Integer, SurfConditions> surfConditionsOneDay, Direction offshore, boolean vertical) {
+    public Bitmap drawWind(Map<Integer, SurfConditions> surfConditionsOneDay, SurfSpot surfSpot, boolean vertical) {
         int width = dh * 16;
         int height = dh * 2;
 
@@ -214,6 +218,7 @@ public class SurfConditionsOneDayBitmapsDrawer {
         int colorMinorWindText = getColorMinor(colorWindText);
         paintDirection.setColor(colorMinorWindText);
 
+        Direction offshore = surfSpot.waveDirection;
 
         if (vertical) {
             c.save();
@@ -267,13 +272,15 @@ public class SurfConditionsOneDayBitmapsDrawer {
             cosA = (float) Math.cos(a);
             sinA = (float) Math.sin(a);
 
-            paintDirection.setColor(isDay ? colorWindText : colorMinorWindText);
+            int color = MetricsAndPaints.getWindColor(surfConditions, surfSpot);
+
+            paintDirection.setColor(isDay ? color : colorMinorWindText);
             float ax = tx + cosA * r;
             float ay = ty - sinA * r;
 
             drawArrow(c, ax, ay, (float) (-a * 180 / Math.PI), cosA, sinA, paintDirection);
 
-            paintFontWind.setColor(isDay ? colorWindText : colorMinorWindText);
+            paintFontWind.setColor(isDay ? color : colorMinorWindText);
             c.drawText(String.valueOf(surfConditions.windSpeed), tx, ty + fontHDiv2, paintFontWind);
         }
 

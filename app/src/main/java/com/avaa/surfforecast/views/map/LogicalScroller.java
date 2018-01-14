@@ -1,7 +1,6 @@
-package com.avaa.surfforecast.views.Map;
+package com.avaa.surfforecast.views.map;
 
 
-import android.content.Context;
 import android.view.View;
 
 

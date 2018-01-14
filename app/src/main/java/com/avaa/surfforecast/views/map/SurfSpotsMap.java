@@ -1,4 +1,4 @@
-package com.avaa.surfforecast.views.Map;
+package com.avaa.surfforecast.views.map;
 
 
 import android.content.Context;
@@ -9,9 +9,7 @@ import android.graphics.Paint;
 import android.graphics.Path;
 import android.graphics.Point;
 import android.graphics.PointF;
-import android.graphics.Rect;
 import android.graphics.RectF;
-import android.graphics.Region;
 import android.graphics.drawable.Drawable;
 import android.os.Build;
 import android.os.PowerManager;
@@ -23,7 +21,7 @@ import android.view.View;
 
 import com.avaa.surfforecast.MainModel;
 import com.avaa.surfforecast.R;
-import com.avaa.surfforecast.data.RatedConditions;
+import com.avaa.surfforecast.data.Rater;
 import com.avaa.surfforecast.data.SurfSpot;
 import com.avaa.surfforecast.drawers.MetricsAndPaints;
 import com.avaa.surfforecast.drawers.SVGPathToAndroidPath;
@@ -39,6 +37,10 @@ import java.util.Map;
 import java.util.Timer;
 import java.util.TimerTask;
 
+import static com.avaa.surfforecast.MainModel.Change.SELECTED_CONDITIONS;
+import static com.avaa.surfforecast.MainModel.Change.SELECTED_DAY;
+import static com.avaa.surfforecast.MainModel.Change.SELECTED_RATING;
+import static com.avaa.surfforecast.MainModel.Change.SELECTED_TIME;
 import static com.avaa.surfforecast.views.ColorUtils.alpha;
 import static java.lang.Math.PI;
 import static java.lang.Math.abs;
@@ -87,7 +89,7 @@ public class SurfSpotsMap extends View {
         setTextAlign(Paint.Align.CENTER);
         setColor(MetricsAndPaints.colorWhite);
     }};
-//    private final Paint paintFontSmall = new Paint() {{
+    //    private final Paint paintFontSmall = new Paint() {{
 //        setFlags(Paint.ANTI_ALIAS_FLAG);
 //        setTextAlign(Paint.Align.CENTER);
 //        setColor(MetricsAndPaints.colorWhite);
@@ -123,11 +125,13 @@ public class SurfSpotsMap extends View {
 
     private Drawable star;
 
-    private final Matrix matrix = new Matrix();
-    private final Path pathTemp = new Path();
+    private final Matrix matrixTmp = new Matrix();
+    private final Path pathTmp = new Path();
+
     private Bitmap bmpMapZoomedOut = null;
-    private Bitmap bmpMapZoomedIn = null;
-    private int bmpMapZoomedInForSpotI = -1;
+//    private Bitmap bmpMapZoomedIn = null; // Used to buffer zoomedIn state
+//    private int bmpMapZoomedInForSpotI = -1;
+
     private final PointF zoomedInPoint = new PointF(0, 0);
     private PointF zoomedInV = new PointF(0, 0);
 
@@ -135,20 +139,19 @@ public class SurfSpotsMap extends View {
     private int insetBottom = 0;
     private static final float paddingBottom = 4.8f;
 
-    private static final float MAP_ZOOMED_OUT = 180;
-    private static final float MAP_OVERVIEW = 20;
-    private static final float MAP_SPOT_SELECTED = 30;
+    private static final float SCALE_MAP_ZOOMED_OUT = 180;
+    private static final float SCALE_MAP_OVERVIEW = 20;
+    private static final float SCALE_MAP_SPOT_SELECTED = 30;
 
     private final RectF rectFTemp = new RectF();
 
     private SpotLabel.SpotLabelsCommon spotLabelsCommon;
-    private Map<Integer, SpotLabel> spotsLabels = new HashMap<>();
-    private Map<Integer, Rect> spotsLabelsRects = new HashMap<>();
+    private final Map<Integer, SpotLabel> spotsLabels = new HashMap<>();
 
     private float avex = 0;
     private float avey = 0;
 
-    private RectF shownSpotsBoundRect = null;
+    private final RectF shownSpotsBoundRect = new RectF();
     private PointF shownSpotsAverage = null;
 
 
@@ -178,7 +181,6 @@ public class SurfSpotsMap extends View {
         surfSpotsList = model.surfSpots.getAll();
 
         for (int i = 0; i < surfSpotsList.size(); i++) {
-            spotsLabelsRects.put(i, new Rect());
             spotsLabels.put(i, new SpotLabel(surfSpotsList.get(i)));
         }
 
@@ -186,7 +188,7 @@ public class SurfSpotsMap extends View {
 
         model.userStat.addUserLevelListener(this::setHintsVisiblePolicy);
 
-        PointF pointOnSVG = model.surfSpots.getArea(model.getSelectedSpotI()).pointOnSVG;
+        final PointF pointOnSVG = model.surfSpots.getArea(model.getSelectedSpotI()).pointOnSVG; // TODO: Think about 'need animation on start or not?'
         zoomedInPoint.set(pointOnSVG.x, pointOnSVG.y);
 
         setAwakenedState(1);
@@ -206,21 +208,30 @@ public class SurfSpotsMap extends View {
 
         bmpMapZoomedOut = Bitmap.createBitmap(pathTerrainSize.x, pathTerrainSize.y, Bitmap.Config.ARGB_8888);
 
-        model.addChangeListener(MainModel.Change.SELECTED_TIME,
-                MainModel.Change.SELECTED_CONDITIONS,
-                MainModel.Change.SELECTED_DAY,
+        model.addChangeListener(
+                SELECTED_CONDITIONS,
+                SELECTED_DAY,
+                SELECTED_TIME,
                 changes -> repaint());
 
-        model.addChangeListener(MainModel.Change.SELECTED_RATING,
-                changes -> {
-                    for (SpotLabel label : spotsLabels.values()) {
-                        label.setRating(model.rater.getBestForDay(model.getSelectedDay()));
-                    }
-                });
+        model.addChangeListener(
+                SELECTED_RATING,
+                SELECTED_DAY,
+                changes -> updateLabelsRating());
 
         parallaxHelper = new ParallaxHelper(this);
 
         star = ContextCompat.getDrawable(getContext(), R.drawable.ic_star_white_24dp);
+    }
+
+
+    private void updateLabelsRating() {
+        Rater rater = model.rater;
+        int selectedDay = model.getSelectedDay();
+
+        for (SpotLabel label : spotsLabels.values()) {
+            label.setRating(rater.getBest(label.spot, selectedDay));
+        }
     }
 
 
@@ -241,14 +252,14 @@ public class SurfSpotsMap extends View {
 
         insetTop = 6 * dh;
 
-        bmpMapZoomedInForSpotI = -1;
+//        bmpMapZoomedInForSpotI = -1;
 
         Canvas c = new Canvas(bmpMapZoomedOut);
 
-        float scale = 2 * dh / MAP_ZOOMED_OUT;
-        matrix.setScale(scale, scale);
-        pathTerrain.transform(matrix, pathTemp);
-        c.drawPath(pathTemp, paintTerrain);
+        float scale = 2 * dh / SCALE_MAP_ZOOMED_OUT;
+        matrixTmp.setScale(scale, scale);
+        pathTerrain.transform(matrixTmp, pathTmp);
+        c.drawPath(pathTmp, paintTerrain);
 
         if (tideCircle == null) {
             tideCircle = new TideCircle(this);
@@ -263,6 +274,10 @@ public class SurfSpotsMap extends View {
         updateScale();
 
         spotLabelsCommon = new SpotLabel.SpotLabelsCommon(star);
+
+        for (SpotLabel label : spotsLabels.values()) {
+            label.updateDimension(spotLabelsCommon, 2 * dh / SCALE_MAP_OVERVIEW);
+        }
 
         onSizeChanged(getWidth(), getHeight(), getWidth(), getHeight());
 
@@ -336,20 +351,20 @@ public class SurfSpotsMap extends View {
 //    }
 
 
-    private Path pathCropMap = null;
+//    private Path pathCropMap = null;
 
-    @Override
-    protected void onSizeChanged(int w, int h, int oldw, int oldh) {
-        super.onSizeChanged(w, h, oldw, oldh);
-        if (dh != 0) {
-            if (bmpMapZoomedIn != null && bmpMapZoomedIn.getWidth() == getWidth() + dh * 4 && bmpMapZoomedIn.getHeight() == getHeight() + dh * 4)
-                return;
-            bmpMapZoomedIn = Bitmap.createBitmap(getWidth() + dh * 4, getHeight() + dh * 4, Bitmap.Config.ARGB_8888);
-            bmpMapZoomedInForSpotI = -1;
-            pathCropMap = new Region(0, 0, getWidth() + 4 * dh, getHeight() + 4 * dh).getBoundaryPath();
-        }
+//    @Override
+//    protected void onSizeChanged(int w, int h, int oldw, int oldh) {
+//        super.onSizeChanged(w, h, oldw, oldh);
+//        if (dh != 0) {
+//            if (bmpMapZoomedIn != null && bmpMapZoomedIn.getWidth() == getWidth() + dh * 4 && bmpMapZoomedIn.getHeight() == getHeight() + dh * 4)
+//                return;
+//            bmpMapZoomedIn = Bitmap.createBitmap(getWidth() + dh * 4, getHeight() + dh * 4, Bitmap.Config.ARGB_8888);
+//            bmpMapZoomedInForSpotI = -1;
+//            pathCropMap = new Region(0, 0, getWidth() + 4 * dh, getHeight() + 4 * dh).getBoundaryPath();
+//        }
 //        Log.i(TAG, "onSizeChanged() | " + bmpMapZoomedIn == null ? "null" : "ok");
-    }
+//    }
 
 
     public void resume() {
@@ -370,8 +385,8 @@ public class SurfSpotsMap extends View {
     private float scale = 1;
 
     private void updateScale() {
-        float rIn = overviewState * MAP_OVERVIEW + (1f - overviewState) * MAP_SPOT_SELECTED;
-        scale = (1f - awakenedState) * dh * 2 / MAP_ZOOMED_OUT + awakenedState * dh * 2 / rIn;
+        float rIn = overviewState * SCALE_MAP_OVERVIEW + (1f - overviewState) * SCALE_MAP_SPOT_SELECTED;
+        scale = (1f - awakenedState) * dh * 2 / SCALE_MAP_ZOOMED_OUT + awakenedState * dh * 2 / rIn;
     }
 
     private float getScale() {
@@ -517,19 +532,35 @@ public class SurfSpotsMap extends View {
 
 
     private int hit(int x, int y) {
-        for (Map.Entry<Integer, Rect> rect : spotsLabelsRects.entrySet()) {
-            if (rect.getValue().contains(x, y)) {
-                return rect.getKey();
+        float dx, dy;
+        dx = shownSpotsBoundRect.left;
+        dy = shownSpotsBoundRect.top;
+
+        x -= getWidth() - (3 * dh);
+
+        int height = getHeight() - insetBottom;
+        int h = height - (insetTop + (int) (paddingBottom * dh));
+        y -= awakenedState * (insetTop + h / 2) + (1 - awakenedState) * (height / 2 - dh);
+
+        x /= scale;
+        y /= scale;
+
+        x += dx;
+        y += dy;
+
+        for (Map.Entry<Integer, SpotLabel> e : spotsLabels.entrySet()) {
+            if (e.getValue().rect.contains(x, y)) {
+                return e.getKey();
             }
         }
 
-        double min = dh * dh * 4;
+        double min = dh * dh * 4 / scale;
         int minI = -1;
-        for (Map.Entry<Integer, Rect> rect : spotsLabelsRects.entrySet()) {
-            double d = Math.pow(rect.getValue().centerX() - x, 2) + Math.pow(rect.getValue().centerY() - y, 2);
+        for (Map.Entry<Integer, SpotLabel> e : spotsLabels.entrySet()) {
+            double d = Math.pow(e.getValue().rect.centerX() - x, 2) + Math.pow(e.getValue().rect.centerY() - y, 2);
             if (d < min) {
                 min = d;
-                minI = rect.getKey();
+                minI = e.getKey();
             }
         }
 
@@ -651,7 +682,7 @@ public class SurfSpotsMap extends View {
     private void updateShownSpotsBoundRect() {
         int i = 0;
 
-        shownSpotsBoundRect = null;
+//        shownSpotsBoundRect = null;
 
         //if (prevAwakenedState >= awakenedState) {
         float sum = 0;
@@ -702,7 +733,7 @@ public class SurfSpotsMap extends View {
         avey = awakenedState * zoomedInPoint.y + (1f - awakenedState) * avey;
 
         shownSpotsAverage = new PointF(avex, avey);
-        shownSpotsBoundRect = new RectF(avex - radf, avey - radf, avex + radf, avey + radf);
+        shownSpotsBoundRect.set(avex - radf, avey - radf, avex + radf, avey + radf);
     }
 
 
@@ -710,7 +741,7 @@ public class SurfSpotsMap extends View {
     private final Path pathSpotCircleClip = new Path();
 
     private void paintSpotCircle(Canvas c, float ox, float oy, float r, float awakenedState) {
-        PointF pp = parallaxHelper.applyParallax(ox, oy, dh * MapCircle.subZ);
+        PointF pp = parallaxHelper.applyParallax(ox, oy, dh * MapCircle.subZ * awakenedState);
         float x = pp.x, y = pp.y;
 
         float a = (float) (model.getSelectedSpot().waveDirection.ordinal() * PI * 2 / 16 + PI);
@@ -783,7 +814,7 @@ public class SurfSpotsMap extends View {
 
         updateShownSpotsBoundRect();
 
-        if (shownSpotsBoundRect == null) return;
+//        if (shownSpotsBoundRect == null) return;
 
         float dx, dy;
         dx = -shownSpotsBoundRect.left * scale;
@@ -814,21 +845,21 @@ public class SurfSpotsMap extends View {
 //                bmpMapZoomedIn.eraseColor(0x00000000);
 //                Canvas c = new Canvas(bmpMapZoomedIn);
 //
-//                matrix.setTranslate(dx2 + 2 * dh, dy2 + 2 * dh);
-//                matrix.preScale(scale, scale);
-//                pathTerrain.transform(matrix, pathTemp);
+//                matrixTmp.setTranslate(dx2 + 2 * dh, dy2 + 2 * dh);
+//                matrixTmp.preScale(scale, scale);
+//                pathTerrain.transform(matrixTmp, pathTmp);
 //
 //                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT) { //TODO FIX
-//                    pathTemp.op(pathTemp, pathCropMap, Path.Op.INTERSECT);
+//                    pathTmp.op(pathTmp, pathCropMap, Path.Op.INTERSECT);
 //                }
 //
-//                c.drawPath(pathTemp, paintTerrain);
+//                c.drawPath(pathTmp, paintTerrain);
 //
 //                bmpMapZoomedInForSpotI = model.selectedSpotI;
 //            }
 //            canvas.drawBitmap(bmpMapZoomedIn, pp.x - 2 * dh, -insetBottom / 2 + pp.y - 2 * dh, null);
         } else {
-            float s = scale / (dh * 2f / MAP_ZOOMED_OUT);
+            float s = scale / (dh * 2f / SCALE_MAP_ZOOMED_OUT);
             rectFTemp.set(dx + pp.x, dy + pp.y, dx + pp.x + bmpMapZoomedOut.getWidth() * s, dy + pp.y + bmpMapZoomedOut.getHeight() * s);
             canvas.drawBitmap(bmpMapZoomedOut, null, rectFTemp, null);
         }
@@ -867,7 +898,7 @@ public class SurfSpotsMap extends View {
 
         boolean justOneLabel = false;
 
-        float scaleOverview = 2 * dh / MAP_OVERVIEW;
+        float scaleOverview = 2 * dh / SCALE_MAP_OVERVIEW;
 
         float scalesRatio = scale / scaleOverview;
 
@@ -875,105 +906,32 @@ public class SurfSpotsMap extends View {
         canvas.translate(dx, dy);
         canvas.scale(scalesRatio, scalesRatio);
 
-//        float dx2 = dx / scalesRatio;
-//        float dy2 = dy / scalesRatio;
-
         float r = densityDHDep * 2.5f; //1.5f;
-//        float rZommedOut = densityDHDep * 1.5f / scalesRatio;
 
-//        float labelsAlpha = Math.max(0f, overviewState - 0.33f) / 0.67f;
+        if (overviewState == 0 && awakenedState < 1) {
+            float rZoomedOut = densityDHDep * 1.5f / scalesRatio;
 
-//        paintFont.setTextSize(metrics.font);
-//        paintFont.setTextAlign(Paint.Align.LEFT);
+            i = 0;
+            for (SurfSpot spot : surfSpotsList) {
+                float x = spot.pointOnSVG.x * scaleOverview;
+                float y = spot.pointOnSVG.y * scaleOverview;
 
-//        float labelDY = paintFont.getFontMetrics().ascent / 3;
+                float highlighted = isHighlighted(i);
+                if (highlighted > 0 && i != selectedSpotI) {
+                    float t = highlighted * (1f - awakenedState);
+                    paintBG.setColor(alpha(t, 0xbbffffff)); //colorSpotDot));
+                    canvas.drawCircle(x, y, rZoomedOut * highlighted, paintBG);
+                }
 
-//        paintFontSmall.setTextAlign(Paint.Align.CENTER);
-//        paintFontSmall.setTextSize(metrics.fontSmall);
-
-//        RatedConditions best;
-//        float bestRating;
-
-        if (spotLabelsCommon != null)
-            for (SpotLabel spotLabel : spotsLabels.values()) {
-                spotLabel.draw(canvas, spotLabelsCommon, scaleOverview, spotIDown == i);
+                i++;
             }
-//        for (SurfSpot spot : surfSpotsList) {
+        }
 
-//            boolean isPressed = spotIDown == i;
-//
-//            float x = spot.pointOnSVG.x * scaleOverview;
-//            float y = spot.pointOnSVG.y * scaleOverview;
-//            float x2 = x + dx2;
-//            float y2 = y + dy2;
-//
-//            if (awakenedState != 1) {
-//                float highlighted = isHighlighted(i);
-//                if (highlighted > 0 && i != selectedSpotI) {
-//                    float t = highlighted * (1f - awakenedState);
-//                    paintBG.setColor(alpha(t, 0xbbffffff));
-//                    canvas.drawCircle(x, y, rZommedOut * highlighted, paintBG);
-//                }
-//            }
-//
-//            if (awakenedState == 1 && overviewState > 0f) {
-//                if (isPressed) labelsAlpha *= 0.4f;
-//
-//                best = model.rater.getBest(spot, plusDays);
-//                bestRating = best != null ? best.rating : -1;
-//
-//                paintBG.setColor(isPressed ? circleColorPressed : circleColor);
-//                canvas.drawCircle(x, y, r, paintBG);
-//
-//                if (x2 > rectXL && (y2 > insetTop || x2 > dh * 4 && y2 > rectYT) && x2 < rectXR && y2 < rectYB) {
-//                    paintFont.setColor(alpha(labelsAlpha, 0x004055));
-//
-//                    int strWidth = (int) paintFont.measureText(spot.name);
-//
-//                    y -= labelDY;
-//                    if (spot.labelLeft) {
-//                        x -= 3 * r;
-//                        x -= strWidth;
-//                        x2 -= strWidth - (bestRating >= 0 ? (int) (dh * 1.5f) : 0);
-//                    } else {
-//                        x += 3 * r;
-//                    }
-//
-//                    canvas.drawText(spot.name, x, y, paintFont);
-//
-//                    Rect rect = spotsLabelsRects.get(i);
-//                    rect.set((int) x2 - dh / 2, (int) (y2 + paintFont.getFontMetrics().ascent), (int) x2 + strWidth + dh / 2 + (bestRating >= 0 ? (int) (dh * 1.5f) : 0), (int) y2);
-//
-//                    if (spot.labelLeft) {
-//                        x -= dh / 16 + dh;
-//                    } else {
-//                        x += strWidth + dh / 16;
-//                    }
-//
-//                    if (bestRating >= 0) {
-//                        y += starDY;
-//                        star.setAlpha((int) (labelsAlpha * (80 + 175 * bestRating)));
-//                        star.setBounds((int) x, (int) y, (int) (x + dh), (int) (y + dh));
-//                        star.draw(canvas);
-//
-//                        y -= starTextDY;
-//                        paintFontSmall.setColor(alpha(labelsAlpha * (0.66f + 0.33f * bestRating), 0xffffffff)); //bestRating >= 0.7 ? 0xff8ae3fc : 0xff4ac3ec)); //paintBG.getColor());
-//                        canvas.drawText(String.valueOf(Math.round(bestRating * 7)), x + dh / 2, y, paintFontSmall);
-//                    }
-//
-//                    canvas.drawRect(rect, paintFont);
-//
-//                    if (!justOneLabel && x2 > fx1 && y2 > fy1 && x2 + dh < fx2 && y2 < fy2) {
-//                        justOneLabel = true;
-//                    }
-//                } else {
-//                    spotsLabelsRects.get(i).set(-1000, -1000, -1, -1);
-//                }
-//
-//                if (isPressed) labelsAlpha /= 0.4f;
-//            }
-//            i++;
-//        }
+        if (spotLabelsCommon != null && overviewState > 0) {
+            for (Map.Entry<Integer, SpotLabel> entry : spotsLabels.entrySet()) {
+                entry.getValue().draw(canvas, spotLabelsCommon, scaleOverview, spotIDown == entry.getKey());
+            }
+        }
 
         canvas.restore();
 
@@ -996,7 +954,7 @@ public class SurfSpotsMap extends View {
                 paintSelectedSpot(canvas, x, y, r, t);
             }
 
-            if (t < 0.5f && t > 0) {
+            if (t > 0 && t < 0.5f) {
 //                paintBG.setColor(alpha(overviewState * (bestRating / 2f + 0.5f) * (1f - t / 0.5f), 0x006281));
                 paintBG.setColor(alpha(overviewState * (1f - t / 0.5f), 0x006281));
                 canvas.drawCircle(x, y, r, paintBG);
@@ -1147,7 +1105,9 @@ public class SurfSpotsMap extends View {
 
         this.overviewState = overviewState;
 
-        spotLabelsCommon.update(overviewState);
+        if (spotLabelsCommon != null) {
+            spotLabelsCommon.update(overviewState);
+        }
 
         updateScale();
         repaint();

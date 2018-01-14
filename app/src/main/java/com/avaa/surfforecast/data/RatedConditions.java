@@ -2,6 +2,9 @@ package com.avaa.surfforecast.data;
 
 import android.support.annotation.NonNull;
 
+import static com.avaa.surfforecast.drawers.MetricsAndPaints.colorGreen;
+import static com.avaa.surfforecast.drawers.MetricsAndPaints.colorRed;
+import static com.avaa.surfforecast.drawers.MetricsAndPaints.colorWindText;
 import static java.lang.Math.PI;
 import static java.lang.Math.abs;
 import static java.lang.Math.cos;
@@ -140,7 +143,7 @@ public class RatedConditions implements Comparable<RatedConditions> {
         return 0;
     }
 
-    private static float rateWind(SurfConditions surfConditions, SurfSpot spot) {
+    public static float rateWind(SurfConditions surfConditions, SurfSpot spot) {
         //windRating = 1f - (float)Math.abs((spot.getWindRelativeAngle(windAngle) - Math.PI) / Math.PI); // angle component
 
         float windRating = (float) cos(abs(spot.getWindRelativeAngle(surfConditions.windAngle) - PI)) / 2f + 0.5f;

@@ -1,8 +1,7 @@
-package com.avaa.surfforecast.views.Map;
+package com.avaa.surfforecast.views.map;
 
 
 import android.graphics.Paint;
-import android.util.Log;
 import android.view.View;
 
 import com.avaa.surfforecast.MainModel;

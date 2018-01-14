@@ -1,4 +1,4 @@
-package com.avaa.surfforecast.views.Map;
+package com.avaa.surfforecast.views.map;
 
 
 import android.graphics.Canvas;
@@ -19,7 +19,7 @@ import static com.avaa.surfforecast.data.Common.STR_S;
 import static com.avaa.surfforecast.data.Common.STR_SWELL;
 import static com.avaa.surfforecast.drawers.MetricsAndPaints.colorWaveText;
 import static com.avaa.surfforecast.views.ColorUtils.alpha;
-import static com.avaa.surfforecast.views.Map.Arrow.createArrow;
+import static com.avaa.surfforecast.views.map.Arrow.createArrow;
 
 
 /**

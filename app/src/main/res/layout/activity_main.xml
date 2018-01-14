@@ -31,7 +31,7 @@
                 app:mpb_progressStyle="horizontal"
                 app:mpb_useIntrinsicPadding="false" />
 
-            <com.avaa.surfforecast.views.Map.SurfSpotsMap
+            <com.avaa.surfforecast.views.map.SurfSpotsMap
                 android:id="@+id/map"
                 android:layout_width="match_parent"
                 android:layout_height="match_parent" />
