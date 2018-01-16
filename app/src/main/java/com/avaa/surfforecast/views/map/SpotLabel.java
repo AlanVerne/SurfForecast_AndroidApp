@@ -4,6 +4,7 @@ package com.avaa.surfforecast.views.map;
 import android.graphics.Canvas;
 import android.graphics.Paint;
 import android.graphics.Rect;
+import android.graphics.RectF;
 import android.graphics.drawable.Drawable;
 
 import com.avaa.surfforecast.MainModel;
@@ -132,6 +133,14 @@ public class SpotLabel {
                     (int) (spot.pointOnSVG.x + (w + common.dh / 2) / scale),
                     (int) (spot.pointOnSVG.y + common.paintLabel.getFontMetrics().descent / scale));
         }
+    }
+
+
+    public boolean isVisible(RectF screen) {
+        return rect.right > screen.left &&
+                rect.left < screen.right &&
+                rect.top < screen.bottom &&
+                rect.bottom > screen.top;
     }
 
 

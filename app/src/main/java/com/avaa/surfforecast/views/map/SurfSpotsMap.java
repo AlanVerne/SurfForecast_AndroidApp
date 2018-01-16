@@ -31,9 +31,7 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.Timer;
 import java.util.TimerTask;
 
@@ -146,7 +144,7 @@ public class SurfSpotsMap extends View {
     private final RectF rectFTemp = new RectF();
 
     private SpotLabel.SpotLabelsCommon spotLabelsCommon;
-    private final Map<Integer, SpotLabel> spotsLabels = new HashMap<>();
+    private final ArrayList<SpotLabel> spotsLabels = new ArrayList<>();
 
     private float avex = 0;
     private float avey = 0;
@@ -180,8 +178,8 @@ public class SurfSpotsMap extends View {
 
         surfSpotsList = model.surfSpots.getAll();
 
-        for (int i = 0; i < surfSpotsList.size(); i++) {
-            spotsLabels.put(i, new SpotLabel(surfSpotsList.get(i)));
+        for (SurfSpot surfSpot : surfSpotsList) {
+            spotsLabels.add(new SpotLabel(surfSpot));
         }
 
         densityDHDep = getResources().getDisplayMetrics().density;
@@ -229,7 +227,7 @@ public class SurfSpotsMap extends View {
         Rater rater = model.rater;
         int selectedDay = model.getSelectedDay();
 
-        for (SpotLabel label : spotsLabels.values()) {
+        for (SpotLabel label : spotsLabels) {
             label.setRating(rater.getBest(label.spot, selectedDay));
         }
     }
@@ -275,7 +273,7 @@ public class SurfSpotsMap extends View {
 
         spotLabelsCommon = new SpotLabel.SpotLabelsCommon(star);
 
-        for (SpotLabel label : spotsLabels.values()) {
+        for (SpotLabel label : spotsLabels) {
             label.updateDimension(spotLabelsCommon, 2 * dh / SCALE_MAP_OVERVIEW);
         }
 
@@ -531,6 +529,21 @@ public class SurfSpotsMap extends View {
     }
 
 
+    private PointF screenToMap(float x, float y) { // TODO: Use for hit()
+        float dx, dy;
+        dx = shownSpotsBoundRect.left;
+        dy = shownSpotsBoundRect.top;
+
+        x -= getWidth() - (3 * dh);
+
+        int height = getHeight() - insetBottom;
+        int h = height - (insetTop + (int) (paddingBottom * dh));
+        y -= awakenedState * (insetTop + h / 2) + (1 - awakenedState) * (height / 2 - dh);
+
+        return new PointF(x / scale + dx, y / scale + dy);
+    }
+
+
     private int hit(int x, int y) {
         float dx, dy;
         dx = shownSpotsBoundRect.left;
@@ -548,20 +561,24 @@ public class SurfSpotsMap extends View {
         x += dx;
         y += dy;
 
-        for (Map.Entry<Integer, SpotLabel> e : spotsLabels.entrySet()) {
-            if (e.getValue().rect.contains(x, y)) {
-                return e.getKey();
+        int i = 0;
+        for (SpotLabel label : spotsLabels) {
+            if (label.rect.contains(x, y)) {
+                return i;
             }
+            i++;
         }
 
         double min = dh * dh * 4 / scale;
         int minI = -1;
-        for (Map.Entry<Integer, SpotLabel> e : spotsLabels.entrySet()) {
-            double d = Math.pow(e.getValue().rect.centerX() - x, 2) + Math.pow(e.getValue().rect.centerY() - y, 2);
+        i = 0;
+        for (SpotLabel label : spotsLabels) {
+            double d = Math.pow(label.rect.centerX() - x, 2) + Math.pow(label.rect.centerY() - y, 2);
             if (d < min) {
                 min = d;
-                minI = e.getKey();
+                minI = i;
             }
+            i++;
         }
 
         return minI;
@@ -637,6 +654,7 @@ public class SurfSpotsMap extends View {
         }, 7500);
     }
 
+
     public void setAwakenedState(float awakenedState) {
         awakenedState = FAST_OUT_SLOW_IN_INTERPOLATOR.getInterpolation(awakenedState);
 
@@ -659,6 +677,7 @@ public class SurfSpotsMap extends View {
 
         repaint();
     }
+
 
     public void highlightSpots(float shownI, float firstI, float lastI, float awakenedState) {
         //Log.i(TAG, shownI +" "+ firstI +" "+ lastI);
@@ -875,21 +894,14 @@ public class SurfSpotsMap extends View {
         dx += pp.x;
         dy += pp.y;
 
-        int i = 0;
-
-        int plusDays = 0;
-        if (model != null) {
-            plusDays = model.getSelectedDay();
-        }
+//        int plusDays = 0;
+//        if (model != null) {
+//            plusDays = model.getSelectedDay();
+//        }
         if (awakenedState == 1 && insetBottom < dh * 4) {
             paintFont.setColor(alpha(overviewState, colorSpotDot));
             paintFont.setTextAlign(Paint.Align.LEFT);
         }
-
-        float rectXL = -dh * 6;
-        float rectXR = getWidth() + dh * 6;
-        float rectYT = -dh;
-        float rectYB = getHeight() - paddingBottom * dh;
 
         float fx1 = dh * 2;
         float fx2 = getWidth() - dh * 2;
@@ -902,6 +914,10 @@ public class SurfSpotsMap extends View {
 
         float scalesRatio = scale / scaleOverview;
 
+        PointF LT = screenToMap(-dh, -dh);
+        PointF RB = screenToMap(getWidth() + dh, getHeight() + dh);
+        RectF screen = new RectF(LT.x, LT.y, RB.x, RB.y);
+
         canvas.save();
         canvas.translate(dx, dy);
         canvas.scale(scalesRatio, scalesRatio);
@@ -911,7 +927,7 @@ public class SurfSpotsMap extends View {
         if (overviewState == 0 && awakenedState < 1) {
             float rZoomedOut = densityDHDep * 1.5f / scalesRatio;
 
-            i = 0;
+            int i = 0;
             for (SurfSpot spot : surfSpotsList) {
                 float x = spot.pointOnSVG.x * scaleOverview;
                 float y = spot.pointOnSVG.y * scaleOverview;
@@ -927,9 +943,13 @@ public class SurfSpotsMap extends View {
             }
         }
 
-        if (spotLabelsCommon != null && overviewState > 0) {
-            for (Map.Entry<Integer, SpotLabel> entry : spotsLabels.entrySet()) {
-                entry.getValue().draw(canvas, spotLabelsCommon, scaleOverview, spotIDown == entry.getKey());
+        if (overviewState > 0 && spotLabelsCommon != null) {
+            int i = 0;
+            for (SpotLabel label : spotsLabels) {
+                if (label.isVisible(screen)) {
+                    label.draw(canvas, spotLabelsCommon, scaleOverview, spotIDown == i);
+                }
+                i++;
             }
         }
 
@@ -960,7 +980,6 @@ public class SurfSpotsMap extends View {
                 canvas.drawCircle(x, y, r, paintBG);
             }
         }
-
 
         if (!justOneLabel && actionDown == null && overviewState > 0f && toOverview) { // Map correction
             SurfSpot magnetSpot = null;
